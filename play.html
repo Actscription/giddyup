@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)file:///C:/Users/Admin/Downloads/giddyup_play_10.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GiddyUp Play</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Courier+Prime:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1a6b3c;--green-light:#e8f5ee;--green-mid:#2d9155;--green-dark:#0f4023;
+  --gold:#c9a84c;--gold-light:#fdf6e3;--gold-dark:#8a6a0a;
+  --red:#c0392b;--red-light:#fdf0ef;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --ink:#1a1a1a;--muted:#6b7280;--border:#e2e8f0;
+  --bg:#f8f7f4;--white:#ffffff;--radius:12px;
+  --nav-h:60px;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);}
+
+/* ── APP MODE FLAG ── */
+/* Change APP_MODE in JS to 'premium' to unlock all club features */
+
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+.has-nav{padding-bottom:var(--nav-h);}
+
+/* SPLASH */
+#screen-splash{background:linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%);align-items:center;justify-content:center;text-align:center;padding:48px 28px;position:relative;overflow:hidden;}
+#screen-splash::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.015) 0,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 50px);}
+#screen-splash::after{content:'🏇';position:absolute;font-size:200px;opacity:0.04;bottom:-30px;right:-30px;line-height:1;}
+.splash-eyebrow{font-family:'Courier Prime',monospace;font-size:11px;color:var(--gold);letter-spacing:4px;text-transform:uppercase;margin-bottom:16px;position:relative;}
+.splash-logo{font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--white);letter-spacing:6px;line-height:0.9;position:relative;}
+.splash-logo span{color:var(--gold);}
+.splash-sub{font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-top:10px;position:relative;}
+.splash-divider{width:40px;height:2px;background:var(--gold);margin:28px auto;position:relative;}
+.splash-tagline{font-family:'Courier Prime',monospace;font-size:15px;color:var(--white);font-style:italic;margin-bottom:40px;position:relative;line-height:1.6;}
+.splash-tagline strong{color:var(--gold);font-style:normal;}
+.splash-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;position:relative;}
+
+/* HEADERS */
+.auth-header{background:var(--green);padding:16px 24px 24px;}
+.back-btn{color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;}
+.back-btn:hover{color:var(--white);}
+.auth-header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--white);letter-spacing:2px;}
+.auth-header p{font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;}
+
+/* TOP BAR */
+.top-bar{background:var(--green);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.top-bar-left .tb-ctx{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;}
+.top-bar-left .tb-name{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);letter-spacing:2px;line-height:1.1;}
+.top-bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.cpill{font-family:'Courier Prime',monospace;font-size:11px;font-weight:700;letter-spacing:2px;padding:3px 9px;border-radius:20px;}
+.cpill-gold{background:var(--gold);color:var(--ink);}
+.cpill-green{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.06);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);transition:color 0.15s;position:relative;}
+.nav-item.active{color:var(--green);}
+.nav-item.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--green);border-radius:0 0 3px 3px;}
+.nav-item .ni{font-size:20px;line-height:1;}
+.nav-item .nl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* BUTTONS */
+.btn{width:100%;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:15px;cursor:pointer;border:none;transition:all 0.15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-green{background:var(--green);color:var(--white);}
+.btn-green:hover{background:var(--green-mid);}
+.btn-gold{background:var(--gold);color:var(--ink);}
+.btn-gold:hover{background:#b8962a;}
+.btn-white{background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:var(--white);}
+.btn-white:hover{background:rgba(255,255,255,0.25);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--green);color:var(--green);}
+.btn-red{background:var(--red-light);border:1.5px solid var(--red);color:var(--red);}
+.btn-silks{background:var(--gold-light);border:1.5px solid var(--gold);color:var(--gold-dark);}
+.btn-sm{width:auto;padding:7px 14px;font-size:12px;margin-bottom:0;}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+
+/* FORMS */
+.form-body{padding:22px 20px;max-width:480px;margin:0 auto;width:100%;}
+.fg{margin-bottom:15px;}
+.fg label{display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
+.fg input,.fg select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);transition:border-color 0.2s;}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--green);}
+.fg .hint{font-size:11px;color:var(--muted);margin-top:4px;}
+.err-msg{font-size:12px;color:var(--red);margin-bottom:12px;padding:8px 12px;background:var(--red-light);border-radius:8px;}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:44px;}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;color:var(--muted);user-select:none;}
+.pw-eye:hover{color:var(--green);}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--green);margin-bottom:12px;}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:5px;}
+.tag-green{background:var(--green-light);color:var(--green);}
+.tag-gold{background:var(--gold-light);color:var(--gold-dark);}
+.tag-red{background:var(--red-light);color:var(--red);}
+.tag-muted{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.tag-blue{background:var(--blue-light);color:var(--blue);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.notice{background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--gold-dark);margin-bottom:14px;}
+.notice-green{background:var(--green-light);border:1px solid var(--green);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--green-dark);margin-bottom:14px;}
+.page-pad{padding:18px 20px;max-width:600px;margin:0 auto;width:100%;}
+
+/* WELCOME CARD */
+.welcome-card{background:linear-gradient(135deg,var(--green-dark),var(--green));border-radius:var(--radius);padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.welcome-card::after{content:'🏇';position:absolute;font-size:90px;opacity:0.07;right:-10px;bottom:-10px;}
+.welcome-card .wc-ctx{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.welcome-card .wc-name{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);letter-spacing:2px;}
+.welcome-card .wc-tag{font-size:12px;color:rgba(255,255,255,0.6);margin-top:8px;font-style:italic;}
+
+/* RACE GRID */
+.race-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.race-cell{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.race-cell:hover{border-color:var(--green);background:var(--green-light);}
+.race-cell.has-picks{border-color:var(--green);background:var(--green-light);}
+.race-cell.has-results{border-color:var(--gold);background:var(--gold-light);}
+.race-cell.scored{border-color:var(--green);background:var(--green-light);}
+.race-cell .rc-num{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--green);}
+.race-cell .rc-status{font-size:11px;color:var(--muted);margin-top:3px;}
+.race-cell.has-picks .rc-num,.race-cell.scored .rc-num{color:var(--green);}
+.race-cell.has-results .rc-num{color:var(--gold-dark);}
+
+/* PICKS */
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.pick-slot label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;display:block;}
+.pick-slot.win label{color:var(--gold-dark);}
+.pick-slot.place label{color:var(--blue);}
+.pick-slot.show label{color:#7c3aed;}
+.pick-slot.fourth label{color:var(--muted);}
+input.pi{width:100%;padding:10px 4px;border:1.5px solid var(--border);border-radius:8px;font-size:18px;font-weight:700;font-family:'Courier Prime',monospace;color:var(--ink);background:var(--bg);text-align:center;-moz-appearance:textfield;}
+input.pi::-webkit-outer-spin-button,input.pi::-webkit-inner-spin-button{-webkit-appearance:none;}
+input.pi:focus{outline:none;background:var(--white);border-color:var(--green);}
+input.pi:disabled{opacity:0.45;cursor:not-allowed;}
+.pi-win{border-color:var(--gold)!important;background:var(--gold-light)!important;}
+.pi-place{border-color:#93c5fd!important;background:#eff6ff!important;}
+.pi-show{border-color:#c4b5fd!important;background:#f5f3ff!important;}
+
+/* MORNING LINE SECTION */
+.ml-section{background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-top:14px;}
+.ml-section .ml-title{font-size:11px;font-weight:500;color:var(--gold-dark);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+.gu-section{background:var(--green-light);border:1px solid var(--green);border-radius:10px;padding:14px;margin-top:14px;}
+.gu-section .gu-title{font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+.gu-section input.pi:disabled{opacity:0.7;background:var(--white);color:var(--green-dark);font-weight:700;}
+
+/* SCORE */
+.score-bd{background:var(--green-light);border-radius:9px;padding:12px 14px;margin-top:10px;}
+.score-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+.score-row .pts{font-weight:500;color:var(--green);}
+.score-row .pts.zero{color:var(--muted);}
+.score-total-row{display:flex;justify-content:space-between;font-size:14px;font-weight:500;border-top:1px solid rgba(26,107,60,0.2);margin-top:8px;padding-top:8px;}
+.score-total-row .pts{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);}
+
+/* STREAK DOTS */
+.streak-row{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0;}
+.sdot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;}
+.sdot.scored{background:var(--green);color:var(--white);}
+.sdot.blank{background:var(--red-light);color:var(--red);border:1.5px solid var(--red);}
+.sdot.pending{background:var(--border);color:var(--muted);}
+
+/* SCORECARD TABLE */
+.sc-table{width:100%;border-collapse:collapse;font-size:12px;}
+.sc-table th{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:7px 5px;border-bottom:1px solid var(--border);text-align:center;}
+.sc-table th:first-child{text-align:left;}
+.sc-table td{padding:7px 5px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.sc-table td:first-child{text-align:left;}
+.sc-foot-row td{background:var(--green-light);font-weight:600;font-size:13px;border-top:2px solid var(--green)!important;}
+.sc-grand-row td{background:var(--green);color:var(--white);font-weight:600;font-size:14px;}
+
+/* COMPARISON */
+.compare-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.compare-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px;text-align:center;}
+.compare-card.winner{border-color:var(--gold);background:var(--gold-light);}
+.compare-card .cc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.compare-card .cc-score{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;color:var(--green);}
+.compare-card.winner .cc-score{color:var(--gold-dark);}
+
+/* TBTS */
+.tbts-rule{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.rule-badge{display:inline-flex;align-items:center;gap:6px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+.rule-tbts{font-family:'Courier Prime',monospace;font-size:12px;color:#b91c1c;background:#fef2f2;border-radius:6px;padding:6px 10px;font-style:italic;margin-top:8px;}
+
+.text-center{text-align:center;}
+.text-muted{color:var(--muted);font-size:13px;}
+
+/* ── DIARY ── */
+.diary-entry{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.diary-entry .de-race{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--green);}
+.diary-entry .de-date{font-size:11px;color:var(--muted);}
+.diary-entry .de-note{font-size:13px;color:var(--ink);margin-top:6px;line-height:1.6;white-space:pre-wrap;}
+.diary-entry .de-ticket{width:100%;max-width:300px;border-radius:8px;margin-top:8px;cursor:pointer;}
+.diary-entry .de-actions{display:flex;gap:8px;margin-top:10px;}
+textarea.diary-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);resize:vertical;min-height:80px;transition:border-color 0.2s;}
+textarea.diary-input:focus{outline:none;border-color:var(--green);}
+.photo-upload-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border:1.5px dashed var(--border);border-radius:9px;cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.15s;background:var(--bg);}
+.photo-upload-btn:hover{border-color:var(--green);color:var(--green);}
+.ticket-preview{width:100%;max-width:280px;border-radius:8px;margin-top:8px;display:block;}
+input[type=file]{display:none;}
+</style>
+</head>
+<body>
+
+<!-- ═══ SPLASH ═══ -->
+<div id="screen-splash" class="screen">
+  <div class="splash-eyebrow">Free to play · No betting required</div>
+  <div class="splash-logo">GiddyUp<br><span>Play</span></div>
+  <div class="splash-sub">Part of the GiddyUp Family</div>
+  <div class="splash-divider"></div>
+  <div class="splash-tagline">Are you playing today?<br>Pick horses. Track your score.<br><strong>No betting required.</strong></div>
+  <div class="splash-btns">
+    <button class="btn btn-gold" onclick="clearReg();go('screen-register')">🏇 &nbsp;Create Account</button>
+    <button class="btn btn-white" onclick="go('screen-login')">Sign In</button>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:8px;cursor:pointer;" onclick="goToTBTS()" id="tbts-btn-splash">📖 How to Use</div>
+  </div>
+  <div style="position:relative;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);width:100%;max-width:320px;">
+    <p style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;text-align:center;">Handicapping tool</p>
+    <button class="btn btn-silks btn-sm" style="width:100%;" onclick="openSilks()">🔬 &nbsp;Open GiddyUp Silks</button>
+  </div>
+</div>
+
+<!-- ═══ REGISTER ═══ -->
+<div id="screen-register" class="screen">
+  <div class="auth-header">
+    <div class="back-btn" onclick="clearReg();go('screen-splash')">← Back</div>
+    <h1>Create Account</h1><p>Start tracking your picks today</p>
+  </div>
+  <div class="form-body">
+    <div class="notice-green">🏇 Free to use. No credit card. No betting required.</div>
+    <div class="fg"><label>Username</label><input type="text" id="reg-u" placeholder="e.g. FastEddie" maxlength="20"><div class="hint">Your display name</div></div>
+    <div class="fg"><label>Email</label><input type="email" id="reg-e" placeholder="your@email.com"><div class="hint">One account per email</div></div>
+    <div class="fg"><label>City</label><input type="text" id="reg-c" placeholder="e.g. Grande Prairie, AB"><div class="hint">For regional race day notifications</div></div>
+    <div class="fg"><label>Password</label>
+      <div class="pw-wrap"><input type="password" id="reg-p" placeholder="Min 8 characters"><span class="pw-eye" onclick="togglePW('reg-p',this)">👁</span></div>
+    </div>
+    <div id="reg-err" class="err-msg" style="display:none;"></div>
+    <button class="btn btn-green" onclick="handleRegister()">Create My Account →</button>
+    <div class="text-center"><span class="text-muted">Have an account? </span><span style="color:var(--green);cursor:pointer;font-size:13px;" onclick="go('screen-login')">Sign in</span></div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="screen-login" class="screen">
+  <div class="auth-header">
+    <div class="back-btn" onclick="go('screen-splash')">← Back</div>
+    <h1>Sign In</h1><p>Welcome back</p>
+  </div>
+  <div class="form-body">
+    <div class="fg"><label>Email</label><input type="email" id="login-e" placeholder="your@email.com"></div>
+    <div class="fg"><label>Password</label>
+      <div class="pw-wrap"><input type="password" id="login-p" placeholder="Your password"><span class="pw-eye" onclick="togglePW('login-p',this)">👁</span></div>
+    </div>
+    <div id="login-err" class="err-msg" style="display:none;"></div>
+    <button class="btn btn-green" onclick="handleLogin()">Sign In</button>
+    <div class="text-center"><span class="text-muted">New here? </span><span style="color:var(--green);cursor:pointer;font-size:13px;" onclick="clearReg();go('screen-register')">Create account</span></div>
+  </div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div id="screen-home" class="screen has-nav active">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">GiddyUp Play</div><div class="tb-name" id="h-name">user1</div></div>
+    <div class="top-bar-right"><div class="cpill cpill-gold" id="h-city">Grande Prairie</div></div>
+  </div>
+  <div class="page-pad">
+    <div class="welcome-card">
+      <div class="wc-ctx">Welcome back</div>
+      <div class="wc-name" id="h-welcome-name">user1</div>
+      <div class="wc-tag">Pick your horses. Track your score. No betting required.</div>
+    </div>
+    <div class="section-title">Today's Card</div>
+    <div id="h-today-card">
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Jun 12, 2026</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">2</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Picked</div>
+        </div>
+        <div style="background:var(--gold-light);border-radius:8px;padding:10px 16px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold-dark);">2</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Scored</div>
+        </div>
+        <div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">405</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Total Pts</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-green btn-sm" onclick="nav('picks')">🎟️ Enter Picks</button>
+        <button class="btn btn-outline btn-sm" onclick="nav('results')">📋 Enter Results</button>
+        <button class="btn btn-outline btn-sm" onclick="nav('scorecard')">📊 View Scorecard</button>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <div class="section-title">How Many Races Today?</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(6)">6</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(7)">7</button><button class="btn btn-outline btn-sm" style="background:var(--green);color:white;border-color:var(--green)" onclick="setNumRaces(8)">8</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(9)">9</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(10)">10</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(11)">11</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(12)">12</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(13)">13</button>
+        <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
+      </div>
+    </div></div>
+    <div class="divider"></div>
+    <button class="btn btn-silks" onclick="openSilks()">🔬 &nbsp;Open GiddyUp Silks — Handicapping Tool</button>
+    <button class="btn btn-outline" style="border-color:#ef4444;color:#b91c1c;background:#fef2f2;margin-top:4px;" onclick="goToTBTS()" id="tbts-btn-home">📖 How to Use</button>
+    <button class="btn btn-outline" style="color:var(--red);border-color:var(--red);margin-top:4px;" onclick="handleLogout()">Sign Out</button>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+    <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+</div>
+
+<!-- ═══ PICKS ═══ -->
+<div id="screen-picks" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">My Picks</div><div class="tb-name" id="p-name">FastEddie</div></div>
+    <div class="top-bar-right"><div class="cpill cpill-gold" id="p-date"></div></div>
+  </div>
+  <div class="page-pad">
+    <!-- Race grid -->
+    <div id="p-race-grid" class="race-grid"></div>
+    <!-- Pick entry panel -->
+    <div id="p-pick-panel" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="p-racenum">1</span></div>
+        <button class="btn btn-outline btn-sm" onclick="showGrid()">↑ All Races</button>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">My Picks</div>
+        <div class="pick-grid">
+          <div class="pick-slot win"><label>★ Win</label><input type="number" id="pp1" class="pi pi-win" placeholder="#" min="1"></div>
+          <div class="pick-slot place"><label>Place</label><input type="number" id="pp2" class="pi pi-place" placeholder="#" min="1"></div>
+          <div class="pick-slot show"><label>Show</label><input type="number" id="pp3" class="pi pi-show" placeholder="#" min="1"></div>
+          <div class="pick-slot fourth"><label>4th</label><input type="number" id="pp4" class="pi" placeholder="#" min="1"></div>
+        </div>
+        <div class="hint" style="margin-top:8px;">★ Win Pick finishes 1st = +20 pts bonus</div>
+        <div id="p-lock-msg" style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-light);border:1px solid var(--red);border-radius:8px;font-size:12px;color:var(--red);"></div>
+        <div id="p-err" class="err-msg" style="display:none;margin-top:8px;"></div>
+      </div>
+      <!-- Morning line (optional) -->
+      <div class="ml-section">
+        <div class="ml-title">📰 Selections (optional)</div>
+        <div style="font-size:12px;color:var(--gold-dark);margin-bottom:10px;">Enter the 4 selections printed in the race program — your handicapper opponent.</div>
+        <div class="pick-grid">
+          <div class="pick-slot win"><label>★ Win</label><input type="number" id="ml1" class="pi pi-win" placeholder="#" min="1"></div>
+          <div class="pick-slot place"><label>Place</label><input type="number" id="ml2" class="pi pi-place" placeholder="#" min="1"></div>
+          <div class="pick-slot show"><label>Show</label><input type="number" id="ml3" class="pi pi-show" placeholder="#" min="1"></div>
+          <div class="pick-slot fourth"><label>4th</label><input type="number" id="ml4" class="pi" placeholder="#" min="1"></div>
+        </div>
+      </div>
+      <div class="gu-section" id="gu-section" style="display:none;">
+        <div class="gu-title">🔬 GiddyUp Picks</div>
+        <div style="font-size:12px;color:var(--green-dark);margin-bottom:10px;">Loaded from GiddyUp Silks — your AI handicapper's picks for this race.</div>
+        <div class="pick-grid">
+          <div class="pick-slot win"><label>★ Win</label><input type="number" id="gu1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
+          <div class="pick-slot place"><label>Place</label><input type="number" id="gu2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
+          <div class="pick-slot show"><label>Show</label><input type="number" id="gu3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
+          <div class="pick-slot fourth"><label>4th</label><input type="number" id="gu4" class="pi" placeholder="#" min="1" disabled=""></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn btn-green btn-sm" id="p-save-btn" onclick="savePicks()">Save Picks</button>
+        <button class="btn btn-outline btn-sm" onclick="clearPickInputs()">Clear</button>
+      </div>
+      <div id="p-saved" style="margin-top:14px;"></div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item active" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+  </div>
+</div>
+
+<!-- ═══ RESULTS (user enters their own) ═══ -->
+<div id="screen-results" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">Enter Results</div><div class="tb-name" id="r-name">FastEddie</div></div>
+    <div class="top-bar-right"><div class="cpill cpill-gold" id="r-date"></div></div>
+  </div>
+  <div class="page-pad">
+    <div class="notice">📋 Enter the official top 4 finishers after each race. Your picks are scored automatically.</div>
+    <!-- Race grid for results -->
+    <div id="r-race-grid" class="race-grid"></div>
+    <!-- Result entry panel -->
+    <div id="r-entry-panel" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="r-racenum">1</span></div>
+        <button class="btn btn-outline btn-sm" onclick="showResultGrid()">↑ All Races</button>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Official Finish Order</div>
+        <div class="pick-grid">
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">1st</label><input type="number" id="rr1" class="pi" placeholder="#" min="1"></div>
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">2nd</label><input type="number" id="rr2" class="pi" placeholder="#" min="1"></div>
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">3rd</label><input type="number" id="rr3" class="pi" placeholder="#" min="1"></div>
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">4th</label><input type="number" id="rr4" class="pi" placeholder="#" min="1"></div>
+        </div>
+        <div id="r-err" class="err-msg" style="display:none;margin-top:8px;"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn btn-green btn-sm" onclick="submitResult()">Score This Race</button>
+          <button class="btn btn-outline btn-sm" onclick="clearResultInputs()">Clear</button>
+        </div>
+      </div>
+      <div id="r-score-display"></div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item active" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+  </div>
+</div>
+
+<!-- ═══ SCORECARD ═══ -->
+<div id="screen-scorecard" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">My Scorecard</div><div class="tb-name" id="sc-name">FastEddie</div></div>
+    <div class="top-bar-right"><div class="cpill cpill-gold" id="sc-date"></div></div>
+  </div>
+  <div class="page-pad">
+    <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter your picks and results to get started.</div>
+    <!-- Summary cards -->
+    <div id="sc-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;"></div>
+    <!-- Morning line comparison -->
+    <div id="sc-ml-compare" style="display:none;margin-bottom:16px;"></div>
+    <!-- Daily card -->
+    <div class="card" id="sc-card" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="section-title" style="margin-bottom:0;">Daily Card</div>
+        <div id="sc-cons-status" style="font-size:13px;"></div>
+      </div>
+      <div class="streak-row" id="sc-streak-dots"></div>
+      <div class="divider"></div>
+      <div style="overflow-x:auto;">
+        <table class="sc-table">
+          <thead><tr><th>Race</th><th>W</th><th>F</th><th>E</th><th>T</th><th>S</th><th>SW</th><th>ST</th><th>Total</th></tr></thead>
+          <tbody id="sc-body"></tbody>
+          <tfoot id="sc-foot"></tfoot>
+        </table>
+      </div>
+    </div>
+    <div id="sc-h2h"></div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item active" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+
+    <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+
+
+<!-- ═══ TOO BAD TOO SAD ═══ -->
+<div id="screen-tbts" class="screen">
+  <div class="auth-header" id="tbts-header" style="background:linear-gradient(135deg,#1a6b3c,#2d9155);">
+    <div class="back-btn" onclick="go(CU?'screen-home':'screen-splash')">← Back</div>
+    <h1 id="tbts-title">How to Use</h1><p id="tbts-subtitle">GiddyUp Play</p>
+  </div>
+  <div class="form-body" style="max-width:600px;">
+    <div id="tbts-top"></div>
+    <div id="tbts-rules"></div>
+    <div id="tbts-bottom"></div>
+    <div style="height:20px;"></div>
+    <button class="btn btn-green" onclick="go(CU?'screen-home':'screen-splash')">Got it — Let's Go</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// APP MODE — change to 'premium' to unlock full Racing Club
+// ═══════════════════════════════════════════════════════════
+const APP_MODE = 'solo' // change to 'premium' for Racing Club;
+const MAX_RACES = 20;
+const TODAY = new Date().toISOString().split('T')[0];
+
+// ── DATABASE (localStorage backed) ──────────────────────────────
+function loadDB(){
+  try{
+    const saved=localStorage.getItem('giddyup_db');
+    if(saved) return JSON.parse(saved);
+  }catch(e){}
+  return {users:[],nextUserId:1};
+}
+function saveDB(){
+  try{localStorage.setItem('giddyup_db',JSON.stringify(DB));}catch(e){}
+}
+function loadSession(){
+  // Check shared GiddyUp account first (set by Silks or Play)
+  try{
+    const shared=localStorage.getItem('giddyup_account');
+    if(shared){
+      const acc=JSON.parse(shared);
+      if(acc&&acc.id) return acc;
+    }
+  }catch(e){}
+  // Fall back to Play-specific session
+  try{
+    const s=localStorage.getItem('giddyup_session');
+    return s?JSON.parse(s):null;
+  }catch(e){return null;}
+}
+function saveSession(user){
+  try{
+    // Save to both shared key and Play-specific key
+    if(user){
+      localStorage.setItem('giddyup_account',JSON.stringify(user));
+      localStorage.setItem('giddyup_session',JSON.stringify(user));
+    } else {
+      localStorage.removeItem('giddyup_account');
+      localStorage.removeItem('giddyup_session');
+    }
+  }catch(e){}
+}
+
+// User data structure:
+// {id, username, email, city, password, raceCards:{date:{numRaces, picks:{raceNum:{win,field,ml}}, results:{raceNum:[1,2,3,4]}, scores:{raceNum:scoreObj}}}}
+
+let DB = loadDB();
+let CU = null; // current user
+let curPickRace = 1;
+let curResultRace = 1;
+let numRaces = 9; // default, set by user
+
+// ── NAVIGATION ───────────────────────────────────────────────────
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function nav(tab){
+  const map={home:'screen-home',picks:'screen-picks',results:'screen-results',scorecard:'screen-scorecard',diary:'screen-diary'};
+  if(tab==='home') loadHome();
+  if(tab==='picks') loadPicks();
+  if(tab==='results') loadResultsScreen();
+  if(tab==='scorecard') loadScorecard();
+  if(tab==='diary') loadDiary();
+  go(map[tab]);
+}
+
+function openSilks(){
+  // Try localhost file first, fall back to hosted version
+  window.open('https://giddyupsilks.app','_blank');
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────
+function togglePW(id,eye){
+  const el=document.getElementById(id);
+  el.type=el.type==='password'?'text':'password';
+  eye.textContent=el.type==='password'?'👁':'🙈';
+}
+
+function clearReg(){
+  ['reg-u','reg-e','reg-c','reg-p','login-e','login-p'].forEach(id=>{
+    const el=document.getElementById(id);if(el) el.value='';
+  });
+  ['reg-err','login-err'].forEach(id=>{const el=document.getElementById(id);if(el) el.style.display='none';});
+}
+
+function handleRegister(){
+  const u=v('reg-u'),e=v('reg-e').toLowerCase(),c=v('reg-c'),p=v('reg-p');
+  showErr('reg-err','');
+  if(!u||!e||!c||!p){showErr('reg-err','Please fill in all fields.');return;}
+  if(p.length<8){showErr('reg-err','Password must be at least 8 characters.');return;}
+  if(DB.users.find(x=>x.email===e)){showErr('reg-err','An account with this email already exists.');return;}
+  if(DB.users.find(x=>x.username.toLowerCase()===u.toLowerCase())){showErr('reg-err','That username is already taken.');return;}
+  const user={id:DB.nextUserId++,username:u,email:e,city:c,password:p,raceCards:{}};
+  DB.users.push(user);saveDB();
+  CU=user;saveSession(CU);
+  // Save to shared GiddyUp account so Silks recognises this user
+  try{localStorage.setItem('giddyup_account',JSON.stringify(CU));}catch(e){}
+  loadHome();go('screen-home');
+}
+
+function handleLogin(){
+  const e=v('login-e').toLowerCase(),p=v('login-p');
+  showErr('login-err','');
+  const user=DB.users.find(u=>u.email===e&&u.password===p);
+  if(!user){showErr('login-err','Invalid email or password.');return;}
+  CU=user;saveSession(CU);
+  loadHome();go('screen-home');
+}
+
+function handleLogout(){
+  CU=null;saveSession(null);clearReg();go('screen-splash');
+}
+
+// ── RACE CARD HELPERS ────────────────────────────────────────────
+function getTodayCard(){
+  if(!CU) return null;
+  if(!CU.raceCards) CU.raceCards={};
+  if(!CU.raceCards[TODAY]) CU.raceCards[TODAY]={numRaces:9,picks:{},results:{},scores:{},mlPicks:{}};
+  return CU.raceCards[TODAY];
+}
+
+function saveUser(){
+  const idx=DB.users.findIndex(u=>u.id===CU.id);
+  if(idx>-1){DB.users[idx]=CU;saveDB();}
+}
+
+function formatDate(d){
+  if(!d) return '';
+  const [y,m,day]=d.split('-').map(Number);
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[m-1]+' '+day+', '+y;
+}
+
+// ── HOME ─────────────────────────────────────────────────────────
+function loadHome(){
+  document.getElementById('h-name').textContent=displayName(CU);
+  document.getElementById('h-welcome-name').textContent=displayName(CU);
+  document.getElementById('h-city').textContent=CU.city.split(',')[0];
+  const card=getTodayCard();
+  const scored=Object.keys(card.scores).length;
+  const picked=Object.keys(card.picks).length;
+  document.getElementById('h-today-card').innerHTML=`
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">${formatDate(TODAY)}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">${picked}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Picked</div>
+        </div>
+        <div style="background:${scored?'var(--gold-light)':'var(--bg)'};border-radius:8px;padding:10px 16px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:${scored?'var(--gold-dark)':'var(--muted)'};">${scored}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Scored</div>
+        </div>
+        ${scored?`<div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">${Object.values(card.scores).reduce((a,s)=>a+s.raceTotal+s.streak,0)}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Total Pts</div>
+        </div>`:''}
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-green btn-sm" onclick="nav('picks')">🎟️ Enter Picks</button>
+        ${picked?`<button class="btn btn-outline btn-sm" onclick="nav('results')">📋 Enter Results</button>`:''}
+        ${scored?`<button class="btn btn-outline btn-sm" onclick="nav('scorecard')">📊 View Scorecard</button>`:''}
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <div class="section-title">How Many Races Today?</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${[6,7,8,9,10,11,12,13].map(n=>`<button class="btn btn-outline btn-sm" style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
+        <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
+      </div>
+    </div>`;
+}
+
+function setNumRaces(n){
+  const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
+}
+function promptCustomRaces(){
+  const n=parseInt(prompt('How many races? (1-20)'));
+  if(n&&n>=1&&n<=20) setNumRaces(n);
+}
+
+// ── PICKS ────────────────────────────────────────────────────────
+function loadPicks(){
+  document.getElementById('p-name').textContent=displayName(CU);
+  document.getElementById('p-date').textContent=formatDate(TODAY);
+  // Check if GiddyUp Silks sent picks via localStorage bridge
+  checkSilksBridge();
+  showGrid();
+  renderRaceGrid();
+}
+
+function checkSilksBridge(){
+  try{
+    const incoming=localStorage.getItem('giddyup_play_incoming');
+    if(!incoming) return;
+    const data=JSON.parse(incoming);
+    if(!data||data.date!==TODAY) return;
+    // Show a banner that picks are available from Silks
+    const existing=document.getElementById('silks-bridge-banner');
+    if(existing) return; // already shown
+    const banner=document.createElement('div');
+    banner.id='silks-bridge-banner';
+    banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
+    const raceCount=Object.keys(data.picks||{}).length;
+    const raceLabel=raceCount===1?'1 race':raceCount+' races';
+    banner.innerHTML=`<div>🔬 <strong>GiddyUp Picks for ${raceLabel}</strong> ready from ${data.sentAt||'earlier today'}. Load as GiddyUp Picks?</div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn btn-gold btn-sm" onclick="loadSilksPicks()">Load</button>
+        <button class="btn btn-outline btn-sm" onclick="dismissSilksBridge()">Dismiss</button>
+      </div>`;
+    const grid=document.getElementById('p-race-grid');
+    grid.parentNode.insertBefore(banner,grid);
+  }catch(e){}
+}
+
+function loadSilksPicks(){
+  try{
+    const data=JSON.parse(localStorage.getItem('giddyup_play_incoming'));
+    if(!data||!data.picks) return;
+    const card=getTodayCard();
+    if(!card.guPicks) card.guPicks={};
+    let count=0;
+    // data.picks is {raceNum: [horse1,horse2,horse3,horse4]} from Silks rankings
+    Object.keys(data.picks).forEach(raceNum=>{
+      const p=data.picks[raceNum];
+      if(p&&p.length>=4){
+        card.guPicks[raceNum]=[p[0],p[1],p[2],p[3]];
+        count++;
+      }
+    });
+    saveUser();
+    localStorage.removeItem('giddyup_play_incoming');
+    dismissSilksBridge();
+    renderRaceGrid();
+    alert('GiddyUp Picks loaded for '+count+' race'+(count!==1?'s':'')+'! These will compete against your picks and selections on the scorecard.');
+  }catch(e){alert('Could not load picks from Silks.');}
+}
+
+function dismissSilksBridge(){
+  const banner=document.getElementById('silks-bridge-banner');
+  if(banner) banner.remove();
+  localStorage.removeItem('giddyup_play_incoming');
+}
+
+function renderRaceGrid(){
+  const card=getTodayCard();
+  const grid=document.getElementById('p-race-grid');
+  let html='';
+  for(let r=1;r<=card.numRaces;r++){
+    const hasPicks=!!card.picks[r];
+    const hasResults=!!card.results[r];
+    const isScored=!!card.scores[r];
+    let cls='race-cell',status='Tap to pick';
+    if(isScored){cls='race-cell scored';status='✓ Scored';}
+    else if(hasResults){cls='race-cell has-results';status='Results in';}
+    else if(hasPicks){cls='race-cell has-picks';status='✓ Picks saved';}
+    html+=`<div class="${cls}" onclick="selectPickRace(${r})">
+      <div class="rc-num">Race ${r}</div>
+      <div class="rc-status">${status}</div>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function showGrid(){
+  document.getElementById('p-race-grid').style.display='grid';
+  document.getElementById('p-pick-panel').style.display='none';
+}
+
+function selectPickRace(r){
+  curPickRace=r;
+  document.getElementById('p-racenum').textContent=r;
+  document.getElementById('p-race-grid').style.display='none';
+  document.getElementById('p-pick-panel').style.display='block';
+  loadPickRaceData(r);
+}
+
+function loadPickRaceData(r){
+  const card=getTodayCard();
+  const pk=card.picks[r];
+  const ml=card.mlPicks?card.mlPicks[r]:null;
+  const hasResults=!!card.results[r];
+  // my picks
+  document.getElementById('pp1').value=pk?pk.field[0]:'';
+  document.getElementById('pp2').value=pk?pk.field[1]:'';
+  document.getElementById('pp3').value=pk?pk.field[2]:'';
+  document.getElementById('pp4').value=pk?pk.field[3]:'';
+  // morning line
+  document.getElementById('ml1').value=ml?ml[0]:'';
+  document.getElementById('ml2').value=ml?ml[1]:'';
+  document.getElementById('ml3').value=ml?ml[2]:'';
+  document.getElementById('ml4').value=ml?ml[3]:'';
+  // lock if results in
+  const locked=hasResults;
+  ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.disabled=locked;el.style.opacity=locked?'0.5':'1';
+  });
+  const saveBtn=document.getElementById('p-save-btn');
+  saveBtn.disabled=locked;
+  const lockMsg=document.getElementById('p-lock-msg');
+  if(locked){
+    const res=card.results[r];
+    lockMsg.style.display='block';
+    lockMsg.innerHTML=`🔒 Race ${r} is locked — official result: ${res.map((h,i)=>['1st','2nd','3rd','4th'][i]+' #'+h).join(' · ')}`;
+  } else lockMsg.style.display='none';
+  document.getElementById('p-err').style.display='none';
+  renderSavedPicksList();
+}
+
+function clearPickInputs(){
+  ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>document.getElementById(id).value='');
+}
+
+function savePicks(){
+  const p1=gi('pp1'),p2=gi('pp2'),p3=gi('pp3'),p4=gi('pp4');
+  if(!p1||!p2||!p3||!p4){showErr('p-err','Please fill in all 4 picks.');return;}
+  const card=getTodayCard();
+  if(card.results[curPickRace]){showErr('p-err','Results already entered for this race — picks locked.');return;}
+  card.picks[curPickRace]={win:p1,field:[p1,p2,p3,p4],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+  // save morning line if entered
+  const ml1=gi('ml1'),ml2=gi('ml2'),ml3=gi('ml3'),ml4=gi('ml4');
+  if(ml1&&ml2&&ml3&&ml4){
+    if(!card.mlPicks) card.mlPicks={};
+    card.mlPicks[curPickRace]=[ml1,ml2,ml3,ml4];
+  }
+  saveUser();
+  document.getElementById('p-err').style.display='none';
+  renderSavedPicksList();
+  renderRaceGrid();
+  // auto-advance
+  if(curPickRace<card.numRaces){
+    curPickRace++;
+    document.getElementById('p-racenum').textContent=curPickRace;
+    loadPickRaceData(curPickRace);
+  }
+}
+
+function renderSavedPicksList(){
+  const card=getTodayCard();
+  const races=Object.keys(card.picks).sort((a,b)=>a-b);
+  const div=document.getElementById('p-saved');
+  if(!races.length){div.innerHTML='';return;}
+  div.innerHTML=`<div class="section-title" style="margin-top:14px;">Saved Picks</div>
+  <div class="card" style="padding:10px;">
+  <table class="sc-table"><thead><tr><th>Race</th><th>★ Win</th><th>Place</th><th>Show</th><th>4th</th><th>ML</th><th>Saved</th><th></th></tr></thead><tbody>
+  ${races.map(r=>{
+    const pk=card.picks[r];
+    const ml=card.mlPicks?card.mlPicks[r]:null;
+    const sc=card.scores[r];
+    let badge=sc?'<span class="tag tag-green">Scored</span>':card.results[r]?'<span class="tag tag-gold">Results in</span>':'<span class="tag tag-muted">Pending</span>';
+    return`<tr><td><strong>R${r}</strong></td>
+      <td style="color:var(--gold-dark);font-weight:600;">${pk.field[0]}</td>
+      <td>${pk.field[1]}</td><td>${pk.field[2]}</td><td>${pk.field[3]}</td>
+      <td style="color:var(--muted);font-size:11px;">${ml?ml.join(','):'—'}</td>
+      <td style="font-size:11px;color:var(--muted);">${pk.savedAt||"—"}</td><td>${badge}</td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+// ── RESULTS ──────────────────────────────────────────────────────
+function loadResultsScreen(){
+  document.getElementById('r-name').textContent=displayName(CU);
+  document.getElementById('r-date').textContent=formatDate(TODAY);
+  showResultGrid();
+  renderResultGrid();
+}
+
+function renderResultGrid(){
+  const card=getTodayCard();
+  const grid=document.getElementById('r-race-grid');
+  let html='';
+  for(let r=1;r<=card.numRaces;r++){
+    const hasPicks=!!card.picks[r];
+    const hasResults=!!card.results[r];
+    const isScored=!!card.scores[r];
+    let cls='race-cell',status='No picks yet';
+    if(isScored){cls='race-cell scored';status='✓ Scored';}
+    else if(hasResults){cls='race-cell has-results';status='✓ Result entered';}
+    else if(hasPicks){cls='race-cell has-picks';status='Ready to score';}
+    html+=`<div class="${cls}" onclick="selectResultRace(${r})">
+      <div class="rc-num">Race ${r}</div>
+      <div class="rc-status">${status}</div>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function showResultGrid(){
+  document.getElementById('r-race-grid').style.display='grid';
+  document.getElementById('r-entry-panel').style.display='none';
+}
+
+function selectResultRace(r){
+  curResultRace=r;
+  document.getElementById('r-racenum').textContent=r;
+  document.getElementById('r-race-grid').style.display='none';
+  document.getElementById('r-entry-panel').style.display='block';
+  const card=getTodayCard();
+  const existing=card.results[r];
+  document.getElementById('rr1').value=existing?existing[0]:'';
+  document.getElementById('rr2').value=existing?existing[1]:'';
+  document.getElementById('rr3').value=existing?existing[2]:'';
+  document.getElementById('rr4').value=existing?existing[3]:'';
+  document.getElementById('r-err').style.display='none';
+  document.getElementById('r-score-display').innerHTML='';
+}
+
+function clearResultInputs(){
+  ['rr1','rr2','rr3','rr4'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('r-score-display').innerHTML='';
+  document.getElementById('r-err').style.display='none';
+}
+
+function submitResult(){
+  const r1=gi('rr1'),r2=gi('rr2'),r3=gi('rr3'),r4=gi('rr4');
+  if(!r1||!r2||!r3||!r4){showErr('r-err','Please enter all 4 finishers.');return;}
+  const actual=[r1,r2,r3,r4];
+  const card=getTodayCard();
+  // Confirm if re-entering
+  if(card.results[curResultRace]&&card.scores[curResultRace]){
+    if(!confirm('Race '+curResultRace+' is already scored. Re-entering will recalculate. Continue?')) return;
+  }
+  card.results[curResultRace]=actual;
+  // Score my picks
+  const picks=card.picks[curResultRace];
+  let myScore=null,mlScore=null,guScore=null;
+  if(picks){
+    myScore=scoreRace(picks,actual,curResultRace,card,false,'scores');
+    card.scores[curResultRace]=myScore;
+  } else {
+    // No picks = zero score = streak breaker
+    card.scores[curResultRace]={fieldPts:0,fieldHits:[],sweepPts:0,winHit:false,winPts:0,exacta:false,trifecta:false,superfecta:false,exactaPts:0,trifectaPts:0,superfectaPts:0,exoticPts:0,raceTotal:0,streak:0,actual,picks:null};
+  }
+  // Score selections if entered
+  const ml=card.mlPicks?card.mlPicks[curResultRace]:null;
+  if(ml){
+    const mlPicks={win:ml[0],field:ml};
+    mlScore=scoreRace(mlPicks,actual,curResultRace,card,true,'mlScores');
+    if(!card.mlScores) card.mlScores={};
+    card.mlScores[curResultRace]=mlScore;
+  }
+  // Score GiddyUp Picks if loaded
+  const gu=card.guPicks?card.guPicks[curResultRace]:null;
+  if(gu){
+    const guPicks={win:gu[0],field:gu};
+    guScore=scoreRace(guPicks,actual,curResultRace,card,true,'guScores');
+    if(!card.guScores) card.guScores={};
+    card.guScores[curResultRace]=guScore;
+  }
+  saveUser();
+  renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore);
+  renderResultGrid();
+}
+
+function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
+  const div=document.getElementById('r-score-display');
+  let html=`<div class="card" style="margin-top:14px;">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Official finish: ${actual.map((h,i)=>['1st','2nd','3rd','4th'][i]+' #'+h).join(' · ')}</div>`;
+
+  // Three-way leaderboard for this race
+  const competitors=[];
+  if(mlScore) competitors.push({name:'Selections',icon:'📰',score:mlScore,color:'var(--blue)'});
+  if(guScore) competitors.push({name:'GiddyUp',icon:'🔬',score:guScore,color:'var(--gold-dark)'});
+  competitors.push({name:CU?displayName(CU):'You',icon:'🏇',score:myScore,color:'var(--green)',isMe:true});
+
+  if(competitors.length>1){
+    const sorted=[...competitors].sort((a,b)=>(b.score?b.score.raceTotal:0)-(a.score?a.score.raceTotal:0));
+    html+=`<div style="display:grid;grid-template-columns:repeat(${competitors.length},1fr);gap:8px;margin-bottom:14px;">`;
+    competitors.forEach(c=>{
+      const pts=c.score?c.score.raceTotal:0;
+      const isWinner=sorted[0]===c && pts>0;
+      html+=`<div style="background:${isWinner?'var(--gold-light)':'var(--bg)'};border:1.5px solid ${isWinner?'var(--gold)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px;">${c.icon} ${c.name}</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${c.color};">${pts}</div>
+        ${isWinner?'<div style="font-size:10px;color:var(--gold-dark);">🏆 Leading</div>':''}
+      </div>`;
+    });
+    html+='</div>';
+  }
+
+  if(myScore){
+    html+=`<div style="font-weight:500;margin-bottom:8px;">My Score: <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${myScore.raceTotal+myScore.streak} pts</span></div>
+    <div class="score-bd">
+      <div class="score-row"><span>Field picks (${myScore.fieldHits.length}/4)</span><span class="pts ${!myScore.fieldPts?'zero':''}">${myScore.fieldPts?'+'+myScore.fieldPts:'—'}</span></div>
+      <div class="score-row"><span>Sweep bonus</span><span class="pts ${!myScore.sweepPts?'zero':''}">${myScore.sweepPts?'+10':'—'}</span></div>
+      <div class="score-row"><span>Win bonus</span><span class="pts ${!myScore.winPts?'zero':''}">${myScore.winPts?'+20':'—'}</span></div>
+      <div class="score-row"><span>Exacta</span><span class="pts ${!myScore.exactaPts?'zero':''}">${myScore.exactaPts?'+30':'—'}</span></div>
+      <div class="score-row"><span>Trifecta</span><span class="pts ${!myScore.trifectaPts?'zero':''}">${myScore.trifectaPts?'+50':'—'}</span></div>
+      <div class="score-row"><span>Superfecta</span><span class="pts ${!myScore.superfectaPts?'zero':''}">${myScore.superfectaPts?'+70':'—'}</span></div>
+      <div class="score-total-row"><span>Race total</span><span class="pts">${myScore.raceTotal} pts</span></div>
+    </div>
+    ${myScore.streak?'<div style="margin-top:8px;background:var(--gold-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--gold-dark);font-weight:500;">🔥 Streak bonus: +5 pts</div>':''}`;
+  } else {
+    html+=`<div class="tag tag-red">No picks entered — 0 pts · streak broken</div>`;
+  }
+  html+='</div>';
+  div.innerHTML=html;
+  // auto-advance
+  const card=getTodayCard();
+  if(curResultRace<card.numRaces){
+    curResultRace++;
+    document.getElementById('r-racenum').textContent=curResultRace;
+    const existing=card.results[curResultRace];
+    document.getElementById('rr1').value=existing?existing[0]:'';
+    document.getElementById('rr2').value=existing?existing[1]:'';
+    document.getElementById('rr3').value=existing?existing[2]:'';
+    document.getElementById('rr4').value=existing?existing[3]:'';
+  }
+}
+
+// ── SCORING ENGINE ────────────────────────────────────────────────
+function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
+  const field=picks.field,win=picks.win;
+  let fieldPts=0,fieldHits=[];
+  field.forEach(h=>{if(actual.includes(h)){fieldPts+=5;fieldHits.push(h);}});
+  const sweep=fieldHits.length===4,sweepPts=sweep?10:0;
+  const winHit=actual[0]===win,winPts=winHit?20:0;
+  const exacta=field[0]===actual[0]&&field[1]===actual[1];
+  const trifecta=exacta&&field[2]===actual[2];
+  const superfecta=trifecta&&field[3]===actual[3];
+  const exactaPts=exacta?30:0,trifectaPts=trifecta?50:0,superfectaPts=superfecta?70:0;
+  const exoticPts=exactaPts+trifectaPts+superfectaPts;
+  const raceTotal=fieldPts+sweepPts+winPts+exoticPts;
+  let streak=0;
+  if(raceNum>1 && scoreKey){
+    let alive=true;
+    const history=card[scoreKey]||{};
+    for(let i=raceNum-1;i>=1;i--){
+      const prev=history[i];
+      if(!prev||prev.raceTotal===0){alive=false;break;}
+    }
+    if(alive&&raceTotal>0) streak=5;
+  }
+  return{fieldPts,fieldHits,sweepPts,winHit,winPts,exacta,trifecta,superfecta,exactaPts,trifectaPts,superfectaPts,exoticPts,raceTotal,streak,actual,picks};
+}
+
+// ── SCORECARD ────────────────────────────────────────────────────
+function loadScorecard(){
+  document.getElementById('sc-name').textContent=displayName(CU);
+  document.getElementById('sc-date').textContent=formatDate(TODAY);
+  const card=getTodayCard();
+  const rns=Object.keys(card.scores).map(Number).sort((a,b)=>a-b);
+  const noData=document.getElementById('sc-no-data'),scCard=document.getElementById('sc-card');
+  if(!rns.length){noData.style.display='block';scCard.style.display='none';document.getElementById('sc-summary').innerHTML='';return;}
+  noData.style.display='none';scCard.style.display='block';
+  let tF=0,tW=0,tE=0,tS=0,tSt=0,tR=0,tEx=0,tTri=0,tSf=0,consAlive=true;
+  let dots='';
+  for(let i=1;i<=card.numRaces;i++){
+    const sc=card.scores[i];
+    if(!sc) dots+=`<div class="sdot pending">${i}</div>`;
+    else if(sc.raceTotal>0) dots+=`<div class="sdot scored">${i}</div>`;
+    else{dots+=`<div class="sdot blank">${i}</div>`;consAlive=false;}
+  }
+  document.getElementById('sc-streak-dots').innerHTML=dots;
+  rns.forEach(r=>{if(card.scores[r].raceTotal===0) consAlive=false;});
+  const allScored=rns.length===card.numRaces,consBonus=allScored&&consAlive?card.numRaces*5:0;
+  let rows='';
+  rns.forEach(r=>{
+    const sc=card.scores[r];
+    tF+=sc.fieldPts;tW+=sc.winPts;tE+=sc.exoticPts;tS+=sc.sweepPts;tSt+=sc.streak;tR+=sc.raceTotal;
+    if(sc.exacta) tEx+=sc.exactaPts;
+    if(sc.trifecta) tTri+=sc.trifectaPts;
+    if(sc.superfecta) tSf+=sc.superfectaPts;
+    rows+=`<tr><td><strong>R${r}</strong></td>
+      <td>${sc.winHit?'<span style="color:var(--gold-dark);font-weight:500;">+20</span>':'—'}</td>
+      <td>${sc.fieldPts||'—'}</td>
+      <td>${sc.exacta?'<span class="tag tag-green">+30</span>':'—'}</td>
+      <td>${sc.trifecta?'<span class="tag tag-gold">+50</span>':'—'}</td>
+      <td>${sc.superfecta?'<span class="tag tag-gold">+70</span>':'—'}</td>
+      <td>${sc.sweepPts?'<span class="tag tag-green">+10</span>':'—'}</td>
+      <td>${sc.streak?'<span style="color:var(--gold-dark);font-weight:500;">+5</span>':'—'}</td>
+      <td><strong>${sc.raceTotal+sc.streak}</strong></td></tr>`;
+  });
+  const grand=tR+tSt+consBonus;
+  document.getElementById('sc-summary').innerHTML=`
+    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Race Score</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);">${tR}</div></div>
+    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Streak Bonus</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold-dark);">${tSt}</div></div>
+    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Grand Total</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);">${grand}</div></div>`;
+  document.getElementById('sc-cons-status').innerHTML=consAlive?'<span style="color:var(--green);font-weight:500;">🟢 Alive</span>':'<span style="color:var(--red);font-weight:500;">🔴 Lost</span>';
+  // Three-way leaderboard: Selections vs GiddyUp vs My Picks
+  const mlScores=card.mlScores||{};
+  const guScores=card.guScores||{};
+  const mlRns=Object.keys(mlScores).map(Number);
+  const guRns=Object.keys(guScores).map(Number);
+  const mlEl=document.getElementById('sc-ml-compare');
+  if(mlRns.length||guRns.length){
+    const myTotal=tR;
+    const mlTotal=mlRns.reduce((a,r)=>a+mlScores[r].raceTotal,0);
+    const guTotal=guRns.reduce((a,r)=>a+guScores[r].raceTotal,0);
+    const competitors=[];
+    if(mlRns.length) competitors.push({name:'Selections',icon:'📰',total:mlTotal,races:mlRns.length,color:'var(--blue)'});
+    if(guRns.length) competitors.push({name:'GiddyUp',icon:'🔬',total:guTotal,races:guRns.length,color:'var(--gold-dark)'});
+    competitors.push({name:CU?displayName(CU):'You',icon:'🏇',total:myTotal,races:rns.length,color:'var(--green)',isMe:true});
+    const ranked=[...competitors].sort((a,b)=>b.total-a.total);
+
+    mlEl.style.display='block';
+    mlEl.innerHTML=`<div class="section-title" style="margin-bottom:8px;">Leaderboard — Today</div>
+    <div class="card" style="padding:10px;">
+      ${ranked.map((c,i)=>{
+        const medal=['🥇','🥈','🥉'][i]||'';
+        return`<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;${i<ranked.length-1?'border-bottom:1px solid var(--border);':''}">
+          <div style="font-size:20px;width:28px;text-align:center;">${medal||c.icon}</div>
+          <div style="flex:1;">
+            <div style="font-weight:500;font-size:14px;${c.isMe?'color:var(--green);':''}">${c.icon} ${c.name}${c.isMe?' <span class=\"tag tag-green\" style=\"font-size:9px;\">You</span>':''}</div>
+            <div style="font-size:11px;color:var(--muted);">${c.races} race${c.races!==1?'s':''} scored</div>
+          </div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${c.color};">${c.total}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } else mlEl.style.display='none';
+  document.getElementById('sc-body').innerHTML=rows;
+  document.getElementById('sc-foot').innerHTML=`
+    <tr class="sc-foot-row"><td><strong>Totals</strong></td><td>${tW?'+'+tW:'—'}</td><td>${tF}</td><td>${tEx?'+'+tEx:'—'}</td><td>${tTri?'+'+tTri:'—'}</td><td>${tSf?'+'+tSf:'—'}</td><td>${tS?'+'+tS:'—'}</td><td>${tSt?'+'+tSt:'—'}</td><td><strong>${tR+tSt}</strong></td></tr>
+    ${consBonus?`<tr style="background:var(--gold-light);"><td colspan="8" style="text-align:right;color:var(--gold-dark);font-size:12px;">🏆 Consistency (${card.numRaces}×5)</td><td style="font-weight:600;color:var(--gold-dark);">+${consBonus}</td></tr>`:''}
+    <tr class="sc-grand-row"><td colspan="8"><strong>Grand Total</strong></td><td><strong>${grand}</strong></td></tr>`;
+  renderHeadToHead(card,rns);
+}
+
+// ── HEAD-TO-HEAD: race-by-race breakdown for Selections / GiddyUp / Me ──
+function renderHeadToHead(card,rns){
+  const el=document.getElementById('sc-h2h');
+  const mlScores=card.mlScores||{};
+  const guScores=card.guScores||{};
+  const hasML=Object.keys(mlScores).length>0;
+  const hasGU=Object.keys(guScores).length>0;
+  if(!hasML&&!hasGU){el.innerHTML='';return;}
+
+  const competitors=[];
+  competitors.push({key:'me',icon:'🏇',name:CU?displayName(CU):'You',color:'var(--green)',scores:card.scores,isMe:true});
+  if(hasML) competitors.push({key:'ml',icon:'📰',name:'Selections',color:'var(--blue)',scores:mlScores});
+  if(hasGU) competitors.push({key:'gu',icon:'🔬',name:'GiddyUp',color:'var(--gold-dark)',scores:guScores});
+
+  // exotic label helper
+  function exLabel(sc){
+    if(!sc) return '—';
+    if(sc.superfecta) return '<span class="tag tag-gold">Sfcta</span>';
+    if(sc.trifecta) return '<span class="tag tag-gold">Tri</span>';
+    if(sc.exacta) return '<span class="tag tag-green">Ex</span>';
+    return '—';
+  }
+
+  // Build rows: for each race, one sub-row per competitor that has a score
+  let rows='';
+  rns.forEach(r=>{
+    competitors.forEach((c,ci)=>{
+      const sc=c.scores[r];
+      if(!sc) return;
+      const isFirst=ci===0;
+      rows+=`<tr style="${isFirst?'border-top:2px solid var(--border);':''}">
+        <td style="${isFirst?'':'color:var(--muted);'}">${isFirst?'<strong>R'+r+'</strong>':''}</td>
+        <td style="text-align:left;${c.isMe?'font-weight:600;color:var(--green);':''}">${c.icon} ${c.name}</td>
+        <td>${sc.winHit?'<span style="color:var(--gold-dark);font-weight:500;">+20</span>':'—'}</td>
+        <td>${sc.fieldPts||'—'}</td>
+        <td>${exLabel(sc)}</td>
+        <td>${sc.sweepPts?'<span class="tag tag-green">+10</span>':'—'}</td>
+        <td>${sc.streak?'<span style="color:var(--gold-dark);font-weight:500;">+5</span>':'—'}</td>
+        <td><strong style="color:${c.color};">${sc.raceTotal+(sc.streak||0)}</strong></td>
+      </tr>`;
+    });
+  });
+
+  // Totals per competitor
+  let totalsRows='';
+  competitors.forEach(c=>{
+    let tF=0,tW=0,tE=0,tS=0,tSt=0,tR=0,exactaCt=0,trifectaCt=0,superfectaCt=0,winCt=0,sweepCt=0;
+    rns.forEach(r=>{
+      const sc=c.scores[r];
+      if(!sc) return;
+      tF+=sc.fieldPts;tW+=sc.winPts;tE+=sc.exoticPts;tS+=sc.sweepPts;tSt+=sc.streak||0;tR+=sc.raceTotal;
+      if(sc.winHit) winCt++;
+      if(sc.sweepPts) sweepCt++;
+      if(sc.exacta) exactaCt++;
+      if(sc.trifecta) trifectaCt++;
+      if(sc.superfecta) superfectaCt++;
+    });
+    totalsRows+=`<tr style="background:${c.isMe?'var(--green-light)':'var(--bg)'};font-weight:600;">
+      <td colspan="2" style="text-align:left;${c.isMe?'color:var(--green);':''}">${c.icon} ${c.name}${c.isMe?' <span class="tag tag-green" style="font-size:9px;">You</span>':''}</td>
+      <td>${tW?'+'+tW:'—'}</td>
+      <td>${tF}</td>
+      <td style="font-size:11px;">${exactaCt||trifectaCt||superfectaCt?(superfectaCt?superfectaCt+'×Sf ':'')+(trifectaCt?trifectaCt+'×Tri ':'')+(exactaCt?exactaCt+'×Ex':''):'—'}</td>
+      <td>${tS?'+'+tS:'—'}</td>
+      <td>${tSt?'+'+tSt:'—'}</td>
+      <td style="color:${c.color};">${tR+tSt}</td>
+    </tr>`;
+  });
+
+  el.innerHTML=`
+    <div class="section-title" style="margin-top:16px;">Head-to-Head — Race by Race</div>
+    <div class="card" style="padding:10px;overflow-x:auto;">
+      <table class="sc-table">
+        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Win</th><th>Field</th><th>Exotic</th><th>Sweep</th><th>Streak</th><th>Total</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot>${totalsRows}</tfoot>
+      </table>
+    </div>`;
+}
+
+// ── TOO BAD TOO SAD ──────────────────────────────────────────────
+const TBTS_RULES=[
+  {num:0,icon:"👑",title:"Who Runs This Platform",rule:"GiddyUp Play is operated by the platform administrator. All Master Steward appointments are made personally by the platform administrator. If you represent a racetrack and want to bring GiddyUp Play to your facility, contact us. The platform administrator's decision is final.",tbts:"Want to run a track? Contact us. We decide. Full stop."},
+  {num:1,icon:"🚫",title:"Scratches",rule:"If your horse is scratched before the race, it scores zero. No substitutions, no replacements, no do-overs.",tbts:"Your horse didn't run. Too Bad Too Sad."},
+  {num:2,icon:"🔢",title:"Wrong Number Entry",rule:"You typed #12 when you meant #2. You entered a horse number that doesn't exist in the field. You picked the same horse twice. Pay attention — your picks are your responsibility.",tbts:"You entered it wrong. Too Bad Too Sad."},
+  {num:3,icon:"⏰",title:"Missed the Cutoff",rule:"Picks are made before the races start. If you didn't enter your picks in time, you have no picks for the day. Set an alarm. Enter early.",tbts:"The gate opened without you. Too Bad Too Sad."},
+  {num:4,icon:"💾",title:"Forgot to Save",rule:"You filled in your picks but didn't tap Save Picks. Unsaved picks do not exist. The app does not read minds.",tbts:"It was never saved. Too Bad Too Sad."},
+  {num:5,icon:"📵",title:"Device Issues",rule:"Your phone died. Your wifi dropped. The app crashed. Technical problems on your end are not the pool's problem. Enter early.",tbts:"Not our circus, not our horse. Too Bad Too Sad."},
+  {num:6,icon:"🥈",title:"No Partial Credit",rule:"Close doesn't count. Your Win Pick finished second. The scoring system is the scoring system. There is no almost.",tbts:"Almost only counts in horseshoes. Too Bad Too Sad."},
+  {num:7,icon:"🤝",title:"Dead Heats",rule:"In a dead heat, both horses are awarded the finishing position. If you picked either one for that position, you get full credit. Dead heats expand your winning combinations.",tbts:"This one works in your favour. You're welcome."},
+  {num:8,icon:"📋",title:"Official Result is Final",rule:"If stewards change the official result, you may correct the entry and scores recalculate. The corrected official result stands. No further disputes.",tbts:"Stewards rule. Deal with it."},
+  {num:9,icon:"🌧️",title:"Rain and Cancellations",rule:"If a race is cancelled, it is removed from scoring. The consistency bonus recalculates against races actually run. Same rules for everyone.",tbts:"Nobody controls the weather. We all suffer together."},
+  {num:10,icon:"🎩",title:"The Steward's Decision is Final",rule:"All decisions on any dispute are final. There is no appeal process. There is no commissioner. There is no tribunal. This is a free game.",tbts:"The steward has spoken. Too Bad Too Sad."},
+];
+
+const HOW_TO_USE = [
+  {icon:"🎟️", title:"Step 1 — Set Your Race Card",
+   desc:"On the Home screen, tap how many races are on today's card. This sets up your pick grid for the day."},
+  {icon:"✏️", title:"Step 2 — Enter Your Picks Before the Races Start",
+   desc:"Tap the Picks tab. You'll see a grid of all today's races. Tap any race to enter your 4 picks — Win, Place, Show and 4th. Your Win Pick is your bonus horse — if it finishes 1st you get +20 bonus points on top of your regular score."},
+  {icon:"📰", title:"Step 3 — Optional: Enter Selections and Load GiddyUp Picks",
+   desc:"Below your picks you'll see a Selections section — enter the 4 picks printed in the race program if you want to compare yourself against the house experts. If you came from GiddyUp Silks, your AI-ranked picks are also loaded automatically as GiddyUp Picks. This is optional — the app works fine with just your own picks."},
+  {icon:"🏆", title:"Three-Way Leaderboard",
+   desc:"After each race, see how Selections, GiddyUp, and you stack up head to head. The Scorecard shows a running leaderboard for the day — who's leading after every race scored. It's the ultimate test: can you beat the house? Can you beat the AI?"},
+  {icon:"📋", title:"Step 4 — Enter the Official Results",
+   desc:"After each race, tap the Results tab. Select the race and enter the official top 4 finishers in order. Your picks are scored automatically the moment you submit."},
+  {icon:"📊", title:"Step 5 — Check Your Scorecard",
+   desc:"Tap the Scorecard tab to see your full daily breakdown — race by race scores, streak bonus, consistency bonus and grand total. If you entered morning line picks, you'll see a head-to-head comparison showing whether you beat the chalk."},
+  {icon:"⭐", title:"How Scoring Works",
+   desc:"Each of your 4 picks that lands anywhere in the top 4 (any order) = 5 pts. Sweep all 4 = +10 bonus. Win Pick finishes 1st = +20 bonus. Exacta (Win + Place in correct order) = +30. Trifecta = +50. Superfecta = +70. Perfect race = 200 pts."},
+  {icon:"🔥", title:"Streak Bonus",
+   desc:"Score at least 1 point in a race and your streak stays alive. Each race you extend your streak = +5 pts. Miss a race or score zero = streak resets to zero."},
+  {icon:"🏆", title:"Consistency Bonus",
+   desc:"Score at least 1 point in every single race on the card = bonus points equal to the number of races × 5. On a 9-race card that's 45 bonus points. One blank race and it's gone for the day."},
+  {icon:"🔒", title:"Picks Lock When Results Are Entered",
+   desc:"Once you enter results for a race, that race's picks are locked and cannot be changed. Enter your picks honestly — if you cheat you are only cheating yourself."},
+  {icon:"💾", title:"Your Data is Saved",
+   desc:"Your picks, results and scores are saved automatically in your browser. They will be there when you come back. Clearing your browser data will erase your history."},
+  {icon:"📓", title:"Keep a Racing Diary",
+   desc:"The Diary tab is your personal racing journal. Add notes before a race (your read on a horse, trainer tips, track conditions), after a race (what you noticed, what you missed), and attach photos of your winning tickets or race programs. Over time your diary becomes a powerful handicapping study tool."},
+];
+
+function initTBTSButtons(){
+  const isSolo=APP_MODE==='solo';
+  const label=isSolo?'📖 How to Use':'🐴 Too Bad Too Sad Rules';
+  ['tbts-btn-home','tbts-btn-splash'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=label;
+  });
+}
+
+function goToTBTS(){
+  const isSolo=APP_MODE==='solo';
+  const header=document.getElementById('tbts-header');
+  const title=document.getElementById('tbts-title');
+  const subtitle=document.getElementById('tbts-subtitle');
+  const topEl=document.getElementById('tbts-top');
+  const bottomEl=document.getElementById('tbts-bottom');
+  const rulesEl=document.getElementById('tbts-rules');
+  if(isSolo){
+    header.style.background='linear-gradient(135deg,#1a6b3c,#2d9155)';
+    title.textContent='GiddyUp Play — How to Use';
+    subtitle.textContent='GiddyUp Play';
+    topEl.innerHTML=`<div style="text-align:center;padding:20px 0 10px;">
+      <div style="font-size:64px;line-height:1;">🏇</div>
+      <div style="font-family:'Courier Prime',monospace;font-size:13px;color:var(--muted);margin-top:6px;font-style:italic;">"Pick your horses. Track your score."</div>
+    </div>
+    <div style="background:var(--green-light);border:2px solid var(--green);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--green);">Free to use. No betting required.</div>
+      <div style="font-size:13px;color:var(--green-dark);margin-top:4px;">Pick horses, score your races, keep notes, improve your handicapping.</div>
+    </div>`;
+    rulesEl.innerHTML=HOW_TO_USE.map(r=>`
+      <div class="tbts-rule">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="font-size:26px;flex-shrink:0;">${r.icon}</div>
+          <div style="flex:1;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--ink);margin-bottom:6px;">${r.title}</div>
+            <div style="font-size:13px;color:var(--ink);line-height:1.6;">${r.desc}</div>
+          </div>
+        </div>
+      </div>`).join('');
+    bottomEl.innerHTML=`<div style="margin-top:24px;text-align:center;">
+      <div style="font-size:48px;">🏇</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--green);margin-top:8px;">Now go pick some winners.</div>
+    </div>`;
+  } else {
+    header.style.background='linear-gradient(135deg,#7c2d12,#9a3412)';
+    title.textContent='Too Bad Too Sad Rules';
+    subtitle.textContent='The official rules of GiddyUp Play';
+    topEl.innerHTML=`<div style="text-align:center;padding:20px 0 10px;">
+      <div style="font-size:72px;line-height:1;">🐴</div>
+      <div style="font-family:'Courier Prime',monospace;font-size:13px;color:var(--muted);margin-top:6px;font-style:italic;">"Not our problem, partner."</div>
+    </div>
+    <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#b91c1c;">By entering picks you agree to all rules below.</div>
+      <div style="font-size:13px;color:#991b1b;margin-top:4px;">No exceptions. No appeals. This is a free game — enjoy it.</div>
+    </div>`;
+    rulesEl.innerHTML=TBTS_RULES.map(r=>`
+      <div class="tbts-rule">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="font-size:26px;flex-shrink:0;">${r.icon}</div>
+          <div style="flex:1;">
+            <div class="rule-badge">Rule ${r.num}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--ink);margin-bottom:6px;">${r.title}</div>
+            <div style="font-size:13px;color:var(--ink);line-height:1.6;margin-bottom:8px;">${r.rule}</div>
+            <div class="rule-tbts">😤 ${r.tbts}</div>
+          </div>
+        </div>
+      </div>`).join('');
+    bottomEl.innerHTML=`<div style="margin-top:24px;text-align:center;">
+      <div style="font-size:48px;">🐴</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--green);margin-top:8px;">Now go pick some winners.</div>
+    </div>`;
+  }
+  go('screen-tbts');
+}
+
+// ── DIARY ───────────────────────────────────────────────────────
+let pendingPhotoData = null;
+let pendingPhotoName = null;
+
+function loadDiary(){
+  document.getElementById('d-name').textContent = displayName(CU);
+  document.getElementById('d-date').textContent = formatDate(TODAY);
+  // populate race selector
+  const card = getTodayCard();
+  const sel = document.getElementById('d-race-select');
+  sel.innerHTML = '<option value="">General note — not race specific</option>';
+  for(let r=1; r<=card.numRaces; r++){
+    const scored = !!card.scores[r];
+    const picked = !!card.picks[r];
+    sel.innerHTML += `<option value="${r}">Race ${r}${scored?' ✓ Scored':picked?' (picks saved)':''}</option>`;
+  }
+  renderDiaryEntries();
+}
+
+function handlePhotoSelect(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  pendingPhotoName = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    pendingPhotoData = e.target.result;
+    const preview = document.getElementById('d-photo-preview');
+    preview.src = pendingPhotoData;
+    preview.style.display = 'block';
+    document.getElementById('d-photo-name').textContent = '📷 ' + file.name;
+    document.querySelector('.photo-upload-btn').textContent = '📷 Change photo';
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveDiaryEntry(){
+  const note = document.getElementById('d-note').value.trim();
+  const race = document.getElementById('d-race-select').value;
+  showErr('d-err','');
+  if(!note && !pendingPhotoData){showErr('d-err','Please add a note or photo.');return;}
+  if(!CU.diary) CU.diary = [];
+  const entry = {
+    id: Date.now(),
+    date: TODAY,
+    race: race ? parseInt(race) : null,
+    note: note,
+    photo: pendingPhotoData || null,
+    photoName: pendingPhotoName || null,
+    savedAt: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+  };
+  CU.diary.unshift(entry);
+  saveUser();
+  // clear form
+  document.getElementById('d-note').value = '';
+  document.getElementById('d-race-select').value = '';
+  document.getElementById('d-photo-preview').style.display = 'none';
+  document.getElementById('d-photo-name').textContent = '';
+  document.querySelector('.photo-upload-btn').textContent = '📷  Add photo — winning ticket, race program, anything';
+  pendingPhotoData = null;
+  pendingPhotoName = null;
+  renderDiaryEntries();
+}
+
+function deleteDiaryEntry(id){
+  if(!confirm('Delete this diary entry?')) return;
+  CU.diary = (CU.diary||[]).filter(e=>e.id!==id);
+  saveUser();
+  renderDiaryEntries();
+}
+
+function renderDiaryEntries(){
+  const entries = CU.diary || [];
+  const todayEntries = entries.filter(e=>e.date===TODAY);
+  const prevEntries = entries.filter(e=>e.date!==TODAY);
+  const noEl = document.getElementById('d-no-entries');
+  noEl.style.display = entries.length===0?'block':'none';
+  document.getElementById('d-entries-today').innerHTML = todayEntries.length
+    ? todayEntries.map(e=>renderDiaryCard(e)).join('')
+    : '<p style="color:var(--muted);font-size:13px;margin-bottom:12px;">No notes yet today.</p>';
+  // Group previous entries by date
+  const dateGroups = {};
+  prevEntries.forEach(e=>{
+    if(!dateGroups[e.date]) dateGroups[e.date]=[];
+    dateGroups[e.date].push(e);
+  });
+  const prevDates = Object.keys(dateGroups).sort((a,b)=>b.localeCompare(a));
+  document.getElementById('d-entries-prev').innerHTML = prevDates.length
+    ? prevDates.map(date=>`
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;">${formatDate(date)}</div>
+        ${dateGroups[date].map(e=>renderDiaryCard(e)).join('')}
+      `).join('')
+    : '<p style="color:var(--muted);font-size:13px;">No previous entries.</p>';
+}
+
+function renderDiaryCard(e){
+  return `<div class="diary-entry">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        ${e.race?`<span class="de-race">Race ${e.race}</span>&nbsp;`:'<span style="font-size:11px;color:var(--muted);">General Note</span>'}
+        <span class="de-date">· ${formatDate(e.date)} · ${e.savedAt}</span>
+      </div>
+      <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);padding:4px 10px;font-size:11px;" onclick="deleteDiaryEntry(${e.id})">✕</button>
+    </div>
+    ${e.note?`<div class="de-note">${e.note}</div>`:''}
+    ${e.photo?`<div style="margin-top:8px;">
+      <img src="${e.photo}" class="ticket-preview" onclick="viewFullPhoto('${e.id}')" title="Tap to enlarge" alt="${e.photoName||'Photo'}">
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">📷 ${e.photoName||'Photo'}</div>
+    </div>`:''}
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-green btn-sm" onclick="shareDiaryEntry(${e.id})">📤 &nbsp;Share</button>
+      <button class="btn btn-outline btn-sm" onclick="copyDiaryEntry(${e.id})">📋 &nbsp;Copy Text</button>
+    </div>
+  </div>`;
+}
+
+function shareDiaryEntry(id){
+  const entry=(CU.diary||[]).find(e=>e.id==id);
+  if(!entry) return;
+  const raceLabel=entry.race?'Race '+entry.race+' — ':'';
+  const text=`GiddyUp Play 🏇\n${raceLabel}${formatDate(entry.date)}\n\n${entry.note||''}\n\nTracked with GiddyUp Play — giddyupsilks.app`;
+  // Use native share sheet if available (mobile)
+  if(navigator.share){
+    const shareData={title:'GiddyUp Play — '+raceLabel+formatDate(entry.date),text:text};
+    // Include photo as file if available
+    if(entry.photo){
+      fetch(entry.photo)
+        .then(r=>r.blob())
+        .then(blob=>{
+          const file=new File([blob],entry.photoName||'giddyup-ticket.jpg',{type:blob.type});
+          if(navigator.canShare&&navigator.canShare({files:[file]})){
+            navigator.share({...shareData,files:[file]}).catch(()=>navigator.share(shareData));
+          } else {
+            navigator.share(shareData);
+          }
+        }).catch(()=>navigator.share(shareData));
+    } else {
+      navigator.share(shareData).catch(err=>console.log('Share cancelled'));
+    }
+  } else {
+    // Fallback: copy to clipboard
+    copyToClipboard(text);
+    alert('Copied to clipboard — paste anywhere to share!');
+  }
+}
+
+function copyDiaryEntry(id){
+  const entry=(CU.diary||[]).find(e=>e.id==id);
+  if(!entry) return;
+  const raceLabel=entry.race?'Race '+entry.race+' — ':'';
+  const text=`GiddyUp Play 🏇\n${raceLabel}${formatDate(entry.date)}\n\n${entry.note||''}\n\nTracked with GiddyUp Play — giddyupsilks.app`;
+  copyToClipboard(text);
+  alert('Note copied to clipboard!');
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard){navigator.clipboard.writeText(text);}
+  else{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+  }
+}
+
+function viewFullPhoto(id){
+  const entry=(CU.diary||[]).find(e=>e.id==id);
+  if(!entry||!entry.photo) return;
+  const win=window.open('','_blank');
+  win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+    <img src="${entry.photo}" style="max-width:100%;max-height:100vh;object-fit:contain;">
+  </body></html>`);
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function displayName(user){
+  if(!user) return '';
+  // If username looks like an email or is empty, use the part before @
+  const u=user.username||'';
+  if(!u||u.includes('@')) return (user.email||'').split('@')[0];
+  return u;
+}
+
+function v(id){return document.getElementById(id).value.trim();}
+function gi(id){return parseInt(document.getElementById(id).value)||0;}
+function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display=msg?'block':'none';}}
+
+// ── INIT ─────────────────────────────────────────────────────────
+(function init(){
+  initTBTSButtons();
+  const session=loadSession();
+  if(session){
+    // reload fresh from DB
+    const fresh=DB.users.find(u=>u.id===session.id);
+    if(fresh){CU=fresh;loadHome();go('screen-home');return;}
+  }
+  go('screen-splash');
+})();
+</script>
+
+<!-- ═══ DIARY ═══ -->
+<div id="screen-diary" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">My Racing Diary</div><div class="tb-name" id="d-name">FastEddie</div></div>
+    <div class="top-bar-right"><div class="cpill cpill-gold" id="d-date"></div></div>
+  </div>
+  <div class="page-pad">
+    <!-- Add new entry -->
+    <div class="card" style="border-color:var(--green);">
+      <div class="section-title" style="margin-bottom:10px;">Add a Note</div>
+      <div class="fg" style="margin-bottom:8px;">
+        <label>Race (optional)</label>
+        <select id="d-race-select" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);">
+          <option value="">General note (not race-specific)</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:8px;">
+        <label>Your Notes</label>
+        <textarea class="diary-input" id="d-note" placeholder="e.g. Horse #4 looked strong in warm-ups. Trainer mentioned good workout this week. Backing my gut on this one..."></textarea>
+      </div>
+      <!-- Photo upload -->
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Photo (optional)</label>
+        <div class="photo-upload-btn" onclick="document.getElementById('d-photo-input').click()">
+          📷 &nbsp;Add photo — winning ticket, race program, anything
+        </div>
+        <input type="file" id="d-photo-input" accept="image/*" onchange="handlePhotoSelect(event)">
+        <img id="d-photo-preview" class="ticket-preview" style="display:none;" alt="Photo preview">
+        <div id="d-photo-name" style="font-size:11px;color:var(--muted);margin-top:4px;"></div>
+      </div>
+      <div id="d-err" class="err-msg" style="display:none;"></div>
+      <button class="btn btn-green btn-sm" style="width:100%;" onclick="saveDiaryEntry()">💾 &nbsp;Save Note</button>
+    </div>
+
+    <!-- Entries list -->
+    <div class="section-title" style="margin-top:4px;">Today's Notes</div>
+    <div id="d-entries-today"></div>
+    <div class="section-title" style="margin-top:4px;">Previous Notes</div>
+    <div id="d-entries-prev"></div>
+    <div id="d-no-entries" class="notice" style="display:none;">No diary entries yet. Add your first note above.</div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+    <div class="nav-item active" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+</div>
+
+
+</body></html>
