@@ -659,7 +659,6 @@ const navPicks=document.getElementById('nav-picks-home');
 if(navPicks){navPicks.classList.toggle('pulse',!picked);}
 const coaching=document.getElementById('coaching-text');
 if(coaching){coaching.style.display=!picked?'block':'none';}
-}
 function setNumRaces(n){
   const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
 }
