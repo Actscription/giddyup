@@ -659,6 +659,7 @@ const navPicks=document.getElementById('nav-picks-home');
 if(navPicks){navPicks.classList.toggle('pulse',!picked);}
 const coaching=document.getElementById('coaching-text');
 if(coaching){coaching.style.display=!picked?'block':'none';}
+}
 function setNumRaces(n){
   const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
 }
@@ -666,7 +667,6 @@ function promptCustomRaces(){
   const n=parseInt(prompt('How many races? (1-20)'));
   if(n&&n>=1&&n<=20) setNumRaces(n);
 }
-
 // ── PICKS ────────────────────────────────────────────────────────
 function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
