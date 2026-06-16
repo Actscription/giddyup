@@ -653,12 +653,11 @@ function loadHome(){
         ${[6,7,8,9,10,11,12,13].map(n=>`<button class="btn btn-outline btn-sm" style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
         <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
       </div>
-    </div>`;
-}
-const navPicks=document.getElementById('nav-picks-home');
-if(navPicks){navPicks.classList.toggle('pulse',!picked);}
-const coaching=document.getElementById('coaching-text');
-if(coaching){coaching.style.display=!picked?'block':'none';}
+   </div>`;
+  const navPicks=document.getElementById('nav-picks-home');
+  if(navPicks){navPicks.classList.toggle('pulse',!picked);}
+  const coaching=document.getElementById('coaching-text');
+  if(coaching){coaching.style.display=!picked?'block':'none';}
 }
 function setNumRaces(n){
   const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
