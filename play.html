@@ -59,6 +59,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);transition:color 0.15s;position:relative;}
 .nav-item.active{color:var(--green);}
 .nav-item.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--green);border-radius:0 0 3px 3px;}
+@keyframes goldPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.4)}50%{box-shadow:0 0 0 6px rgba(201,168,76,0)}}
+.nav-item.pulse{animation:goldPulse 1.5s ease-in-out infinite;border-radius:8px;}
 .nav-item .ni{font-size:20px;line-height:1;}
 .nav-item .nl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
 
@@ -306,9 +308,9 @@ input[type=file]{display:none;}
     <button class="btn btn-outline" style="border-color:#ef4444;color:#b91c1c;background:#fef2f2;margin-top:4px;" onclick="goToTBTS()" id="tbts-btn-home">📖 How to Use</button>
     <button class="btn btn-outline" style="color:var(--red);border-color:var(--red);margin-top:4px;" onclick="handleLogout()">Sign Out</button>
   </div>
-  <div class="bottom-nav">
+ <div class="bottom-nav">
     <div class="nav-item active" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
-    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" id="nav-picks-home" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
@@ -653,7 +655,9 @@ function loadHome(){
       </div>
     </div>`;
 }
-
+const navPicks=document.getElementById('nav-picks-home');
+if(navPicks){navPicks.classList.toggle('pulse',!picked);}
+}
 function setNumRaces(n){
   const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
 }
