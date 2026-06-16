@@ -297,8 +297,9 @@ input[type=file]{display:none;}
       <div class="section-title">How Many Races Today?</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(6)">6</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(7)">7</button><button class="btn btn-outline btn-sm" style="background:var(--green);color:white;border-color:var(--green)" onclick="setNumRaces(8)">8</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(9)">9</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(10)">10</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(11)">11</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(12)">12</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(13)">13</button>
-        <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
+   <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
       </div>
+      ${!picked?'<div style="margin-top:10px;font-size:13px;color:var(--green);font-weight:600;">👇 Next: tap Picks below to enter your horses</div>':''}
     </div></div>
     <div class="divider"></div>
     <button class="btn btn-silks" onclick="openSilks()">🔬 &nbsp;Open GiddyUp Silks — Handicapping Tool</button>
