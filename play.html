@@ -303,6 +303,13 @@ input[type=file]{display:none;}
       </div>
       <div id="coaching-text" style="margin-top:10px;font-size:13px;color:var(--green);font-weight:600;display:none;">👇 Next: tap Picks below to enter your horses</div>
     </div></div>
+    <div style="margin-top:12px;">
+      <div class="section-title" style="margin-bottom:6px;">Who Are You Playing Against Today?</div>
+      <input type="text" id="partner-name-input" placeholder="House Selections" maxlength="30"
+        style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);"
+        oninput="savePartnerName(this.value)">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Enter a friend's name or leave as "House Selections"</div>
+    </div>
     <div class="divider"></div>
     <button class="btn btn-silks" onclick="openSilks()">🔬 &nbsp;Open GiddyUp Silks — Handicapping Tool</button>
     <button class="btn btn-outline" style="border-color:#ef4444;color:#b91c1c;background:#fef2f2;margin-top:4px;" onclick="goToTBTS()" id="tbts-btn-home">📖 How to Use</button>
@@ -346,7 +353,7 @@ input[type=file]{display:none;}
       </div>
       <!-- Morning line (optional) -->
       <div class="ml-section">
-        <div class="ml-title">📰 Selections (optional)</div>
+        <div class="ml-title">📰 <span id="ml-partner-label">House Selections</span> Picks (optional)</div>
         <div style="font-size:12px;color:var(--gold-dark);margin-bottom:10px;">Enter the 4 selections printed in the race program — your handicapper opponent.</div>
         <div class="pick-grid">
           <div class="pick-slot win"><label>★ Win</label><input type="number" id="ml1" class="pi pi-win" placeholder="#" min="1"></div>
@@ -601,7 +608,7 @@ function handleLogout(){
 function getTodayCard(){
   if(!CU) return null;
   if(!CU.raceCards) CU.raceCards={};
-  if(!CU.raceCards[TODAY]) CU.raceCards[TODAY]={numRaces:9,picks:{},results:{},scores:{},mlPicks:{}};
+  if(!CU.raceCards[TODAY]) CU.raceCards[TODAY]={numRaces:9,picks:{},results:{},scores:{},mlPicks:{},partnerName:'House Selections'};
   return CU.raceCards[TODAY];
 }
 
@@ -659,6 +666,19 @@ function loadHome(){
   if(navPicks){navPicks.classList.toggle('pulse',!picked);}
   const coaching=document.getElementById('coaching-text');
   if(coaching){coaching.style.display=!picked?'block':'none';}
+  const partnerInput=document.getElementById('partner-name-input');
+  if(partnerInput){partnerInput.value=getPartnerName()==='House Selections'?'':getPartnerName();partnerInput.placeholder='House Selections';}
+}
+
+function savePartnerName(name){
+  const card=getTodayCard();
+  card.partnerName=name.trim()||'House Selections';
+  saveUser();
+}
+
+function getPartnerName(){
+  const card=getTodayCard();
+  return card.partnerName||'House Selections';
 }
 
 function setNumRaces(n){
@@ -673,6 +693,8 @@ function promptCustomRaces(){
 function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
   document.getElementById('p-date').textContent=formatDate(TODAY);
+  const mlLabel=document.getElementById('ml-partner-label');
+  if(mlLabel) mlLabel.textContent=getPartnerName();
   // Check if GiddyUp Silks sent picks via localStorage bridge
   checkSilksBridge();
   showGrid();
@@ -949,7 +971,7 @@ function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
 
   // Three-way leaderboard for this race
   const competitors=[];
-  if(mlScore) competitors.push({name:'Selections',icon:'📰',score:mlScore,color:'var(--blue)'});
+  if(mlScore) competitors.push({name:getPartnerName(),icon:'📰',score:mlScore,color:'var(--blue)'});
   if(guScore) competitors.push({name:'GiddyUp',icon:'🔬',score:guScore,color:'var(--gold-dark)'});
   competitors.push({name:CU?displayName(CU):'You',icon:'🏇',score:myScore,color:'var(--green)',isMe:true});
 
@@ -1078,7 +1100,7 @@ function loadScorecard(){
     const mlTotal=mlRns.reduce((a,r)=>a+mlScores[r].raceTotal,0);
     const guTotal=guRns.reduce((a,r)=>a+guScores[r].raceTotal,0);
     const competitors=[];
-    if(mlRns.length) competitors.push({name:'Selections',icon:'📰',total:mlTotal,races:mlRns.length,color:'var(--blue)'});
+    if(mlRns.length) competitors.push({name:getPartnerName(),icon:'📰',total:mlTotal,races:mlRns.length,color:'var(--blue)'});
     if(guRns.length) competitors.push({name:'GiddyUp',icon:'🔬',total:guTotal,races:guRns.length,color:'var(--gold-dark)'});
     competitors.push({name:CU?displayName(CU):'You',icon:'🏇',total:myTotal,races:rns.length,color:'var(--green)',isMe:true});
     const ranked=[...competitors].sort((a,b)=>b.total-a.total);
@@ -1118,7 +1140,7 @@ function renderHeadToHead(card,rns){
 
   const competitors=[];
   competitors.push({key:'me',icon:'🏇',name:CU?displayName(CU):'You',color:'var(--green)',scores:card.scores,isMe:true});
-  if(hasML) competitors.push({key:'ml',icon:'📰',name:'Selections',color:'var(--blue)',scores:mlScores});
+  if(hasML) competitors.push({key:'ml',icon:'📰',name:getPartnerName(),color:'var(--blue)',scores:mlScores});
   if(hasGU) competitors.push({key:'gu',icon:'🔬',name:'GiddyUp',color:'var(--gold-dark)',scores:guScores});
 
   // exotic label helper
