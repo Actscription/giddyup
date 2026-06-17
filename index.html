@@ -410,7 +410,7 @@ function GiddyUp(){
   const [races,setRaces]=useState([]);
   const [horses,setHorses]=useState([]);
   const [scratched,setScratched]=useState({});
-  const [showSplash,setShowSplash]=useState(true);
+  const [showSplash,setShowSplash]=useState(!new URLSearchParams(window.location.search).get('tab'));
   const [silksAuthMode,setSilksAuthMode]=useState(null);
   const [silksRegData,setSilksRegData]=useState({username:'',email:'',city:'',password:''});
   const [silksAuthErr,setSilksAuthErr]=useState('');
