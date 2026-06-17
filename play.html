@@ -1150,28 +1150,47 @@ function renderHeadToHead(card,rns){
     });
   });
 
-  // Totals per competitor
-  let totalsRows='';
-  competitors.forEach(c=>{
-    let tF=0,tW=0,tE=0,tS=0,tSt=0,tR=0,exactaCt=0,trifectaCt=0,superfectaCt=0,winCt=0,sweepCt=0;
-    rns.forEach(r=>{
+  // Build exotic breakdown table rows
+  let exoticRows='';
+  let colExacta=0,colTrifecta=0,colSuperfecta=0,colTotal=0;
+  // Track per-competitor totals for exotic breakdown footer
+  const exoticTotals={};
+  competitors.forEach(c=>{exoticTotals[c.key]={ex:0,tri:0,sf:0,total:0};});
+
+  rns.forEach(r=>{
+    competitors.forEach((c,ci)=>{
       const sc=c.scores[r];
       if(!sc) return;
-      tF+=sc.fieldPts;tW+=sc.winPts;tE+=sc.exoticPts;tS+=sc.sweepPts;tSt+=sc.streak||0;tR+=sc.raceTotal;
-      if(sc.winHit) winCt++;
-      if(sc.sweepPts) sweepCt++;
-      if(sc.exacta) exactaCt++;
-      if(sc.trifecta) trifectaCt++;
-      if(sc.superfecta) superfectaCt++;
+      const exPts=sc.exactaPts||0;
+      const triPts=sc.trifectaPts||0;
+      const sfPts=sc.superfectaPts||0;
+      const rowTotal=exPts+triPts+sfPts;
+      const isFirst=ci===0;
+      exoticRows+=`<tr style="${isFirst?'border-top:2px solid var(--border);':''}">
+        <td style="${isFirst?'':'color:var(--muted);'}">${isFirst?'<strong>R'+r+'</strong>':''}</td>
+        <td style="text-align:left;${c.isMe?'font-weight:600;color:var(--green);':''}">${c.icon} ${c.name}</td>
+        <td>${exPts?'<span class="tag tag-green">+'+exPts+'</span>':'—'}</td>
+        <td>${triPts?'<span class="tag tag-gold">+'+triPts+'</span>':'—'}</td>
+        <td>${sfPts?'<span class="tag tag-gold">+'+sfPts+'</span>':'—'}</td>
+        <td><strong style="color:${c.color};">${rowTotal||'—'}</strong></td>
+      </tr>`;
+      exoticTotals[c.key].ex+=exPts;
+      exoticTotals[c.key].tri+=triPts;
+      exoticTotals[c.key].sf+=sfPts;
+      exoticTotals[c.key].total+=rowTotal;
     });
-    totalsRows+=`<tr style="background:${c.isMe?'var(--green-light)':'var(--bg)'};font-weight:600;">
+  });
+
+  // Exotic breakdown footer - one row per competitor
+  let exoticFootRows='';
+  competitors.forEach(c=>{
+    const t=exoticTotals[c.key];
+    exoticFootRows+=`<tr style="background:${c.isMe?'var(--green-light)':'var(--bg)'};font-weight:600;">
       <td colspan="2" style="text-align:left;${c.isMe?'color:var(--green);':''}">${c.icon} ${c.name}${c.isMe?' <span class="tag tag-green" style="font-size:9px;">You</span>':''}</td>
-      <td>${tW?'+'+tW:'—'}</td>
-      <td>${tF}</td>
-      <td style="font-size:11px;">${exactaCt||trifectaCt||superfectaCt?(superfectaCt?superfectaCt+'×Sf ':'')+(trifectaCt?trifectaCt+'×Tri ':'')+(exactaCt?exactaCt+'×Ex':''):'—'}</td>
-      <td>${tS?'+'+tS:'—'}</td>
-      <td>${tSt?'+'+tSt:'—'}</td>
-      <td style="color:${c.color};">${tR+tSt}</td>
+      <td>${t.ex?'+'+t.ex:'—'}</td>
+      <td>${t.tri?'+'+t.tri:'—'}</td>
+      <td>${t.sf?'+'+t.sf:'—'}</td>
+      <td style="color:${c.color};">${t.total?t.total:'—'}</td>
     </tr>`;
   });
 
@@ -1181,7 +1200,14 @@ function renderHeadToHead(card,rns){
       <table class="sc-table">
         <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Win</th><th>Field</th><th>Exotic</th><th>Sweep</th><th>Streak</th><th>Total</th></tr></thead>
         <tbody>${rows}</tbody>
-        <tfoot>${totalsRows}</tfoot>
+      </table>
+    </div>
+    <div class="section-title" style="margin-top:16px;">Exotic Bets Breakdown</div>
+    <div class="card" style="padding:10px;overflow-x:auto;">
+      <table class="sc-table">
+        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Exacta</th><th>Trifecta</th><th>Superfecta</th><th>Total</th></tr></thead>
+        <tbody>${exoticRows}</tbody>
+        <tfoot>${exoticFootRows}</tfoot>
       </table>
     </div>`;
 }
