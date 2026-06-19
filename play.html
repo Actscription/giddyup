@@ -4,6 +4,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiddyUp Play</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="giddyup-auth.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Courier+Prime:wght@400;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -492,50 +494,27 @@ const APP_MODE = 'solo' // change to 'premium' for Racing Club;
 const MAX_RACES = 20;
 const TODAY = new Date().toISOString().split('T')[0];
 
-// ── DATABASE (localStorage backed) ──────────────────────────────
-function loadDB(){
+// ── DATABASE (Supabase Auth + local race-day data cache) ────────
+// CU now holds: {id, username, email, city, raceCards:{...}, diary:[...]}
+// Auth lives in Supabase. Race/pick/diary data still lives in localStorage
+// per-user (keyed by Supabase user id) until the next migration step.
+
+function loadUserData(userId){
   try{
-    const saved=localStorage.getItem('giddyup_db');
+    const saved=localStorage.getItem('giddyup_userdata_'+userId);
     if(saved) return JSON.parse(saved);
   }catch(e){}
-  return {users:[],nextUserId:1};
+  return {raceCards:{},diary:[]};
 }
-function saveDB(){
-  try{localStorage.setItem('giddyup_db',JSON.stringify(DB));}catch(e){}
-}
-function loadSession(){
-  // Check shared GiddyUp account first (set by Silks or Play)
+function saveUserData(){
+  if(!CU||!CU.id) return;
   try{
-    const shared=localStorage.getItem('giddyup_account');
-    if(shared){
-      const acc=JSON.parse(shared);
-      if(acc&&acc.id) return acc;
-    }
-  }catch(e){}
-  // Fall back to Play-specific session
-  try{
-    const s=localStorage.getItem('giddyup_session');
-    return s?JSON.parse(s):null;
-  }catch(e){return null;}
-}
-function saveSession(user){
-  try{
-    // Save to both shared key and Play-specific key
-    if(user){
-      localStorage.setItem('giddyup_account',JSON.stringify(user));
-      localStorage.setItem('giddyup_session',JSON.stringify(user));
-    } else {
-      localStorage.removeItem('giddyup_account');
-      localStorage.removeItem('giddyup_session');
-    }
+    localStorage.setItem('giddyup_userdata_'+CU.id,JSON.stringify({raceCards:CU.raceCards,diary:CU.diary}));
   }catch(e){}
 }
 
-// User data structure:
-// {id, username, email, city, password, raceCards:{date:{numRaces, picks:{raceNum:{win,field,ml}}, results:{raceNum:[1,2,3,4]}, scores:{raceNum:scoreObj}}}}
-
-let DB = loadDB();
-let CU = null; // current user
+let CU = null; // current user (Supabase user + profile + local race data)
+</parameter>
 let curPickRace = 1;
 let curResultRace = 1;
 let numRaces = 9; // default, set by user
@@ -575,32 +554,32 @@ function clearReg(){
   ['reg-err','login-err'].forEach(id=>{const el=document.getElementById(id);if(el) el.style.display='none';});
 }
 
-function handleRegister(){
+async function handleRegister(){
   const u=v('reg-u'),e=v('reg-e').toLowerCase(),c=v('reg-c'),p=v('reg-p');
   showErr('reg-err','');
   if(!u||!e||!c||!p){showErr('reg-err','Please fill in all fields.');return;}
   if(p.length<8){showErr('reg-err','Password must be at least 8 characters.');return;}
-  if(DB.users.find(x=>x.email===e)){showErr('reg-err','An account with this email already exists.');return;}
-  if(DB.users.find(x=>x.username.toLowerCase()===u.toLowerCase())){showErr('reg-err','That username is already taken.');return;}
-  const user={id:DB.nextUserId++,username:u,email:e,city:c,password:p,raceCards:{}};
-  DB.users.push(user);saveDB();
-  CU=user;saveSession(CU);
-  // Save to shared GiddyUp account so Silks recognises this user
-  try{localStorage.setItem('giddyup_account',JSON.stringify(CU));}catch(e){}
+  const result=await GiddyUpAuth.register(e,p,u,c);
+  if(!result.success){showErr('reg-err',result.error);return;}
+  const profile=await GiddyUpAuth.getProfile(result.user.id);
+  CU={id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,...loadUserData(result.user.id)};
   loadHome();go('screen-home');
 }
 
-function handleLogin(){
+async function handleLogin(){
   const e=v('login-e').toLowerCase(),p=v('login-p');
   showErr('login-err','');
-  const user=DB.users.find(u=>u.email===e&&u.password===p);
-  if(!user){showErr('login-err','Invalid email or password.');return;}
-  CU=user;saveSession(CU);
+  const result=await GiddyUpAuth.login(e,p);
+  if(!result.success){showErr('login-err',result.error);return;}
+  const profile=await GiddyUpAuth.getProfile(result.user.id);
+  CU={id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',...loadUserData(result.user.id)};
   loadHome();go('screen-home');
 }
 
-function handleLogout(){
-  CU=null;saveSession(null);clearReg();go('screen-splash');
+async function handleLogout(){
+  await GiddyUpAuth.logout();
+  CU=null;clearReg();go('screen-splash');
+}
 }
 
 // ── RACE CARD HELPERS ────────────────────────────────────────────
@@ -612,8 +591,7 @@ function getTodayCard(){
 }
 
 function saveUser(){
-  const idx=DB.users.findIndex(u=>u.id===CU.id);
-  if(idx>-1){DB.users[idx]=CU;saveDB();}
+  saveUserData();
 }
 
 function formatDate(d){
@@ -1537,13 +1515,14 @@ function gi(id){return parseInt(document.getElementById(id).value)||0;}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display=msg?'block':'none';}}
 
 // ── INIT ─────────────────────────────────────────────────────────
-(function init(){
+(async function init(){
   initTBTSButtons();
-  const session=loadSession();
-  if(session){
-    // reload fresh from DB
-    const fresh=DB.users.find(u=>u.id===session.id);
-    if(fresh){CU=fresh;loadHome();go('screen-home');return;}
+  const session=await GiddyUpAuth.getSession();
+  if(session&&session.user){
+    const profile=await GiddyUpAuth.getProfile(session.user.id);
+    CU={id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',...loadUserData(session.user.id)};
+    loadHome();go('screen-home');
+    return;
   }
   go('screen-splash');
 })();
