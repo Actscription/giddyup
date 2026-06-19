@@ -356,7 +356,32 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       h("div",{style:{fontWeight:700,color:"#ef4444",marginBottom:4}},"Could not read program"),
       h("div",{style:{fontSize:12,color:C.muted}},errorMsg)),
 
-    races.length===0&&h("button",{onClick:()=>{setHorses(DEMO);setRaces([{id:1,label:"Race 1 — 2022 KY Derby Demo",pages:[{base64:"",mediaType:"image/jpeg",isPdf:false,fileName:"demo",preview:null}],status:"analyzed",horseCount:DEMO.length,active:true}]);setActiveTab("rankings");},style:{width:"100%",padding:"14px",background:"transparent",border:"1.5px solid "+C.border,borderRadius:12,color:C.muted,fontSize:14,fontWeight:700,cursor:"pointer"}},"🏇 Try Demo — 2022 KY Derby Future Wager"));
+    races.length===0&&h("button",{onClick:()=>{setHorses(DEMO);setRaces([{id:1,label:"Race 1 — 2022 KY Derby Demo",pages:[{base64:"",mediaType:"image/jpeg",isPdf:false,fileName:"demo",preview:null}],status:"analyzed",horseCount:DEMO.length,active:true}]);setActiveTab("rankings");},style:{width:"100%",padding:"14px",background:"transparent",border:"1.5px solid "+C.border,borderRadius:12,color:C.muted,fontSize:14,fontWeight:700,cursor:"pointer"}},"🏇 Try Demo — 2022 KY Derby Future Wager"),
+
+    h(HowToUse,null));
+}
+
+function HowToUse(){
+  const [open,setOpen]=useState(true);
+  const steps=[
+    "Tap Races Today to open your Google Drive folder",
+    "Download all the race PDFs you need — grab them all at once for convenience",
+    "Tap Photo or PDF and choose your race file",
+    "Got extra files for that race (speed ratings, multiple pages)? Tap + to add them",
+    "GiddyUp will analyze every document you've added for that race together",
+    "Tap Analyze",
+    "You're off to the races 🏇",
+  ];
+  return h("div",{style:{marginTop:16,background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden"}},
+    h("div",{onClick:()=>setOpen(!open),style:{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",cursor:"pointer",background:open?"rgba(201,168,76,0.06)":"#fff"}},
+      h("div",{style:{fontSize:18}},"📋"),
+      h("div",{style:{flex:1,fontWeight:800,fontSize:14,color:C.text}},"How to Upload Your Races"),
+      h("div",{style:{color:C.muted,fontSize:12,fontWeight:700}},open?"Hide ▲":"Show ▼")),
+    open&&h("div",{style:{padding:"4px 16px 18px"}},
+      steps.map((step,i)=>h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:i<steps.length-1?10:0}},
+        h("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:C.gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}},i+1),
+        h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},step)))));
+}
 }
 
 function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses}){const [openGroups,setOpenGroups]=useState({core:true,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount===ALL_FACTORS.length;function selectRace(id){setActiveRace(id);setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...PRESETS[id]});}function change(id,v){const ls=ALL_FACTORS.filter(f=>f.id!==id&&locks[f.id]).reduce((s,f)=>s+weights[f.id],0);setWeights(w=>redistribute(w,locks,id,Math.max(0,Math.min(v,100-ls))));}function toggleLock(id){setLocks(l=>({...l,[id]:!l[id]}));}function lockAll(){if(allLocked)setLocks({});else setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
