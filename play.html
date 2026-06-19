@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <!-- saved from url=(0053)file:///C:/Users/Admin/Downloads/giddyup_play_10.html -->
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GiddyUp Play</title>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -19,15 +18,9 @@
   --nav-h:60px;
 }
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);}
-
-/* ── APP MODE FLAG ── */
-/* Change APP_MODE in JS to 'premium' to unlock all club features */
-
 .screen{display:none;min-height:100vh;flex-direction:column;}
 .screen.active{display:flex;}
 .has-nav{padding-bottom:var(--nav-h);}
-
-/* SPLASH */
 #screen-splash{background:linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%);align-items:center;justify-content:center;text-align:center;padding:48px 28px;position:relative;overflow:hidden;}
 #screen-splash::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.015) 0,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 50px);}
 #screen-splash::after{content:'🏇';position:absolute;font-size:200px;opacity:0.04;bottom:-30px;right:-30px;line-height:1;}
@@ -39,15 +32,11 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .splash-tagline{font-family:'Courier Prime',monospace;font-size:15px;color:var(--white);font-style:italic;margin-bottom:40px;position:relative;line-height:1.6;}
 .splash-tagline strong{color:var(--gold);font-style:normal;}
 .splash-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;position:relative;}
-
-/* HEADERS */
 .auth-header{background:var(--green);padding:16px 24px 24px;}
 .back-btn{color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;}
 .back-btn:hover{color:var(--white);}
 .auth-header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--white);letter-spacing:2px;}
 .auth-header p{font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;}
-
-/* TOP BAR */
 .top-bar{background:var(--green);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .top-bar-left .tb-ctx{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;}
 .top-bar-left .tb-name{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);letter-spacing:2px;line-height:1.1;}
@@ -55,8 +44,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .cpill{font-family:'Courier Prime',monospace;font-size:11px;font-weight:700;letter-spacing:2px;padding:3px 9px;border-radius:20px;}
 .cpill-gold{background:var(--gold);color:var(--ink);}
 .cpill-green{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);}
-
-/* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.06);}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);transition:color 0.15s;position:relative;}
 .nav-item.active{color:var(--green);}
@@ -65,8 +52,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .nav-item.pulse{animation:goldPulse 1.5s ease-in-out infinite;border-radius:8px;}
 .nav-item .ni{font-size:20px;line-height:1;}
 .nav-item .nl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
-
-/* BUTTONS */
 .btn{width:100%;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:15px;cursor:pointer;border:none;transition:all 0.15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-green{background:var(--green);color:var(--white);}
 .btn-green:hover{background:var(--green-mid);}
@@ -80,8 +65,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .btn-silks{background:var(--gold-light);border:1.5px solid var(--gold);color:var(--gold-dark);}
 .btn-sm{width:auto;padding:7px 14px;font-size:12px;margin-bottom:0;}
 .btn:disabled{opacity:0.35;cursor:not-allowed;}
-
-/* FORMS */
 .form-body{padding:22px 20px;max-width:480px;margin:0 auto;width:100%;}
 .fg{margin-bottom:15px;}
 .fg label{display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
@@ -93,8 +76,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .pw-wrap input{padding-right:44px;}
 .pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;color:var(--muted);user-select:none;}
 .pw-eye:hover{color:var(--green);}
-
-/* CARDS */
 .card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;}
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--green);margin-bottom:12px;}
 .tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:5px;}
@@ -107,15 +88,11 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .notice{background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--gold-dark);margin-bottom:14px;}
 .notice-green{background:var(--green-light);border:1px solid var(--green);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--green-dark);margin-bottom:14px;}
 .page-pad{padding:18px 20px;max-width:600px;margin:0 auto;width:100%;}
-
-/* WELCOME CARD */
 .welcome-card{background:linear-gradient(135deg,var(--green-dark),var(--green));border-radius:var(--radius);padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
 .welcome-card::after{content:'🏇';position:absolute;font-size:90px;opacity:0.07;right:-10px;bottom:-10px;}
 .welcome-card .wc-ctx{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
 .welcome-card .wc-name{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);letter-spacing:2px;}
 .welcome-card .wc-tag{font-size:12px;color:rgba(255,255,255,0.6);margin-top:8px;font-style:italic;}
-
-/* RACE GRID */
 .race-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
 .race-cell{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.15s;}
 .race-cell:hover{border-color:var(--green);background:var(--green-light);}
@@ -126,8 +103,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .race-cell .rc-status{font-size:11px;color:var(--muted);margin-top:3px;}
 .race-cell.has-picks .rc-num,.race-cell.scored .rc-num{color:var(--green);}
 .race-cell.has-results .rc-num{color:var(--gold-dark);}
-
-/* PICKS */
 .pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .pick-slot label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;display:block;}
 .pick-slot.win label{color:var(--gold-dark);}
@@ -141,30 +116,22 @@ input.pi:disabled{opacity:0.45;cursor:not-allowed;}
 .pi-win{border-color:var(--gold)!important;background:var(--gold-light)!important;}
 .pi-place{border-color:#93c5fd!important;background:#eff6ff!important;}
 .pi-show{border-color:#c4b5fd!important;background:#f5f3ff!important;}
-
-/* MORNING LINE SECTION */
 .ml-section{background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-top:14px;}
 .ml-section .ml-title{font-size:11px;font-weight:500;color:var(--gold-dark);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
 .gu-section{background:var(--green-light);border:1px solid var(--green);border-radius:10px;padding:14px;margin-top:14px;}
 .gu-section .gu-title{font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
 .gu-section input.pi:disabled{opacity:0.7;background:var(--white);color:var(--green-dark);font-weight:700;}
-
-/* SCORE */
 .score-bd{background:var(--green-light);border-radius:9px;padding:12px 14px;margin-top:10px;}
 .score-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
 .score-row .pts{font-weight:500;color:var(--green);}
 .score-row .pts.zero{color:var(--muted);}
 .score-total-row{display:flex;justify-content:space-between;font-size:14px;font-weight:500;border-top:1px solid rgba(26,107,60,0.2);margin-top:8px;padding-top:8px;}
 .score-total-row .pts{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);}
-
-/* STREAK DOTS */
 .streak-row{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0;}
 .sdot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;}
 .sdot.scored{background:var(--green);color:var(--white);}
 .sdot.blank{background:var(--red-light);color:var(--red);border:1.5px solid var(--red);}
 .sdot.pending{background:var(--border);color:var(--muted);}
-
-/* SCORECARD TABLE */
 .sc-table{width:100%;border-collapse:collapse;font-size:12px;}
 .sc-table th{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:7px 5px;border-bottom:1px solid var(--border);text-align:center;}
 .sc-table th:first-child{text-align:left;}
@@ -172,24 +139,17 @@ input.pi:disabled{opacity:0.45;cursor:not-allowed;}
 .sc-table td:first-child{text-align:left;}
 .sc-foot-row td{background:var(--green-light);font-weight:600;font-size:13px;border-top:2px solid var(--green)!important;}
 .sc-grand-row td{background:var(--green);color:var(--white);font-weight:600;font-size:14px;}
-
-/* COMPARISON */
 .compare-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
 .compare-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px;text-align:center;}
 .compare-card.winner{border-color:var(--gold);background:var(--gold-light);}
 .compare-card .cc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
 .compare-card .cc-score{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;color:var(--green);}
 .compare-card.winner .cc-score{color:var(--gold-dark);}
-
-/* TBTS */
 .tbts-rule{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
 .rule-badge{display:inline-flex;align-items:center;gap:6px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
 .rule-tbts{font-family:'Courier Prime',monospace;font-size:12px;color:#b91c1c;background:#fef2f2;border-radius:6px;padding:6px 10px;font-style:italic;margin-top:8px;}
-
 .text-center{text-align:center;}
 .text-muted{color:var(--muted);font-size:13px;}
-
-/* ── DIARY ── */
 .diary-entry{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;}
 .diary-entry .de-race{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--green);}
 .diary-entry .de-date{font-size:11px;color:var(--muted);}
@@ -205,8 +165,6 @@ input[type=file]{display:none;}
 </style>
 </head>
 <body>
-
-<!-- ═══ SPLASH ═══ -->
 <div id="screen-splash" class="screen">
   <div class="splash-eyebrow">Free to play · No betting required</div>
   <div class="splash-logo">GiddyUp<br><span>Play</span></div>
@@ -223,8 +181,6 @@ input[type=file]{display:none;}
     <button class="btn btn-silks btn-sm" style="width:100%;" onclick="openSilks()">🔬 &nbsp;Open GiddyUp Silks</button>
   </div>
 </div>
-
-<!-- ═══ REGISTER ═══ -->
 <div id="screen-register" class="screen">
   <div class="auth-header">
     <div class="back-btn" onclick="clearReg();go('screen-splash')">← Back</div>
@@ -243,8 +199,6 @@ input[type=file]{display:none;}
     <div class="text-center"><span class="text-muted">Have an account? </span><span style="color:var(--green);cursor:pointer;font-size:13px;" onclick="go('screen-login')">Sign in</span></div>
   </div>
 </div>
-
-<!-- ═══ LOGIN ═══ -->
 <div id="screen-login" class="screen">
   <div class="auth-header">
     <div class="back-btn" onclick="go('screen-splash')">← Back</div>
@@ -260,8 +214,6 @@ input[type=file]{display:none;}
     <div class="text-center"><span class="text-muted">New here? </span><span style="color:var(--green);cursor:pointer;font-size:13px;" onclick="clearReg();go('screen-register')">Create account</span></div>
   </div>
 </div>
-
-<!-- ═══ HOME ═══ -->
 <div id="screen-home" class="screen has-nav active">
   <div class="top-bar">
     <div class="top-bar-left"><div class="tb-ctx">GiddyUp Play</div><div class="tb-name" id="h-name">user1</div></div>
@@ -325,17 +277,13 @@ input[type=file]{display:none;}
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
   </div>
 </div>
-
-<!-- ═══ PICKS ═══ -->
 <div id="screen-picks" class="screen has-nav">
   <div class="top-bar">
     <div class="top-bar-left"><div class="tb-ctx">My Picks</div><div class="tb-name" id="p-name">FastEddie</div></div>
     <div class="top-bar-right"><div class="cpill cpill-gold" id="p-date"></div></div>
   </div>
   <div class="page-pad">
-    <!-- Race grid -->
     <div id="p-race-grid" class="race-grid"></div>
-    <!-- Pick entry panel -->
     <div id="p-pick-panel" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="p-racenum">1</span></div>
@@ -353,7 +301,6 @@ input[type=file]{display:none;}
         <div id="p-lock-msg" style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-light);border:1px solid var(--red);border-radius:8px;font-size:12px;color:var(--red);"></div>
         <div id="p-err" class="err-msg" style="display:none;margin-top:8px;"></div>
       </div>
-      <!-- Morning line (optional) -->
       <div class="ml-section">
         <div class="ml-title">📰 <span id="ml-partner-label">House Selections</span> Picks (optional)</div>
         <div style="font-size:12px;color:var(--gold-dark);margin-bottom:10px;">Enter the 4 selections printed in the race program — your handicapper opponent.</div>
@@ -388,8 +335,6 @@ input[type=file]{display:none;}
     <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
   </div>
 </div>
-
-<!-- ═══ RESULTS (user enters their own) ═══ -->
 <div id="screen-results" class="screen has-nav">
   <div class="top-bar">
     <div class="top-bar-left"><div class="tb-ctx">Enter Results</div><div class="tb-name" id="r-name">FastEddie</div></div>
@@ -397,9 +342,7 @@ input[type=file]{display:none;}
   </div>
   <div class="page-pad">
     <div class="notice">📋 Enter the official top 4 finishers after each race. Your picks are scored automatically.</div>
-    <!-- Race grid for results -->
     <div id="r-race-grid" class="race-grid"></div>
-    <!-- Result entry panel -->
     <div id="r-entry-panel" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="r-racenum">1</span></div>
@@ -429,8 +372,6 @@ input[type=file]{display:none;}
     <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
   </div>
 </div>
-
-<!-- ═══ SCORECARD ═══ -->
 <div id="screen-scorecard" class="screen has-nav">
   <div class="top-bar">
     <div class="top-bar-left"><div class="tb-ctx">My Scorecard</div><div class="tb-name" id="sc-name">FastEddie</div></div>
@@ -438,11 +379,8 @@ input[type=file]{display:none;}
   </div>
   <div class="page-pad">
     <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter your picks and results to get started.</div>
-    <!-- Summary cards -->
     <div id="sc-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;"></div>
-    <!-- Morning line comparison -->
     <div id="sc-ml-compare" style="display:none;margin-bottom:16px;"></div>
-    <!-- Daily card -->
     <div class="card" id="sc-card" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div class="section-title" style="margin-bottom:0;">Daily Card</div>
@@ -465,13 +403,9 @@ input[type=file]{display:none;}
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item active" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
-
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
   </div>
 </div>
-
-
-<!-- ═══ TOO BAD TOO SAD ═══ -->
 <div id="screen-tbts" class="screen">
   <div class="auth-header" id="tbts-header" style="background:linear-gradient(135deg,#1a6b3c,#2d9155);">
     <div class="back-btn" onclick="go(CU?'screen-home':'screen-splash')">← Back</div>
@@ -485,20 +419,15 @@ input[type=file]{display:none;}
     <button class="btn btn-green" onclick="go(CU?'screen-home':'screen-splash')">Got it — Let's Go</button>
   </div>
 </div>
-
 <script>
-// ═══════════════════════════════════════════════════════════
-// APP MODE — change to 'premium' to unlock full Racing Club
-// ═══════════════════════════════════════════════════════════
 const APP_MODE = 'solo' // change to 'premium' for Racing Club;
 const MAX_RACES = 20;
 const TODAY = new Date().toISOString().split('T')[0];
 
-// ── DATABASE (Supabase Auth + local race-day data cache) ────────
-// CU now holds: {id, username, email, city, raceCards:{...}, diary:[...]}
-// Auth lives in Supabase. Race/pick/diary data still lives in localStorage
-// per-user (keyed by Supabase user id) until the next migration step.
-
+// ── USER DATA (Supabase Auth + local race-day data cache) ───────
+// CU holds: {id, username, email, city, raceCards:{...}, diary:[...]}
+// Auth lives in Supabase. Race/pick/diary data lives in localStorage
+// per-user, keyed by Supabase user id.
 function loadUserData(userId){
   try{
     const saved=localStorage.getItem('giddyup_userdata_'+userId);
@@ -513,19 +442,15 @@ function saveUserData(){
   }catch(e){}
 }
 
-let CU = null; // current user (Supabase user + profile + local race data)
-</parameter>
+let CU = null; // current user
 let curPickRace = 1;
 let curResultRace = 1;
 let numRaces = 9; // default, set by user
-
-// ── NAVIGATION ───────────────────────────────────────────────────
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
 }
-
 function nav(tab){
   const map={home:'screen-home',picks:'screen-picks',results:'screen-results',scorecard:'screen-scorecard',diary:'screen-diary'};
   if(tab==='home') loadHome();
@@ -535,18 +460,14 @@ function nav(tab){
   if(tab==='diary') loadDiary();
   go(map[tab]);
 }
-
 function openSilks(){
   window.open('https://giddyupsilks.app?tab=upload','_blank');
 }
-
-// ── AUTH ─────────────────────────────────────────────────────────
 function togglePW(id,eye){
   const el=document.getElementById(id);
   el.type=el.type==='password'?'text':'password';
   eye.textContent=el.type==='password'?'👁':'🙈';
 }
-
 function clearReg(){
   ['reg-u','reg-e','reg-c','reg-p','login-e','login-p'].forEach(id=>{
     const el=document.getElementById(id);if(el) el.value='';
@@ -554,6 +475,7 @@ function clearReg(){
   ['reg-err','login-err'].forEach(id=>{const el=document.getElementById(id);if(el) el.style.display='none';});
 }
 
+// ── AUTH (Supabase) ───────────────────────────────────────────────
 async function handleRegister(){
   const u=v('reg-u'),e=v('reg-e').toLowerCase(),c=v('reg-c'),p=v('reg-p');
   showErr('reg-err','');
@@ -565,7 +487,6 @@ async function handleRegister(){
   CU={id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,...loadUserData(result.user.id)};
   loadHome();go('screen-home');
 }
-
 async function handleLogin(){
   const e=v('login-e').toLowerCase(),p=v('login-p');
   showErr('login-err','');
@@ -575,33 +496,26 @@ async function handleLogin(){
   CU={id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',...loadUserData(result.user.id)};
   loadHome();go('screen-home');
 }
-
 async function handleLogout(){
   await GiddyUpAuth.logout();
   CU=null;clearReg();go('screen-splash');
 }
-}
 
-// ── RACE CARD HELPERS ────────────────────────────────────────────
 function getTodayCard(){
   if(!CU) return null;
   if(!CU.raceCards) CU.raceCards={};
   if(!CU.raceCards[TODAY]) CU.raceCards[TODAY]={numRaces:9,picks:{},results:{},scores:{},mlPicks:{},partnerName:'House Selections'};
   return CU.raceCards[TODAY];
 }
-
 function saveUser(){
   saveUserData();
 }
-
 function formatDate(d){
   if(!d) return '';
   const [y,m,day]=d.split('-').map(Number);
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return months[m-1]+' '+day+', '+y;
 }
-
-// ── HOME ─────────────────────────────────────────────────────────
 function loadHome(){
   document.getElementById('h-name').textContent=displayName(CU);
   document.getElementById('h-welcome-name').textContent=displayName(CU);
@@ -646,18 +560,15 @@ function loadHome(){
   const partnerInput=document.getElementById('partner-name-input');
   if(partnerInput){partnerInput.value=getPartnerName()==='House Selections'?'':getPartnerName();partnerInput.placeholder='House Selections';}
 }
-
 function savePartnerName(name){
   const card=getTodayCard();
   card.partnerName=name.trim()||'House Selections';
   saveUser();
 }
-
 function getPartnerName(){
   const card=getTodayCard();
   return card.partnerName||'House Selections';
 }
-
 function setNumRaces(n){
   const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
 }
@@ -665,28 +576,23 @@ function promptCustomRaces(){
   const n=parseInt(prompt('How many races? (1-20)'));
   if(n&&n>=1&&n<=20) setNumRaces(n);
 }
-
-// ── PICKS ────────────────────────────────────────────────────────
 function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
   document.getElementById('p-date').textContent=formatDate(TODAY);
   const mlLabel=document.getElementById('ml-partner-label');
   if(mlLabel) mlLabel.textContent=getPartnerName();
-  // Check if GiddyUp Silks sent picks via localStorage bridge
   checkSilksBridge();
   showGrid();
   renderRaceGrid();
 }
-
 function checkSilksBridge(){
   try{
     const incoming=localStorage.getItem('giddyup_play_incoming');
     if(!incoming) return;
     const data=JSON.parse(incoming);
     if(!data||data.date!==TODAY) return;
-    // Show a banner that picks are available from Silks
     const existing=document.getElementById('silks-bridge-banner');
-    if(existing) return; // already shown
+    if(existing) return;
     const banner=document.createElement('div');
     banner.id='silks-bridge-banner';
     banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
@@ -701,7 +607,6 @@ function checkSilksBridge(){
     grid.parentNode.insertBefore(banner,grid);
   }catch(e){}
 }
-
 function loadSilksPicks(){
   try{
     const data=JSON.parse(localStorage.getItem('giddyup_play_incoming'));
@@ -709,7 +614,6 @@ function loadSilksPicks(){
     const card=getTodayCard();
     if(!card.guPicks) card.guPicks={};
     let count=0;
-    // data.picks is {raceNum: [horse1,horse2,horse3,horse4]} from Silks rankings
     Object.keys(data.picks).forEach(raceNum=>{
       const p=data.picks[raceNum];
       if(p&&p.length>=4){
@@ -724,13 +628,11 @@ function loadSilksPicks(){
     alert('GiddyUp Picks loaded for '+count+' race'+(count!==1?'s':'')+'! These will compete against your picks and selections on the scorecard.');
   }catch(e){alert('Could not load picks from Silks.');}
 }
-
 function dismissSilksBridge(){
   const banner=document.getElementById('silks-bridge-banner');
   if(banner) banner.remove();
   localStorage.removeItem('giddyup_play_incoming');
 }
-
 function renderRaceGrid(){
   const card=getTodayCard();
   const grid=document.getElementById('p-race-grid');
@@ -750,12 +652,10 @@ function renderRaceGrid(){
   }
   grid.innerHTML=html;
 }
-
 function showGrid(){
   document.getElementById('p-race-grid').style.display='grid';
   document.getElementById('p-pick-panel').style.display='none';
 }
-
 function selectPickRace(r){
   curPickRace=r;
   document.getElementById('p-racenum').textContent=r;
@@ -763,23 +663,19 @@ function selectPickRace(r){
   document.getElementById('p-pick-panel').style.display='block';
   loadPickRaceData(r);
 }
-
 function loadPickRaceData(r){
   const card=getTodayCard();
   const pk=card.picks[r];
   const ml=card.mlPicks?card.mlPicks[r]:null;
   const hasResults=!!card.results[r];
-  // my picks
   document.getElementById('pp1').value=pk?pk.field[0]:'';
   document.getElementById('pp2').value=pk?pk.field[1]:'';
   document.getElementById('pp3').value=pk?pk.field[2]:'';
   document.getElementById('pp4').value=pk?pk.field[3]:'';
-  // morning line
   document.getElementById('ml1').value=ml?ml[0]:'';
   document.getElementById('ml2').value=ml?ml[1]:'';
   document.getElementById('ml3').value=ml?ml[2]:'';
   document.getElementById('ml4').value=ml?ml[3]:'';
-  // lock if results in
   const locked=hasResults;
   ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>{
     const el=document.getElementById(id);
@@ -796,18 +692,15 @@ function loadPickRaceData(r){
   document.getElementById('p-err').style.display='none';
   renderSavedPicksList();
 }
-
 function clearPickInputs(){
   ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>document.getElementById(id).value='');
 }
-
 function savePicks(){
   const p1=gi('pp1'),p2=gi('pp2'),p3=gi('pp3'),p4=gi('pp4');
   if(!p1||!p2||!p3||!p4){showErr('p-err','Please fill in all 4 picks.');return;}
   const card=getTodayCard();
   if(card.results[curPickRace]){showErr('p-err','Results already entered for this race — picks locked.');return;}
   card.picks[curPickRace]={win:p1,field:[p1,p2,p3,p4],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
-  // save morning line if entered
   const ml1=gi('ml1'),ml2=gi('ml2'),ml3=gi('ml3'),ml4=gi('ml4');
   if(ml1&&ml2&&ml3&&ml4){
     if(!card.mlPicks) card.mlPicks={};
@@ -817,14 +710,12 @@ function savePicks(){
   document.getElementById('p-err').style.display='none';
   renderSavedPicksList();
   renderRaceGrid();
-  // auto-advance
   if(curPickRace<card.numRaces){
     curPickRace++;
     document.getElementById('p-racenum').textContent=curPickRace;
     loadPickRaceData(curPickRace);
   }
 }
-
 function renderSavedPicksList(){
   const card=getTodayCard();
   const races=Object.keys(card.picks).sort((a,b)=>a-b);
@@ -845,15 +736,12 @@ function renderSavedPicksList(){
       <td style="font-size:11px;color:var(--muted);">${pk.savedAt||"—"}</td><td>${badge}</td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
-
-// ── RESULTS ──────────────────────────────────────────────────────
 function loadResultsScreen(){
   document.getElementById('r-name').textContent=displayName(CU);
   document.getElementById('r-date').textContent=formatDate(TODAY);
   showResultGrid();
   renderResultGrid();
 }
-
 function renderResultGrid(){
   const card=getTodayCard();
   const grid=document.getElementById('r-race-grid');
@@ -873,12 +761,10 @@ function renderResultGrid(){
   }
   grid.innerHTML=html;
 }
-
 function showResultGrid(){
   document.getElementById('r-race-grid').style.display='grid';
   document.getElementById('r-entry-panel').style.display='none';
 }
-
 function selectResultRace(r){
   curResultRace=r;
   document.getElementById('r-racenum').textContent=r;
@@ -893,34 +779,28 @@ function selectResultRace(r){
   document.getElementById('r-err').style.display='none';
   document.getElementById('r-score-display').innerHTML='';
 }
-
 function clearResultInputs(){
   ['rr1','rr2','rr3','rr4'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('r-score-display').innerHTML='';
   document.getElementById('r-err').style.display='none';
 }
-
 function submitResult(){
   const r1=gi('rr1'),r2=gi('rr2'),r3=gi('rr3'),r4=gi('rr4');
   if(!r1||!r2||!r3||!r4){showErr('r-err','Please enter all 4 finishers.');return;}
   const actual=[r1,r2,r3,r4];
   const card=getTodayCard();
-  // Confirm if re-entering
   if(card.results[curResultRace]&&card.scores[curResultRace]){
     if(!confirm('Race '+curResultRace+' is already scored. Re-entering will recalculate. Continue?')) return;
   }
   card.results[curResultRace]=actual;
-  // Score my picks
   const picks=card.picks[curResultRace];
   let myScore=null,mlScore=null,guScore=null;
   if(picks){
     myScore=scoreRace(picks,actual,curResultRace,card,false,'scores');
     card.scores[curResultRace]=myScore;
   } else {
-    // No picks = zero score = streak breaker
     card.scores[curResultRace]={fieldPts:0,fieldHits:[],sweepPts:0,winHit:false,winPts:0,exacta:false,trifecta:false,superfecta:false,exactaPts:0,trifectaPts:0,superfectaPts:0,exoticPts:0,raceTotal:0,streak:0,actual,picks:null};
   }
-  // Score selections if entered
   const ml=card.mlPicks?card.mlPicks[curResultRace]:null;
   if(ml){
     const mlPicks={win:ml[0],field:ml};
@@ -928,7 +808,6 @@ function submitResult(){
     if(!card.mlScores) card.mlScores={};
     card.mlScores[curResultRace]=mlScore;
   }
-  // Score GiddyUp Picks if loaded
   const gu=card.guPicks?card.guPicks[curResultRace]:null;
   if(gu){
     const guPicks={win:gu[0],field:gu};
@@ -940,18 +819,14 @@ function submitResult(){
   renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore);
   renderResultGrid();
 }
-
 function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
   const div=document.getElementById('r-score-display');
   let html=`<div class="card" style="margin-top:14px;">
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Official finish: ${actual.map((h,i)=>['1st','2nd','3rd','4th'][i]+' #'+h).join(' · ')}</div>`;
-
-  // Three-way leaderboard for this race
   const competitors=[];
   if(mlScore) competitors.push({name:getPartnerName(),icon:'📰',score:mlScore,color:'var(--blue)'});
   if(guScore) competitors.push({name:'GiddyUp',icon:'🔬',score:guScore,color:'var(--gold-dark)'});
   competitors.push({name:CU?displayName(CU):'You',icon:'🏇',score:myScore,color:'var(--green)',isMe:true});
-
   if(competitors.length>1){
     const sorted=[...competitors].sort((a,b)=>(b.score?b.score.raceTotal:0)-(a.score?a.score.raceTotal:0));
     html+=`<div style="display:grid;grid-template-columns:repeat(${competitors.length},1fr);gap:8px;margin-bottom:14px;">`;
@@ -966,7 +841,6 @@ function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
     });
     html+='</div>';
   }
-
   if(myScore){
     html+=`<div style="font-weight:500;margin-bottom:8px;">My Score: <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${myScore.raceTotal+myScore.streak} pts</span></div>
     <div class="score-bd">
@@ -984,7 +858,6 @@ function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
   }
   html+='</div>';
   div.innerHTML=html;
-  // auto-advance
   const card=getTodayCard();
   if(curResultRace<card.numRaces){
     curResultRace++;
@@ -996,8 +869,6 @@ function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
     document.getElementById('rr4').value=existing?existing[3]:'';
   }
 }
-
-// ── SCORING ENGINE ────────────────────────────────────────────────
 function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
   const field=picks.field,win=picks.win;
   let fieldPts=0,fieldHits=[];
@@ -1022,8 +893,6 @@ function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
   }
   return{fieldPts,fieldHits,sweepPts,winHit,winPts,exacta,trifecta,superfecta,exactaPts,trifectaPts,superfectaPts,exoticPts,raceTotal,streak,actual,picks};
 }
-
-// ── SCORECARD ────────────────────────────────────────────────────
 function loadScorecard(){
   document.getElementById('sc-name').textContent=displayName(CU);
   document.getElementById('sc-date').textContent=formatDate(TODAY);
@@ -1066,7 +935,6 @@ function loadScorecard(){
     <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Streak Bonus</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold-dark);">${tSt}</div></div>
     <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Grand Total</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);">${grand}</div></div>`;
   document.getElementById('sc-cons-status').innerHTML=consAlive?'<span style="color:var(--green);font-weight:500;">🟢 Alive</span>':'<span style="color:var(--red);font-weight:500;">🔴 Lost</span>';
-  // Three-way leaderboard: Selections vs GiddyUp vs My Picks
   const mlScores=card.mlScores||{};
   const guScores=card.guScores||{};
   const mlRns=Object.keys(mlScores).map(Number);
@@ -1081,7 +949,6 @@ function loadScorecard(){
     if(guRns.length) competitors.push({name:'GiddyUp',icon:'🔬',total:guTotal,races:guRns.length,color:'var(--gold-dark)'});
     competitors.push({name:CU?displayName(CU):'You',icon:'🏇',total:myTotal,races:rns.length,color:'var(--green)',isMe:true});
     const ranked=[...competitors].sort((a,b)=>b.total-a.total);
-
     mlEl.style.display='block';
     mlEl.innerHTML=`<div class="section-title" style="margin-bottom:8px;">Leaderboard — Today</div>
     <div class="card" style="padding:10px;">
@@ -1105,8 +972,6 @@ function loadScorecard(){
     <tr class="sc-grand-row"><td colspan="8"><strong>Grand Total</strong></td><td><strong>${grand}</strong></td></tr>`;
   renderHeadToHead(card,rns);
 }
-
-// ── HEAD-TO-HEAD: race-by-race breakdown for Selections / GiddyUp / Me ──
 function renderHeadToHead(card,rns){
   const el=document.getElementById('sc-h2h');
   const mlScores=card.mlScores||{};
@@ -1114,13 +979,10 @@ function renderHeadToHead(card,rns){
   const hasML=Object.keys(mlScores).length>0;
   const hasGU=Object.keys(guScores).length>0;
   if(!hasML&&!hasGU){el.innerHTML='';return;}
-
   const competitors=[];
   competitors.push({key:'me',icon:'🏇',name:CU?displayName(CU):'You',color:'var(--green)',scores:card.scores,isMe:true});
   if(hasML) competitors.push({key:'ml',icon:'📰',name:getPartnerName(),color:'var(--blue)',scores:mlScores});
   if(hasGU) competitors.push({key:'gu',icon:'🔬',name:'GiddyUp',color:'var(--gold-dark)',scores:guScores});
-
-  // exotic label helper
   function exLabel(sc){
     if(!sc) return '—';
     if(sc.superfecta) return '<span class="tag tag-gold">Sfcta</span>';
@@ -1128,8 +990,6 @@ function renderHeadToHead(card,rns){
     if(sc.exacta) return '<span class="tag tag-green">Ex</span>';
     return '—';
   }
-
-  // Build rows: for each race, one sub-row per competitor that has a score
   let rows='';
   rns.forEach(r=>{
     competitors.forEach((c,ci)=>{
@@ -1148,14 +1008,10 @@ function renderHeadToHead(card,rns){
       </tr>`;
     });
   });
-
-  // Build exotic breakdown table rows
   let exoticRows='';
   let colExacta=0,colTrifecta=0,colSuperfecta=0,colTotal=0;
-  // Track per-competitor totals for exotic breakdown footer
   const exoticTotals={};
   competitors.forEach(c=>{exoticTotals[c.key]={ex:0,tri:0,sf:0,total:0};});
-
   rns.forEach(r=>{
     competitors.forEach((c,ci)=>{
       const sc=c.scores[r];
@@ -1179,8 +1035,6 @@ function renderHeadToHead(card,rns){
       exoticTotals[c.key].total+=rowTotal;
     });
   });
-
-  // Exotic breakdown footer - one row per competitor
   let exoticFootRows='';
   competitors.forEach(c=>{
     const t=exoticTotals[c.key];
@@ -1192,7 +1046,6 @@ function renderHeadToHead(card,rns){
       <td style="color:${c.color};">${t.total?t.total:'—'}</td>
     </tr>`;
   });
-
   el.innerHTML=`
     <div class="section-title" style="margin-top:16px;">Head-to-Head — Race by Race</div>
     <div class="card" style="padding:10px;overflow-x:auto;">
@@ -1210,8 +1063,6 @@ function renderHeadToHead(card,rns){
       </table>
     </div>`;
 }
-
-// ── TOO BAD TOO SAD ──────────────────────────────────────────────
 const TBTS_RULES=[
   {num:0,icon:"👑",title:"Who Runs This Platform",rule:"GiddyUp Play is operated by the platform administrator. All Master Steward appointments are made personally by the platform administrator. If you represent a racetrack and want to bring GiddyUp Play to your facility, contact us. The platform administrator's decision is final.",tbts:"Want to run a track? Contact us. We decide. Full stop."},
   {num:1,icon:"🚫",title:"Scratches",rule:"If your horse is scratched before the race, it scores zero. No substitutions, no replacements, no do-overs.",tbts:"Your horse didn't run. Too Bad Too Sad."},
@@ -1225,7 +1076,6 @@ const TBTS_RULES=[
   {num:9,icon:"🌧️",title:"Rain and Cancellations",rule:"If a race is cancelled, it is removed from scoring. The consistency bonus recalculates against races actually run. Same rules for everyone.",tbts:"Nobody controls the weather. We all suffer together."},
   {num:10,icon:"🎩",title:"The Steward's Decision is Final",rule:"All decisions on any dispute are final. There is no appeal process. There is no commissioner. There is no tribunal. This is a free game.",tbts:"The steward has spoken. Too Bad Too Sad."},
 ];
-
 const HOW_TO_USE = [
   {icon:"🎟️", title:"Step 1 — Set Your Race Card",
    desc:"On the Home screen, tap how many races are on today's card. This sets up your pick grid for the day."},
@@ -1252,7 +1102,6 @@ const HOW_TO_USE = [
   {icon:"📓", title:"Keep a Racing Diary",
    desc:"The Diary tab is your personal racing journal. Add notes before a race (your read on a horse, trainer tips, track conditions), after a race (what you noticed, what you missed), and attach photos of your winning tickets or race programs. Over time your diary becomes a powerful handicapping study tool."},
 ];
-
 function initTBTSButtons(){
   const isSolo=APP_MODE==='solo';
   const label=isSolo?'📖 How to Use':'🐴 Too Bad Too Sad Rules';
@@ -1261,7 +1110,6 @@ function initTBTSButtons(){
     if(el) el.textContent=label;
   });
 }
-
 function goToTBTS(){
   const isSolo=APP_MODE==='solo';
   const header=document.getElementById('tbts-header');
@@ -1327,15 +1175,11 @@ function goToTBTS(){
   }
   go('screen-tbts');
 }
-
-// ── DIARY ───────────────────────────────────────────────────────
 let pendingPhotoData = null;
 let pendingPhotoName = null;
-
 function loadDiary(){
   document.getElementById('d-name').textContent = displayName(CU);
   document.getElementById('d-date').textContent = formatDate(TODAY);
-  // populate race selector
   const card = getTodayCard();
   const sel = document.getElementById('d-race-select');
   sel.innerHTML = '<option value="">General note — not race specific</option>';
@@ -1346,7 +1190,6 @@ function loadDiary(){
   }
   renderDiaryEntries();
 }
-
 function handlePhotoSelect(event){
   const file = event.target.files[0];
   if(!file) return;
@@ -1362,7 +1205,6 @@ function handlePhotoSelect(event){
   };
   reader.readAsDataURL(file);
 }
-
 function saveDiaryEntry(){
   const note = document.getElementById('d-note').value.trim();
   const race = document.getElementById('d-race-select').value;
@@ -1380,7 +1222,6 @@ function saveDiaryEntry(){
   };
   CU.diary.unshift(entry);
   saveUser();
-  // clear form
   document.getElementById('d-note').value = '';
   document.getElementById('d-race-select').value = '';
   document.getElementById('d-photo-preview').style.display = 'none';
@@ -1390,14 +1231,12 @@ function saveDiaryEntry(){
   pendingPhotoName = null;
   renderDiaryEntries();
 }
-
 function deleteDiaryEntry(id){
   if(!confirm('Delete this diary entry?')) return;
   CU.diary = (CU.diary||[]).filter(e=>e.id!==id);
   saveUser();
   renderDiaryEntries();
 }
-
 function renderDiaryEntries(){
   const entries = CU.diary || [];
   const todayEntries = entries.filter(e=>e.date===TODAY);
@@ -1407,7 +1246,6 @@ function renderDiaryEntries(){
   document.getElementById('d-entries-today').innerHTML = todayEntries.length
     ? todayEntries.map(e=>renderDiaryCard(e)).join('')
     : '<p style="color:var(--muted);font-size:13px;margin-bottom:12px;">No notes yet today.</p>';
-  // Group previous entries by date
   const dateGroups = {};
   prevEntries.forEach(e=>{
     if(!dateGroups[e.date]) dateGroups[e.date]=[];
@@ -1421,7 +1259,6 @@ function renderDiaryEntries(){
       `).join('')
     : '<p style="color:var(--muted);font-size:13px;">No previous entries.</p>';
 }
-
 function renderDiaryCard(e){
   return `<div class="diary-entry">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -1442,16 +1279,13 @@ function renderDiaryCard(e){
     </div>
   </div>`;
 }
-
 function shareDiaryEntry(id){
   const entry=(CU.diary||[]).find(e=>e.id==id);
   if(!entry) return;
   const raceLabel=entry.race?'Race '+entry.race+' — ':'';
   const text=`GiddyUp Play 🏇\n${raceLabel}${formatDate(entry.date)}\n\n${entry.note||''}\n\nTracked with GiddyUp Play — giddyupsilks.app`;
-  // Use native share sheet if available (mobile)
   if(navigator.share){
     const shareData={title:'GiddyUp Play — '+raceLabel+formatDate(entry.date),text:text};
-    // Include photo as file if available
     if(entry.photo){
       fetch(entry.photo)
         .then(r=>r.blob())
@@ -1467,12 +1301,10 @@ function shareDiaryEntry(id){
       navigator.share(shareData).catch(err=>console.log('Share cancelled'));
     }
   } else {
-    // Fallback: copy to clipboard
     copyToClipboard(text);
     alert('Copied to clipboard — paste anywhere to share!');
   }
 }
-
 function copyDiaryEntry(id){
   const entry=(CU.diary||[]).find(e=>e.id==id);
   if(!entry) return;
@@ -1481,7 +1313,6 @@ function copyDiaryEntry(id){
   copyToClipboard(text);
   alert('Note copied to clipboard!');
 }
-
 function copyToClipboard(text){
   if(navigator.clipboard){navigator.clipboard.writeText(text);}
   else{
@@ -1491,7 +1322,6 @@ function copyToClipboard(text){
     document.execCommand('copy');document.body.removeChild(ta);
   }
 }
-
 function viewFullPhoto(id){
   const entry=(CU.diary||[]).find(e=>e.id==id);
   if(!entry||!entry.photo) return;
@@ -1500,21 +1330,17 @@ function viewFullPhoto(id){
     <img src="${entry.photo}" style="max-width:100%;max-height:100vh;object-fit:contain;">
   </body></html>`);
 }
-
-// ── HELPERS ──────────────────────────────────────────────────────
 function displayName(user){
   if(!user) return '';
-  // If username looks like an email or is empty, use the part before @
   const u=user.username||'';
   if(!u||u.includes('@')) return (user.email||'').split('@')[0];
   return u;
 }
-
 function v(id){return document.getElementById(id).value.trim();}
 function gi(id){return parseInt(document.getElementById(id).value)||0;}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display=msg?'block':'none';}}
 
-// ── INIT ─────────────────────────────────────────────────────────
+// ── INIT (Supabase) ────────────────────────────────────────────
 (async function init(){
   initTBTSButtons();
   const session=await GiddyUpAuth.getSession();
@@ -1527,15 +1353,12 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
   go('screen-splash');
 })();
 </script>
-
-<!-- ═══ DIARY ═══ -->
 <div id="screen-diary" class="screen has-nav">
   <div class="top-bar">
     <div class="top-bar-left"><div class="tb-ctx">My Racing Diary</div><div class="tb-name" id="d-name">FastEddie</div></div>
     <div class="top-bar-right"><div class="cpill cpill-gold" id="d-date"></div></div>
   </div>
   <div class="page-pad">
-    <!-- Add new entry -->
     <div class="card" style="border-color:var(--green);">
       <div class="section-title" style="margin-bottom:10px;">Add a Note</div>
       <div class="fg" style="margin-bottom:8px;">
@@ -1548,7 +1371,6 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
         <label>Your Notes</label>
         <textarea class="diary-input" id="d-note" placeholder="e.g. Horse #4 looked strong in warm-ups. Trainer mentioned good workout this week. Backing my gut on this one..."></textarea>
       </div>
-      <!-- Photo upload -->
       <div style="margin-bottom:12px;">
         <label style="display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Photo (optional)</label>
         <div class="photo-upload-btn" onclick="document.getElementById('d-photo-input').click()">
@@ -1561,8 +1383,6 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
       <div id="d-err" class="err-msg" style="display:none;"></div>
       <button class="btn btn-green btn-sm" style="width:100%;" onclick="saveDiaryEntry()">💾 &nbsp;Save Note</button>
     </div>
-
-    <!-- Entries list -->
     <div class="section-title" style="margin-top:4px;">Today's Notes</div>
     <div id="d-entries-today"></div>
     <div class="section-title" style="margin-top:4px;">Previous Notes</div>
@@ -1577,6 +1397,4 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
     <div class="nav-item active" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
   </div>
 </div>
-
-
 </body></html>
