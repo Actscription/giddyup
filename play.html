@@ -227,36 +227,7 @@ input[type=file]{display:none;}
     </div>
     <div class="section-title">Today's Card</div>
     <div id="h-today-card">
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Jun 12, 2026</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">2</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Picked</div>
-        </div>
-        <div style="background:var(--gold-light);border-radius:8px;padding:10px 16px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold-dark);">2</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Scored</div>
-        </div>
-        <div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">405</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Total Pts</div>
-        </div>
-      </div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-green btn-sm" onclick="nav('picks')">🎟️ Enter Picks</button>
-        <button class="btn btn-outline btn-sm" onclick="nav('results')">📋 Enter Results</button>
-        <button class="btn btn-outline btn-sm" onclick="nav('scorecard')">📊 View Scorecard</button>
-      </div>
     </div>
-    <div style="margin-top:8px;">
-      <div class="section-title">How Many Races Today?</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(6)">6</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(7)">7</button><button class="btn btn-outline btn-sm" style="background:var(--green);color:white;border-color:var(--green)" onclick="setNumRaces(8)">8</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(9)">9</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(10)">10</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(11)">11</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(12)">12</button><button class="btn btn-outline btn-sm" style="" onclick="setNumRaces(13)">13</button>
-        <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
-      </div>
-      <div id="coaching-text" style="margin-top:10px;font-size:13px;color:var(--green);font-weight:600;display:none;">👇 Next: tap Picks below to enter your horses</div>
-    </div></div>
     <div style="margin-top:12px;">
       <div class="section-title" style="margin-bottom:6px;">Who Are You Playing Against Today?</div>
       <input type="text" id="partner-name-input" placeholder="House Selections" maxlength="30"
@@ -420,32 +391,47 @@ input[type=file]{display:none;}
   </div>
 </div>
 <script>
-const APP_MODE = 'solo' // change to 'premium' for Racing Club;
+const APP_MODE = 'solo';
 const MAX_RACES = 20;
 const TODAY = new Date().toISOString().split('T')[0];
 
-// ── USER DATA (Supabase Auth + local race-day data cache) ───────
-// CU holds: {id, username, email, city, raceCards:{...}, diary:[...]}
-// Auth lives in Supabase. Race/pick/diary data lives in localStorage
-// per-user, keyed by Supabase user id.
-function loadUserData(userId){
-  try{
-    const saved=localStorage.getItem('giddyup_userdata_'+userId);
-    if(saved) return JSON.parse(saved);
-  }catch(e){}
-  return {raceCards:{},diary:[]};
-}
-function saveUserData(){
-  if(!CU||!CU.id) return;
-  try{
-    localStorage.setItem('giddyup_userdata_'+CU.id,JSON.stringify({raceCards:CU.raceCards,diary:CU.diary}));
-  }catch(e){}
+function emptyDayCard(){
+  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},partnerName:'House Selections'};
 }
 
-let CU = null; // current user
+let CU = null;
+let dayCard = null;
 let curPickRace = 1;
 let curResultRace = 1;
-let numRaces = 9; // default, set by user
+
+async function loadDayCard(){
+  if(!CU) return emptyDayCard();
+  const remote = await GiddyUpAuth.getDayCard(CU.id, TODAY);
+  if(remote) return remote;
+  return emptyDayCard();
+}
+
+let saveQueued = false;
+async function persistDayCard(){
+  if(!CU||!dayCard) return;
+  if(saveQueued) return;
+  saveQueued = true;
+  await GiddyUpAuth.saveDayCard(CU.id, TODAY, dayCard);
+  saveQueued = false;
+}
+
+function loadDiary(userId){
+  try{
+    const saved=localStorage.getItem('giddyup_diary_'+userId);
+    if(saved) return JSON.parse(saved);
+  }catch(e){}
+  return [];
+}
+function saveDiaryLocal(){
+  if(!CU) return;
+  try{localStorage.setItem('giddyup_diary_'+CU.id,JSON.stringify(CU.diary||[]));}catch(e){}
+}
+
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -457,7 +443,7 @@ function nav(tab){
   if(tab==='picks') loadPicks();
   if(tab==='results') loadResultsScreen();
   if(tab==='scorecard') loadScorecard();
-  if(tab==='diary') loadDiary();
+  if(tab==='diary') loadDiaryScreen();
   go(map[tab]);
 }
 function openSilks(){
@@ -475,7 +461,6 @@ function clearReg(){
   ['reg-err','login-err'].forEach(id=>{const el=document.getElementById(id);if(el) el.style.display='none';});
 }
 
-// ── AUTH (Supabase) ───────────────────────────────────────────────
 async function handleRegister(){
   const u=v('reg-u'),e=v('reg-e').toLowerCase(),c=v('reg-c'),p=v('reg-p');
   showErr('reg-err','');
@@ -484,7 +469,8 @@ async function handleRegister(){
   const result=await GiddyUpAuth.register(e,p,u,c);
   if(!result.success){showErr('reg-err',result.error);return;}
   const profile=await GiddyUpAuth.getProfile(result.user.id);
-  CU={id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,...loadUserData(result.user.id)};
+  CU={id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,diary:loadDiary(result.user.id)};
+  dayCard=await loadDayCard();
   loadHome();go('screen-home');
 }
 async function handleLogin(){
@@ -493,22 +479,21 @@ async function handleLogin(){
   const result=await GiddyUpAuth.login(e,p);
   if(!result.success){showErr('login-err',result.error);return;}
   const profile=await GiddyUpAuth.getProfile(result.user.id);
-  CU={id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',...loadUserData(result.user.id)};
+  CU={id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',diary:loadDiary(result.user.id)};
+  dayCard=await loadDayCard();
   loadHome();go('screen-home');
 }
 async function handleLogout(){
   await GiddyUpAuth.logout();
-  CU=null;clearReg();go('screen-splash');
+  CU=null;dayCard=null;clearReg();go('screen-splash');
 }
 
 function getTodayCard(){
-  if(!CU) return null;
-  if(!CU.raceCards) CU.raceCards={};
-  if(!CU.raceCards[TODAY]) CU.raceCards[TODAY]={numRaces:9,picks:{},results:{},scores:{},mlPicks:{},partnerName:'House Selections'};
-  return CU.raceCards[TODAY];
+  if(!dayCard) dayCard=emptyDayCard();
+  return dayCard;
 }
 function saveUser(){
-  saveUserData();
+  persistDayCard();
 }
 function formatDate(d){
   if(!d) return '';
@@ -516,10 +501,11 @@ function formatDate(d){
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return months[m-1]+' '+day+', '+y;
 }
+
 function loadHome(){
   document.getElementById('h-name').textContent=displayName(CU);
   document.getElementById('h-welcome-name').textContent=displayName(CU);
-  document.getElementById('h-city').textContent=CU.city.split(',')[0];
+  document.getElementById('h-city').textContent=(CU.city||'').split(',')[0];
   const card=getTodayCard();
   const scored=Object.keys(card.scores).length;
   const picked=Object.keys(card.picks).length;
@@ -555,8 +541,6 @@ function loadHome(){
     </div>`;
   const navPicks=document.getElementById('nav-picks-home');
   if(navPicks){navPicks.classList.toggle('pulse',!picked);}
-  const coaching=document.getElementById('coaching-text');
-  if(coaching){coaching.style.display=!picked?'block':'none';}
   const partnerInput=document.getElementById('partner-name-input');
   if(partnerInput){partnerInput.value=getPartnerName()==='House Selections'?'':getPartnerName();partnerInput.placeholder='House Selections';}
 }
@@ -576,6 +560,7 @@ function promptCustomRaces(){
   const n=parseInt(prompt('How many races? (1-20)'));
   if(n&&n>=1&&n<=20) setNumRaces(n);
 }
+
 function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
   document.getElementById('p-date').textContent=formatDate(TODAY);
@@ -736,6 +721,7 @@ function renderSavedPicksList(){
       <td style="font-size:11px;color:var(--muted);">${pk.savedAt||"—"}</td><td>${badge}</td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
+
 function loadResultsScreen(){
   document.getElementById('r-name').textContent=displayName(CU);
   document.getElementById('r-date').textContent=formatDate(TODAY);
@@ -869,6 +855,7 @@ function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
     document.getElementById('rr4').value=existing?existing[3]:'';
   }
 }
+
 function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
   const field=picks.field,win=picks.win;
   let fieldPts=0,fieldHits=[];
@@ -893,6 +880,7 @@ function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
   }
   return{fieldPts,fieldHits,sweepPts,winHit,winPts,exacta,trifecta,superfecta,exactaPts,trifectaPts,superfectaPts,exoticPts,raceTotal,streak,actual,picks};
 }
+
 function loadScorecard(){
   document.getElementById('sc-name').textContent=displayName(CU);
   document.getElementById('sc-date').textContent=formatDate(TODAY);
@@ -1009,7 +997,6 @@ function renderHeadToHead(card,rns){
     });
   });
   let exoticRows='';
-  let colExacta=0,colTrifecta=0,colSuperfecta=0,colTotal=0;
   const exoticTotals={};
   competitors.forEach(c=>{exoticTotals[c.key]={ex:0,tri:0,sf:0,total:0};});
   rns.forEach(r=>{
@@ -1063,6 +1050,7 @@ function renderHeadToHead(card,rns){
       </table>
     </div>`;
 }
+
 const TBTS_RULES=[
   {num:0,icon:"👑",title:"Who Runs This Platform",rule:"GiddyUp Play is operated by the platform administrator. All Master Steward appointments are made personally by the platform administrator. If you represent a racetrack and want to bring GiddyUp Play to your facility, contact us. The platform administrator's decision is final.",tbts:"Want to run a track? Contact us. We decide. Full stop."},
   {num:1,icon:"🚫",title:"Scratches",rule:"If your horse is scratched before the race, it scores zero. No substitutions, no replacements, no do-overs.",tbts:"Your horse didn't run. Too Bad Too Sad."},
@@ -1098,7 +1086,7 @@ const HOW_TO_USE = [
   {icon:"🔒", title:"Picks Lock When Results Are Entered",
    desc:"Once you enter results for a race, that race's picks are locked and cannot be changed. Enter your picks honestly — if you cheat you are only cheating yourself."},
   {icon:"💾", title:"Your Data is Saved",
-   desc:"Your picks, results and scores are saved automatically in your browser. They will be there when you come back. Clearing your browser data will erase your history."},
+   desc:"Your picks, results and scores are saved automatically to your account and sync across devices. Sign in anywhere to pick up where you left off."},
   {icon:"📓", title:"Keep a Racing Diary",
    desc:"The Diary tab is your personal racing journal. Add notes before a race (your read on a horse, trainer tips, track conditions), after a race (what you noticed, what you missed), and attach photos of your winning tickets or race programs. Over time your diary becomes a powerful handicapping study tool."},
 ];
@@ -1175,9 +1163,10 @@ function goToTBTS(){
   }
   go('screen-tbts');
 }
+
 let pendingPhotoData = null;
 let pendingPhotoName = null;
-function loadDiary(){
+function loadDiaryScreen(){
   document.getElementById('d-name').textContent = displayName(CU);
   document.getElementById('d-date').textContent = formatDate(TODAY);
   const card = getTodayCard();
@@ -1221,7 +1210,7 @@ function saveDiaryEntry(){
     savedAt: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
   };
   CU.diary.unshift(entry);
-  saveUser();
+  saveDiaryLocal();
   document.getElementById('d-note').value = '';
   document.getElementById('d-race-select').value = '';
   document.getElementById('d-photo-preview').style.display = 'none';
@@ -1234,7 +1223,7 @@ function saveDiaryEntry(){
 function deleteDiaryEntry(id){
   if(!confirm('Delete this diary entry?')) return;
   CU.diary = (CU.diary||[]).filter(e=>e.id!==id);
-  saveUser();
+  saveDiaryLocal();
   renderDiaryEntries();
 }
 function renderDiaryEntries(){
@@ -1330,6 +1319,7 @@ function viewFullPhoto(id){
     <img src="${entry.photo}" style="max-width:100%;max-height:100vh;object-fit:contain;">
   </body></html>`);
 }
+
 function displayName(user){
   if(!user) return '';
   const u=user.username||'';
@@ -1340,13 +1330,13 @@ function v(id){return document.getElementById(id).value.trim();}
 function gi(id){return parseInt(document.getElementById(id).value)||0;}
 function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display=msg?'block':'none';}}
 
-// ── INIT (Supabase) ────────────────────────────────────────────
 (async function init(){
   initTBTSButtons();
   const session=await GiddyUpAuth.getSession();
   if(session&&session.user){
     const profile=await GiddyUpAuth.getProfile(session.user.id);
-    CU={id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',...loadUserData(session.user.id)};
+    CU={id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',diary:loadDiary(session.user.id)};
+    dayCard=await loadDayCard();
     loadHome();go('screen-home');
     return;
   }
