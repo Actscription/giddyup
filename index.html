@@ -70,6 +70,16 @@ const RACE_TYPES=[
   {id:"maiden",label:"Maiden",icon:"🐎",color:"#9e4a9e"},
 ];
 const FC={speed:"#4a7ec9",form:"#c97a4a",jockey:"#c9a84c",trainer:"#4a9e6e",distance:"#9e4a4a",track:"#7a9e4a",post:"#9e4a9e",class:"#4a9e9e",days:"#b87333",weight:"#6b7280",workouts:"#e07070",equipment:"#70b0c0",pedigree:"#a87ab5",style:"#d4a07a",combo:"#7ab5a8",bias:"#b5a87a"};
+const SILK_COLORS={
+  1:{bg:"#c41e28",fg:"#ffffff"},2:{bg:"#ffffff",fg:"#1a1a1a"},3:{bg:"#1e3aaa",fg:"#ffffff"},
+  4:{bg:"#e6c81e",fg:"#1a1a1a"},5:{bg:"#1e783c",fg:"#ffffff"},6:{bg:"#1a1a1a",fg:"#e6c81e"},
+  7:{bg:"#e6781e",fg:"#1a1a1a"},8:{bg:"#e66ea0",fg:"#1a1a1a"},9:{bg:"#1ec8c8",fg:"#1a1a1a"},
+  10:{bg:"#7a1ea0",fg:"#ffffff"},11:{bg:"#9e9e9e",fg:"#c41e28"},12:{bg:"#9ed61e",fg:"#1a1a1a"},
+  13:{bg:"#7a4a28",fg:"#ffffff"},14:{bg:"#7a1e3c",fg:"#e6c81e"},15:{bg:"#b5a96a",fg:"#1a1a1a"},
+  16:{bg:"#82c4e6",fg:"#c41e28"},17:{bg:"#1a2550",fg:"#ffffff"},18:{bg:"#1e5a3c",fg:"#e6c81e"},
+  19:{bg:"#28327a",fg:"#c41e28"},20:{bg:"#d6196e",fg:"#e6c81e"},21:{bg:"#b48ad2",fg:"#1a2550"},
+  default:{bg:"#6b7280",fg:"#ffffff"}
+};
 const C={gold:"#c9a84c",navy:"#1a2535",navy2:"#2d3f55",border:"#e2e8f0",muted:"#94a3b8",text:"#1a2535"};
 function golfRank(horses,factorId){const sorted=[...horses].sort((a,b)=>(b.stats[factorId]||0)-(a.stats[factorId]||0));const ranks={};let i=0;while(i<sorted.length){const val=sorted[i].stats[factorId]||0;let j=i;while(j<sorted.length&&(sorted[j].stats[factorId]||0)===val)j++;for(let k=i;k<j;k++)ranks[sorted[k].number]=i+1;i=j;}return ranks;}
 function computeEarningsRanks(horses){const eps=horses.map(hr=>{const e=hr.earnings||{};return{number:hr.number,eps_cy:e.cy_starts>0?e.cy_earnings/e.cy_starts:null,eps_ly:e.ly_starts>0?e.ly_earnings/e.ly_starts:null,eps_car:e.car_starts>0?e.car_earnings/e.car_starts:null,cy_starts:e.cy_starts||0,ly_starts:e.ly_starts||0};});const ra=(arr,key)=>{const n=arr.length,s=[...arr].filter(x=>x[key]!==null).sort((a,b)=>b[key]-a[key]),m={};s.forEach((x,i)=>m[x.number]=i+1);arr.filter(x=>x[key]===null).forEach(x=>m[x.number]=n+1);return m;};const rc=ra(eps,"eps_cy"),rl=ra(eps,"eps_ly"),rca=ra(eps,"eps_car");return eps.map(hr=>{const rel=Math.min(1,hr.cy_starts/3);let wc=0.6*rel,lost=0.6-wc,wl=0.3+(lost*0.75),wca=0.1+(lost*0.25);if(hr.ly_starts===0){wca+=wl;wl=0;}return{number:hr.number,earningsScore:wc*rc[hr.number]+wl*rl[hr.number]+wca*rca[hr.number]};});}
