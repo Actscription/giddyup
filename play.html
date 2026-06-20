@@ -660,10 +660,22 @@ function loadPickRaceData(r){
   document.getElementById('pp2').value=pk?pk.field[1]:'';
   document.getElementById('pp3').value=pk?pk.field[2]:'';
   document.getElementById('pp4').value=pk?pk.field[3]:'';
-  document.getElementById('ml1').value=ml?ml[0]:'';
+document.getElementById('ml1').value=ml?ml[0]:'';
   document.getElementById('ml2').value=ml?ml[1]:'';
   document.getElementById('ml3').value=ml?ml[2]:'';
   document.getElementById('ml4').value=ml?ml[3]:'';
+  const gu=card.guPicks?card.guPicks[r]:null;
+  if(gu){
+    document.getElementById('gu1').value=gu[0];
+    document.getElementById('gu2').value=gu[1];
+    document.getElementById('gu3').value=gu[2];
+    document.getElementById('gu4').value=gu[3];
+    document.getElementById('gu-loaded-state').style.display='block';
+    document.getElementById('gu-empty-state').style.display='none';
+  } else {
+    document.getElementById('gu-loaded-state').style.display='none';
+    document.getElementById('gu-empty-state').style.display='block';
+  }
   const locked=hasResults;
   ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>{
     const el=document.getElementById(id);
