@@ -132,15 +132,19 @@ function HorseActionModal({horse,isScratched,onSave,onClose}){
 function HorseCard({horse,rank,weights,allScores,activeRace,onTap}){
   const [exp,setExp]=useState(false);
   const medals=["🥇","🥈","🥉"],bcs=["#c9a84c","#9ea8b0","#b87333","#4a7ec9","#4a9e6e","#9e4a9e"],bc=bcs[rank]||"#cbd5e1";
+  const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
+  const ring=rank===0?"#c9a84c":rank===1?"#9ea8b0":rank===2?"#b87333":"transparent";
   const active=ALL_FACTORS.filter(f=>weights[f.id]>0),eWeight=EARNINGS_WEIGHT[activeRace]||2;
   const minS=allScores[0]?allScores[0].totalScore:horse.totalScore,maxS=allScores[allScores.length-1]?allScores[allScores.length-1].totalScore:horse.totalScore;
   const barW=Math.max(15,100-((horse.totalScore-minS)/Math.max(1,maxS-minS))*80);
   return h("div",{style:{background:rank===0?"linear-gradient(135deg,#fffbf0,#fff8e6)":"#fff",border:rank===0?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10,cursor:"pointer"}},
     h("div",{style:{display:"flex",alignItems:"center",gap:12}},
-      h("div",{onClick:()=>setExp(!exp),style:{fontSize:24,minWidth:32,cursor:"pointer"}},medals[rank]||("#"+(rank+1))),
+      h("div",{onClick:()=>setExp(!exp),style:{position:"relative",minWidth:38,cursor:"pointer"}},
+        h("div",{style:{width:38,height:38,borderRadius:9,background:silk.bg,color:silk.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:15,border:ring!=="transparent"?"3px solid "+ring:"1px solid rgba(0,0,0,0.15)",boxShadow:silk.bg==="#ffffff"?"inset 0 0 0 1px rgba(0,0,0,0.12)":"none"}},horse.number),
+        rank<3&&h("div",{style:{position:"absolute",top:-8,right:-8,fontSize:13,lineHeight:1}},medals[rank])),
       h("div",{onClick:()=>setExp(!exp),style:{flex:1,cursor:"pointer"}},
         h("div",{style:{display:"flex",justifyContent:"space-between"}},
-          h("div",{style:{color:C.text,fontWeight:700,fontSize:15}},horse.number+". "+horse.name),
+          h("div",{style:{color:C.text,fontWeight:700,fontSize:15}},horse.name),
           h("div",{style:{color:bc,fontSize:20,fontWeight:800}},horse.totalScore)),
         h("div",{style:{color:C.muted,fontSize:12,marginTop:2}},horse.jockey+" · "+horse.trainer+" · "+horse.odds),
         h("div",{style:{marginTop:8,height:5,background:"#f1f5f9",borderRadius:4,overflow:"hidden"}},
