@@ -57,6 +57,40 @@ const GiddyUpAuth = {
     giddyupSupabase.auth.onAuthStateChange((_event, session) => {
       callback(session);
     });
+  },
+
+  // ── PLAY DAY CARD (GiddyUp Play race day data) ──────────────────
+  // Stores the entire day's card (numRaces, picks, results, scores,
+  // mlPicks, mlScores, guPicks, guScores, partnerName) as one JSON
+  // blob per user per day, in the play_picks table (race_number=0
+  // is a sentinel "whole day" row; the picks column holds the blob).
+
+  async saveDayCard(userId, playDate, dayCard) {
+    const { data, error } = await giddyupSupabase
+      .from("play_picks")
+      .upsert({
+        user_id: userId,
+        play_date: playDate,
+        race_number: 0,
+        picks: dayCard,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "user_id,play_date,race_number" })
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
+  async getDayCard(userId, playDate) {
+    const { data, error } = await giddyupSupabase
+      .from("play_picks")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("play_date", playDate)
+      .eq("race_number", 0)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.picks;
   }
 
 };
