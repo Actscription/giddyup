@@ -27,7 +27,7 @@ textarea,input,select{font-family:Georgia,serif}
 <body>
 <div id="root"></div>
 <script>
-const {createElement:h,useState,useRef,useCallback,Fragment}=React;
+const {createElement:h,useState,useRef,useCallback,useEffect,Fragment}=React;
 const FACTOR_GROUPS=[
   {id:"core",label:"Core Factors",icon:"⭐",factors:[
     {id:"speed",label:"Speed Figures",icon:"⚡",tip:"Historical speed ratings"},
@@ -505,6 +505,64 @@ function PlayTab({scores,raceName}){
   );
 }
 function DiaryTab(){const [entries,setEntries]=useState([]),[note,setNote]=useState(""),[image,setImage]=useState(null),[raceName,setRaceName]=useState(""),[saving,setSaving]=useState(false);const fileRef=useRef(),cameraRef=useRef();function handleImg(file){if(!file)return;const r=new FileReader();r.onload=e=>setImage(e.target.result);r.readAsDataURL(file);}function nowStr(){const d=new Date();return{date:d.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),time:d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true})};}function save(){if(!note&&!image)return;setSaving(true);const ts=nowStr();setTimeout(()=>{setEntries(e=>[{id:Date.now(),raceName:raceName||"Paddock Note",note,image,date:ts.date,time:ts.time},...e]);setNote("");setImage(null);setRaceName("");setSaving(false);},400);}const ts=nowStr();return h("div",{style:{paddingTop:14}},h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"center"}},h("div",{style:{fontSize:10,color:"#c9a84c88",letterSpacing:3,textTransform:"uppercase",marginBottom:6}},"📒 Your Racing Journal"),h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}},"A Day at the Races")),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},h("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:14,padding:"8px 12px",background:"#f8fafc",borderRadius:10}},h("div",{style:{fontSize:14}},"📅"),h("div",{style:{flex:1}},h("div",{style:{fontSize:11,fontWeight:700,color:C.text}},ts.date),h("div",{style:{fontSize:10,color:C.muted}},"⏰ "+ts.time))),h("input",{value:raceName,onChange:e=>setRaceName(e.target.value),placeholder:"Race or note title",style:{width:"100%",padding:"10px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:13,color:C.text,marginBottom:10,outline:"none",background:"#f8fafc"}}),h("div",{style:{display:"flex",gap:8,marginBottom:10}},h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{flex:1,padding:"12px 8px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:18}},"📸"),h("span",{style:{fontSize:12,fontWeight:700,color:C.gold}},"Take Photo")),h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{flex:1,padding:"12px 8px",background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:18}},"🖼"),h("span",{style:{fontSize:12,fontWeight:700,color:C.text}},"Library"))),image&&h("div",{style:{position:"relative",marginBottom:10}},h("img",{src:image,style:{width:"100%",maxHeight:200,borderRadius:10,objectFit:"cover"}}),h("button",{onClick:()=>setImage(null),style:{position:"absolute",top:8,right:8,background:"rgba(0,0,0,.6)",border:"none",borderRadius:20,color:"#fff",width:26,height:26,cursor:"pointer",fontSize:13}},"✕")),h("input",{ref:cameraRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("input",{ref:fileRef,type:"file",accept:"image/*",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("textarea",{value:note,onChange:e=>setNote(e.target.value),placeholder:"Your observations...",style:{width:"100%",padding:"10px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:13,color:C.text,minHeight:90,resize:"vertical",outline:"none",background:"#f8fafc",lineHeight:1.6}}),h("button",{onClick:save,disabled:!note&&!image,style:{width:"100%",marginTop:10,padding:"13px",background:(!note&&!image)?"#e2e8f0":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:(!note&&!image)?C.muted:C.gold,fontSize:14,fontWeight:700,cursor:(!note&&!image)?"not-allowed":"pointer"}},saving?"Saving...":"💾 Save to My Day")),entries.length>0&&h(Fragment,null,h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:12}},"Today's Entries · "+entries.length),entries.map(entry=>h("div",{key:entry.id,style:{background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden",marginBottom:12}},h("div",{style:{padding:"10px 14px",borderBottom:"1px solid "+C.border,display:"flex",alignItems:"center",gap:10}},h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:14,color:C.text}},entry.raceName),h("div",{style:{fontSize:10,color:C.muted}},"📅 "+entry.date+" · ⏰ "+entry.time)),h("button",{onClick:()=>setEntries(e=>e.filter(en=>en.id!==entry.id)),style:{background:"#fee2e2",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,color:"#ef4444",cursor:"pointer"}},"Delete")),h("div",{style:{padding:"12px 14px"}},entry.image&&h("img",{src:entry.image,style:{width:"100%",maxHeight:180,borderRadius:10,objectFit:"cover",marginBottom:10}}),entry.note&&h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.7,marginBottom:10}},entry.note))))),entries.length===0&&h("div",{style:{textAlign:"center",padding:"30px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🏇"),h("div",{style:{fontWeight:700,fontSize:15,color:C.text}},"Your story starts here")));}
+
+// ── AUTH SCREEN (Supabase) ──────────────────────────────────────
+function AuthScreen({mode,setMode,onAuthed}){
+  const [u,setU]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
+  const [err,setErr]=useState(''),[busy,setBusy]=useState(false);
+
+  async function handleRegister(){
+    setErr('');
+    if(!u||!e||!c||!p){setErr('Please fill in all fields.');return;}
+    if(p.length<8){setErr('Password must be at least 8 characters.');return;}
+    setBusy(true);
+    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c);
+    setBusy(false);
+    if(!result.success){setErr(result.error);return;}
+    const profile=await GiddyUpAuth.getProfile(result.user.id);
+    onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c});
+  }
+
+  async function handleLogin(){
+    setErr('');
+    if(!e||!p){setErr('Please enter email and password.');return;}
+    setBusy(true);
+    const result=await GiddyUpAuth.login(e.toLowerCase(),p);
+    setBusy(false);
+    if(!result.success){setErr(result.error);return;}
+    const profile=await GiddyUpAuth.getProfile(result.user.id);
+    onAuthed({id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:''});
+  }
+
+  const isRegister=mode==='register';
+
+  return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
+    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden"}},
+      h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"24px 24px 20px",textAlign:"center"}},
+        h("div",{style:{fontSize:36,marginBottom:6}},"🐴"),
+        h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}},"GiddyUp"),
+        h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:6}},isRegister?"Create your account":"Sign in to continue")),
+      h("div",{style:{padding:"24px 24px 28px"}},
+        isRegister&&h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Username"),
+          h("input",{value:u,onChange:ev=>setU(ev.target.value),placeholder:"e.g. FastEddie",maxLength:20,style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Email"),
+          h("input",{type:"email",value:e,onChange:ev=>setE(ev.target.value),placeholder:"your@email.com",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        isRegister&&h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"City"),
+          h("input",{value:c,onChange:ev=>setC(ev.target.value),placeholder:"e.g. Grande Prairie, AB",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Password"),
+          h("input",{type:"password",value:p,onChange:ev=>setP(ev.target.value),placeholder:isRegister?"Min 8 characters":"Your password",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        err&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:14,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},err),
+        h("button",{onClick:isRegister?handleRegister:handleLogin,disabled:busy,style:{width:"100%",padding:14,background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:15,fontWeight:800,cursor:busy?"not-allowed":"pointer",opacity:busy?0.6:1}},busy?"Please wait...":(isRegister?"Create My Account →":"Sign In")),
+        h("div",{style:{textAlign:"center",marginTop:16,fontSize:13}},
+          isRegister
+            ?h(Fragment,null,h("span",{style:{color:C.muted}},"Have an account? "),h("span",{style:{color:C.navy2,cursor:"pointer",fontWeight:700},onClick:()=>{setMode('login');setErr('');}},"Sign in"))
+            :h(Fragment,null,h("span",{style:{color:C.muted}},"New here? "),h("span",{style:{color:C.navy2,cursor:"pointer",fontWeight:700},onClick:()=>{setMode('register');setErr('');}},"Create account"))))));
+}
+
 function GiddyUp(){
   const [weights,setWeights]=useState({...PRESETS.custom});
   const [locks,setLocks]=useState(()=>Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
@@ -514,42 +572,42 @@ function GiddyUp(){
   const [horses,setHorses]=useState([]);
   const [scratched,setScratched]=useState({});
   const [showSplash,setShowSplash]=useState(!new URLSearchParams(window.location.search).get('tab'));
-  const [silksAuthMode,setSilksAuthMode]=useState(null);
-  const [silksRegData,setSilksRegData]=useState({username:'',email:'',city:'',password:''});
-  const [silksAuthErr,setSilksAuthErr]=useState('');
-  function doSilksRegister(){
-    var d=silksRegData;
-    if(!d.username||!d.email||!d.city||!d.password){setSilksAuthErr('Please fill in all fields.');return;}
-    if(d.password.length<8){setSilksAuthErr('Password must be at least 8 characters.');return;}
-    try{
-      var db=JSON.parse(localStorage.getItem('giddyup_db')||'{"users":[],"nextUserId":1}');
-      if(db.users.find(function(u){return u.email===d.email.toLowerCase();})){setSilksAuthErr('Email already registered.');return;}
-      var user={id:db.nextUserId++,username:d.username,email:d.email.toLowerCase(),city:d.city,password:d.password,raceCards:{}};
-      db.users.push(user);
-      localStorage.setItem('giddyup_db',JSON.stringify(db));
-      localStorage.setItem('giddyup_account',JSON.stringify(user));
-      localStorage.setItem('giddyup_session',JSON.stringify(user));
-      setSilksAuthMode(null);setShowSplash(false);setSilksAuthErr('');
-    }catch(e){setSilksAuthErr('Registration failed.');}
+
+  // ── Auth state (Supabase) ──
+  const [silksUser,setSilksUser]=useState(null);
+  const [authMode,setAuthMode]=useState('login'); // 'login' | 'register'
+  const [authChecked,setAuthChecked]=useState(false);
+
+  useEffect(()=>{
+    (async()=>{
+      const session=await GiddyUpAuth.getSession();
+      if(session&&session.user){
+        const profile=await GiddyUpAuth.getProfile(session.user.id);
+        setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:''});
+      }
+      setAuthChecked(true);
+    })();
+  },[]);
+
+  async function handleSilksLogout(){
+    await GiddyUpAuth.logout();
+    setSilksUser(null);
+    setShowSplash(true);
   }
-  function doSilksLogin(){
-    var d=silksRegData;
-    if(!d.email||!d.password){setSilksAuthErr('Please enter email and password.');return;}
-    try{
-      var db=JSON.parse(localStorage.getItem('giddyup_db')||'{"users":[],"nextUserId":1}');
-      var user=db.users.find(function(u){return u.email===d.email.toLowerCase()&&u.password===d.password;});
-      if(!user){setSilksAuthErr('Invalid email or password.');return;}
-      localStorage.setItem('giddyup_account',JSON.stringify(user));
-      localStorage.setItem('giddyup_session',JSON.stringify(user));
-      setSilksAuthMode(null);setShowSplash(false);setSilksAuthErr('');
-    }catch(e){setSilksAuthErr('Login failed.');}
-  }
+
   const scores=computeScores(horses,weights,activeRace,scratched);
   const activeRaceData=RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0];
   const raceName=races[0]?races[0].label:"";
   const scratchCount=Object.values(scratched).filter(Boolean).length;
   const TABS=[{id:"upload",label:"📷",full:"Upload"},{id:"angles",label:"🎯",full:"Angles"},{id:"rankings",label:"🏇",full:"Rankings"},{id:"giddyup",label:"🐴",full:"GiddyUp"},{id:"play",label:"🎫",full:"Play"},{id:"diary",label:"📒",full:"Diary"}];
-  if(showSplash)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(180deg,#87CEEB 0%,#b8e4f0 32%,#5a9e5a 32%,#2d7a2d 58%,#1b5e20 100%)",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",overflow:"hidden",position:"relative"}},h("style",null,"@keyframes sunPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.9;transform:scale(1.05)}}@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}"),h("div",{style:{position:"absolute",top:"4%",right:"8%",zIndex:1,animation:"sunPulse 4s ease-in-out infinite"}},h("svg",{width:70,height:70,viewBox:"0 0 70 70"},h("circle",{cx:"35",cy:"35",r:"18",fill:"#FFD700",opacity:"0.95"}),h("circle",{cx:"35",cy:"35",r:"14",fill:"#FFF176"}),...["0","45","90","135","180","225","270","315"].map((angle,i)=>h("line",{key:i,x1:"35",y1:"35",x2:String(35+28*Math.cos(Number(angle)*Math.PI/180)),y2:String(35+28*Math.sin(Number(angle)*Math.PI/180)),stroke:"#FFD700",strokeWidth:2.5,strokeLinecap:"round"})))),h("div",{style:{position:"absolute",top:0,left:0,right:0,height:"32%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:5,animation:"fadeIn 1s ease both"}},h("div",{style:{fontSize:48,fontWeight:900,color:"#1b5e20",textShadow:"0 2px 12px rgba(255,255,255,0.95)",letterSpacing:3,lineHeight:1.1}},"GiddyUp"),h("div",{style:{fontSize:24,fontWeight:700,color:"#1b5e20",textShadow:"0 2px 8px rgba(255,255,255,0.95)",letterSpacing:2,marginTop:8}},"You are a Winner!")),h("div",{style:{position:"absolute",top:"30%",left:0,right:0,height:10,background:"#ffffff",zIndex:2,boxShadow:"0 3px 10px rgba(0,0,0,0.15)"}}),h("div",{style:{position:"absolute",top:"36%",left:0,right:0,bottom:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px 28px 28px",zIndex:4}},h("div",{style:{textAlign:"center",marginBottom:18}},h("div",{style:{fontSize:52,fontWeight:900,color:"#ffffff",letterSpacing:2,textShadow:"0 3px 12px rgba(0,0,0,0.5)",lineHeight:1,marginBottom:10}},"GiddyUp"),h("div",{style:{fontSize:13,color:"rgba(255,255,255,0.95)",letterSpacing:2,textTransform:"uppercase",fontStyle:"italic",textShadow:"0 1px 4px rgba(0,0,0,0.4)"}},"The Pro's Edge — Right in Your Pocket.")),h("div",{style:{width:"100%",maxWidth:400,display:"flex",flexDirection:"column",gap:10,margin:"18px 0"}},[{icon:"📸",text:"Snap the program. GiddyUp does the work."},{icon:"🎯",text:"GiddyUp — your picks are ready before the paddock."},{icon:"🐴",text:"Watch them run — Log it in your Diary."}].map((item,i)=>h("div",{key:i,style:{background:"rgba(0,0,0,0.25)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:14}},h("span",{style:{fontSize:22,flexShrink:0}},item.icon),h("span",{style:{fontSize:14,color:"#ffffff",lineHeight:1.4,fontWeight:600}},item.text)))),h("div",{style:{fontSize:14,fontStyle:"italic",color:"rgba(255,255,255,0.9)",textAlign:"center",marginBottom:18,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}},"\"We do the numbers. You enjoy the race.\""),h("button",{onClick:()=>setShowSplash(false),style:{padding:"16px 48px",background:"linear-gradient(135deg,#c9a84c,#f0d080)",border:"none",borderRadius:20,fontSize:18,fontWeight:900,color:"#1b5e20",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:14,boxShadow:"0 6px 24px rgba(201,168,76,0.6)",letterSpacing:1}},h("span",null,"🏇"),h("span",null,"Let's GiddyUp!"),h("span",null,"🏇"))));
+
+  // Wait for auth check before rendering anything (avoids flash of login screen)
+  if(!authChecked)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
+
+  // Not signed in → show auth screen, gating everything else
+  if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{setSilksUser(user);setShowSplash(true);}});
+
+  if(showSplash)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(180deg,#87CEEB 0%,#b8e4f0 32%,#5a9e5a 32%,#2d7a2d 58%,#1b5e20 100%)",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",overflow:"hidden",position:"relative"}},h("style",null,"@keyframes sunPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.9;transform:scale(1.05)}}@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}"),h("div",{style:{position:"absolute",top:"4%",right:"8%",zIndex:1,animation:"sunPulse 4s ease-in-out infinite"}},h("svg",{width:70,height:70,viewBox:"0 0 70 70"},h("circle",{cx:"35",cy:"35",r:"18",fill:"#FFD700",opacity:"0.95"}),h("circle",{cx:"35",cy:"35",r:"14",fill:"#FFF176"}),...["0","45","90","135","180","225","270","315"].map((angle,i)=>h("line",{key:i,x1:"35",y1:"35",x2:String(35+28*Math.cos(Number(angle)*Math.PI/180)),y2:String(35+28*Math.sin(Number(angle)*Math.PI/180)),stroke:"#FFD700",strokeWidth:2.5,strokeLinecap:"round"})))),h("div",{style:{position:"absolute",top:0,left:0,right:0,height:"32%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:5,animation:"fadeIn 1s ease both"}},h("div",{style:{fontSize:48,fontWeight:900,color:"#1b5e20",textShadow:"0 2px 12px rgba(255,255,255,0.95)",letterSpacing:3,lineHeight:1.1}},"GiddyUp"),h("div",{style:{fontSize:24,fontWeight:700,color:"#1b5e20",textShadow:"0 2px 8px rgba(255,255,255,0.95)",letterSpacing:2,marginTop:8}},"Welcome back, "+(silksUser.username||"Rider")+"!")),h("div",{style:{position:"absolute",top:"30%",left:0,right:0,height:10,background:"#ffffff",zIndex:2,boxShadow:"0 3px 10px rgba(0,0,0,0.15)"}}),h("div",{style:{position:"absolute",top:"36%",left:0,right:0,bottom:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px 28px 28px",zIndex:4}},h("div",{style:{textAlign:"center",marginBottom:18}},h("div",{style:{fontSize:52,fontWeight:900,color:"#ffffff",letterSpacing:2,textShadow:"0 3px 12px rgba(0,0,0,0.5)",lineHeight:1,marginBottom:10}},"GiddyUp"),h("div",{style:{fontSize:13,color:"rgba(255,255,255,0.95)",letterSpacing:2,textTransform:"uppercase",fontStyle:"italic",textShadow:"0 1px 4px rgba(0,0,0,0.4)"}},"The Pro's Edge — Right in Your Pocket.")),h("div",{style:{width:"100%",maxWidth:400,display:"flex",flexDirection:"column",gap:10,margin:"18px 0"}},[{icon:"📸",text:"Snap the program. GiddyUp does the work."},{icon:"🎯",text:"GiddyUp — your picks are ready before the paddock."},{icon:"🐴",text:"Watch them run — Log it in your Diary."}].map((item,i)=>h("div",{key:i,style:{background:"rgba(0,0,0,0.25)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:14}},h("span",{style:{fontSize:22,flexShrink:0}},item.icon),h("span",{style:{fontSize:14,color:"#ffffff",lineHeight:1.4,fontWeight:600}},item.text)))),h("div",{style:{fontSize:14,fontStyle:"italic",color:"rgba(255,255,255,0.9)",textAlign:"center",marginBottom:18,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}},"\"We do the numbers. You enjoy the race.\""),h("button",{onClick:()=>setShowSplash(false),style:{padding:"16px 48px",background:"linear-gradient(135deg,#c9a84c,#f0d080)",border:"none",borderRadius:20,fontSize:18,fontWeight:900,color:"#1b5e20",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:14,boxShadow:"0 6px 24px rgba(201,168,76,0.6)",letterSpacing:1}},h("span",null,"🏇"),h("span",null,"Let's GiddyUp!"),h("span",null,"🏇")),h("div",{onClick:handleSilksLogout,style:{marginTop:14,fontSize:12,color:"rgba(255,255,255,0.55)",cursor:"pointer",textDecoration:"underline"}},"Sign Out")));
   return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#f0f4ff 0%,#faf8f2 50%,#f5f0ff 100%)",color:C.text}},
     h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"16px 20px 12px",position:"sticky",top:0,zIndex:100}},
       h("div",{style:{maxWidth:520,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}},
