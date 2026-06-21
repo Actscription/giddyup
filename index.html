@@ -164,7 +164,7 @@ function ScratchedCard({horse,onTap}){
         h("div",{style:{color:"#94a3b8",fontWeight:700,fontSize:14,textDecoration:"line-through"}},horse.number+". "+horse.name),
         h("div",{style:{color:"#cbd5e1",fontSize:11,marginTop:2}},horse.jockey+" · "+horse.trainer)),
       h("div",{style:{fontSize:10,fontWeight:700,color:"#94a3b8",background:"#e2e8f0",borderRadius:8,padding:"3px 8px"}},"SCRATCHED")));}
-function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeights,angleMode}){
+function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeights,setLocks,angleMode,silksUser}){
   const [drag,setDrag]=useState(false);
   const [status,setStatus]=useState("idle");
   const [errorMsg,setErrorMsg]=useState("");
@@ -264,7 +264,13 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       setProgress("Found "+allHorses.length+" horses!");
      setHorses(allHorses);
       setActiveRace(detectedRaceType);
-      if(angleMode!=='custom') setWeights({...PRESETS[detectedRaceType]});
+      if(angleMode!=='custom'){
+        setWeights({...PRESETS[detectedRaceType]});
+      } else {
+        const all=(silksUser&&silksUser.customAngles)||{};
+        const slot=all[detectedRaceType];
+        if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}
+      }
       setRaces(r=>r.map(rc=>rc.id===race.id?{...rc,status:"analyzed",horseCount:allHorses.length,active:true}:{...rc,active:false}));
       setStatus("done");
       setTimeout(()=>setActiveTab("angles"),1200);
