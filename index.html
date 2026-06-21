@@ -627,10 +627,20 @@ useEffect(()=>{
     })();
   },[]);
 
-  async function handleSilksLogout(){
+ async function handleSilksLogout(){
     await GiddyUpAuth.logout();
     setSilksUser(null);
     setShowSplash(true);
+  }
+
+  async function handleSaveAngles(currentWeights,currentLocks){
+    if(!silksUser) return;
+    const result=await GiddyUpAuth.saveCustomAngles(silksUser.id,currentWeights,currentLocks);
+    if(result.success){
+      setSilksUser(u=>({...u,customAngles:{weights:currentWeights,locks:currentLocks}}));
+    } else {
+      alert('Could not save angles: '+result.error);
+    }
   }
 
   const scores=computeScores(horses,weights,activeRace,scratched);
