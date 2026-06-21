@@ -134,9 +134,9 @@ function HorseActionModal({horse,isScratched,onSave,onClose}){
 function HorseCard({horse,rank,weights,allScores,activeRace,onTap}){
   const [exp,setExp]=useState(false);
   const medals=["🥇","🥈","🥉"],bcs=["#c9a84c","#9ea8b0","#b87333","#4a7ec9","#4a9e6e","#9e4a9e"],bc=bcs[rank]||"#cbd5e1";
-  const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
+const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
   const ring=rank===0?"#c9a84c":rank===1?"#9ea8b0":rank===2?"#b87333":"transparent";
-  const active=ALL_FACTORS.filter(f=>weights[f.id]>0),eWeight=EARNINGS_WEIGHT[activeRace]||2;
+  const active=ALL_FACTORS.filter(f=>weights[f.id]>0);
   const minS=allScores[0]?allScores[0].totalScore:horse.totalScore,maxS=allScores[allScores.length-1]?allScores[allScores.length-1].totalScore:horse.totalScore;
   const barW=Math.max(15,100-((horse.totalScore-minS)/Math.max(1,maxS-minS))*80);
   return h("div",{style:{background:rank===0?"linear-gradient(135deg,#fffbf0,#fff8e6)":"#fff",border:rank===0?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10,cursor:"pointer"}},
