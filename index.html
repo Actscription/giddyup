@@ -599,9 +599,10 @@ function AuthScreen({mode,setMode,onAuthed}){
 }
 
 function GiddyUp(){
-  const [weights,setWeights]=useState({...PRESETS.custom});
+const [weights,setWeights]=useState({...PRESETS.custom});
   const [locks,setLocks]=useState(()=>Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
   const [activeRace,setActiveRace]=useState("custom");
+  const [angleMode,setAngleMode]=useState('giddyup');
   const [activeTab,setActiveTab]=useState("upload");
   const [races,setRaces]=useState([]);
   const [horses,setHorses]=useState([]);
