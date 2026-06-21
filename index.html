@@ -668,7 +668,7 @@ async function handleSaveAngles(currentWeights,currentLocks){
   // Not signed in → show auth screen, gating everything else
   if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{
     setSilksUser(user);
-    if(user.customAngles){setAngleMode('custom');setWeights({...user.customAngles.weights});setLocks({...user.customAngles.locks});}
+   if(user.customAngles){const filled=fillMissingFactors(user.customAngles.weights,user.customAngles.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
     setShowSplash(true);
   }});
 
