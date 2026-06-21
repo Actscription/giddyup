@@ -55,11 +55,12 @@ const FACTOR_GROUPS=[
 ];
 const ALL_FACTORS=FACTOR_GROUPS.flatMap(g=>g.factors);
 const PRESETS={
-  custom:{speed:13,form:13,jockey:13,trainer:13,distance:6,track:6,post:6,class:5,days:5,weight:4,workouts:4,equipment:3,pedigree:3,style:3,combo:3,bias:2},
-  stakes:{speed:25,form:18,jockey:6,trainer:13,distance:13,track:15,post:7,class:0,days:0,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:3,bias:0},
-  allowance:{speed:19,form:16,jockey:12,trainer:12,distance:12,track:12,post:10,class:3,days:2,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:2,bias:0},
-  claiming:{speed:15,form:12,jockey:19,trainer:10,distance:10,track:10,post:13,class:5,days:2,weight:0,workouts:0,equipment:2,pedigree:0,style:0,combo:2,bias:0},
-  maiden:{speed:10,form:8,jockey:19,trainer:19,distance:11,track:9,post:13,class:0,days:2,weight:0,workouts:5,equipment:0,pedigree:3,style:0,combo:1,bias:0},
+  custom:{speed:5,form:13,jockey:13,trainer:13,distance:6,track:6,post:6,class:5,days:5,weight:4,workouts:4,equipment:3,pedigree:3,style:3,combo:3,bias:2,earnings:8},
+  stakes:{speed:10,form:18,jockey:6,trainer:13,distance:13,track:15,post:7,class:0,days:0,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:3,bias:0,earnings:15},
+  allowance:{speed:9,form:16,jockey:12,trainer:12,distance:12,track:12,post:10,class:3,days:2,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:2,bias:0,earnings:10},
+  claiming:{speed:9,form:12,jockey:19,trainer:10,distance:10,track:10,post:13,class:5,days:2,weight:0,workouts:0,equipment:2,pedigree:0,style:0,combo:2,bias:0,earnings:6},
+  maiden:{speed:7,form:8,jockey:19,trainer:19,distance:11,track:9,post:13,class:0,days:2,weight:0,workouts:5,equipment:0,pedigree:3,style:0,combo:1,bias:0,earnings:3},
+};
 };
 Object.keys(PRESETS).forEach(k=>{const s=Object.values(PRESETS[k]).reduce((a,b)=>a+b,0);if(s!==100)PRESETS[k].speed+=(100-s);});
 const EARNINGS_WEIGHT={custom:2,stakes:5,allowance:3,claiming:1,maiden:1};
