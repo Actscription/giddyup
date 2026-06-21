@@ -546,7 +546,7 @@ function AuthScreen({mode,setMode,onAuthed}){
   const [u,setU]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
   const [err,setErr]=useState(''),[busy,setBusy]=useState(false);
 
-  async function handleRegister(){
+ async function handleRegister(){
     setErr('');
     if(!u||!e||!c||!p){setErr('Please fill in all fields.');return;}
     if(p.length<8){setErr('Password must be at least 8 characters.');return;}
@@ -555,7 +555,7 @@ function AuthScreen({mode,setMode,onAuthed}){
     setBusy(false);
     if(!result.success){setErr(result.error);return;}
     const profile=await GiddyUpAuth.getProfile(result.user.id);
-    onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c});
+    onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,customAngles:profile&&profile.custom_angles?profile.custom_angles:null});
   }
 
   async function handleLogin(){
@@ -566,7 +566,7 @@ function AuthScreen({mode,setMode,onAuthed}){
     setBusy(false);
     if(!result.success){setErr(result.error);return;}
     const profile=await GiddyUpAuth.getProfile(result.user.id);
-    onAuthed({id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:''});
+    onAuthed({id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',customAngles:profile&&profile.custom_angles?profile.custom_angles:null});
   }
 
   const isRegister=mode==='register';
