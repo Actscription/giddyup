@@ -164,7 +164,7 @@ function ScratchedCard({horse,onTap}){
         h("div",{style:{color:"#94a3b8",fontWeight:700,fontSize:14,textDecoration:"line-through"}},horse.number+". "+horse.name),
         h("div",{style:{color:"#cbd5e1",fontSize:11,marginTop:2}},horse.jockey+" · "+horse.trainer)),
       h("div",{style:{fontSize:10,fontWeight:700,color:"#94a3b8",background:"#e2e8f0",borderRadius:8,padding:"3px 8px"}},"SCRATCHED")));}
-function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeights}){
+function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeights,angleMode}){
   const [drag,setDrag]=useState(false);
   const [status,setStatus]=useState("idle");
   const [errorMsg,setErrorMsg]=useState("");
@@ -262,9 +262,9 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       }));
       if(!allHorses.length)throw new Error("No horses found.");
       setProgress("Found "+allHorses.length+" horses!");
-      setHorses(allHorses);
+     setHorses(allHorses);
       setActiveRace(detectedRaceType);
-      setWeights({...PRESETS[detectedRaceType]});
+      if(angleMode!=='custom') setWeights({...PRESETS[detectedRaceType]});
       setRaces(r=>r.map(rc=>rc.id===race.id?{...rc,status:"analyzed",horseCount:allHorses.length,active:true}:{...rc,active:false}));
       setStatus("done");
       setTimeout(()=>setActiveTab("angles"),1200);
