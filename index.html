@@ -614,12 +614,14 @@ const [weights,setWeights]=useState({...PRESETS.custom});
   const [authMode,setAuthMode]=useState('login'); // 'login' | 'register'
   const [authChecked,setAuthChecked]=useState(false);
 
-  useEffect(()=>{
+useEffect(()=>{
     (async()=>{
       const session=await GiddyUpAuth.getSession();
       if(session&&session.user){
         const profile=await GiddyUpAuth.getProfile(session.user.id);
-        setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:''});
+        const savedAngles=profile&&profile.custom_angles?profile.custom_angles:null;
+        setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',customAngles:savedAngles});
+        if(savedAngles){setAngleMode('custom');setWeights({...savedAngles.weights});setLocks({...savedAngles.locks});}
       }
       setAuthChecked(true);
     })();
