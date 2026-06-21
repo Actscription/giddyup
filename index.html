@@ -667,9 +667,9 @@ async function handleSaveAngles(currentWeights,currentLocks){
   if(!authChecked)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
 
   // Not signed in → show auth screen, gating everything else
-  if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{
+if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{
     setSilksUser(user);
-   if(user.customAngles){const filled=fillMissingFactors(user.customAngles.weights,user.customAngles.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
+    if(user.customAngles&&user.customAngles.custom){const filled=fillMissingFactors(user.customAngles.custom.weights,user.customAngles.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
     setShowSplash(true);
   }});
 
