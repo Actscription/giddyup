@@ -632,7 +632,7 @@ useEffect(()=>{
         const profile=await GiddyUpAuth.getProfile(session.user.id);
         const savedAngles=profile&&profile.custom_angles?profile.custom_angles:null;
         setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',customAngles:savedAngles});
-        if(savedAngles){setAngleMode('custom');setWeights({...savedAngles.weights});setLocks({...savedAngles.locks});}
+        if(savedAngles){const filled=fillMissingFactors(savedAngles.weights,savedAngles.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
       }
       setAuthChecked(true);
     })();
