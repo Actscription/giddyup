@@ -644,13 +644,15 @@ useEffect(()=>{
     setShowSplash(true);
   }
 
-  async function handleSaveAngles(currentWeights,currentLocks){
-    if(!silksUser) return;
+async function handleSaveAngles(currentWeights,currentLocks){
+    if(!silksUser) return false;
     const result=await GiddyUpAuth.saveCustomAngles(silksUser.id,currentWeights,currentLocks);
     if(result.success){
       setSilksUser(u=>({...u,customAngles:{weights:currentWeights,locks:currentLocks}}));
+      return true;
     } else {
       alert('Could not save angles: '+result.error);
+      return false;
     }
   }
 
