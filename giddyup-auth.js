@@ -52,6 +52,19 @@ const GiddyUpAuth = {
     return data;
   },
 
+  // Save a user's permanent custom Angles (weights + locks) to their profile.
+  // This is "[Username] Angles" — persists across logout, devices, and race days.
+  async saveCustomAngles(userId, weights, locks) {
+    const { data, error } = await giddyupSupabase
+      .from("profiles")
+      .update({ custom_angles: { weights, locks } })
+      .eq("id", userId)
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
   // Listen for auth state changes (login/logout) — callback receives session or null
   onAuthChange(callback) {
     giddyupSupabase.auth.onAuthStateChange((_event, session) => {
