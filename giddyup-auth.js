@@ -52,12 +52,14 @@ const GiddyUpAuth = {
     return data;
   },
 
-  // Save a user's permanent custom Angles (weights + locks) to their profile.
+// Save a user's permanent custom Angles to their profile.
+  // customAnglesObj is the FULL per-race-type object, e.g.
+  // { custom:{weights,locks}, stakes:{weights,locks}, allowance:{...}, claiming:{...}, maiden:{...} }
   // This is "[Username] Angles" — persists across logout, devices, and race days.
-  async saveCustomAngles(userId, weights, locks) {
+  async saveCustomAngles(userId, customAnglesObj) {
     const { data, error } = await giddyupSupabase
       .from("profiles")
-      .update({ custom_angles: { weights, locks } })
+      .update({ custom_angles: customAnglesObj })
       .eq("id", userId)
       .select()
       .single();
