@@ -567,7 +567,7 @@ function AuthScreen({mode,setMode,onAuthed}){
     setBusy(false);
     if(!result.success){setErr(result.error);return;}
     const profile=await GiddyUpAuth.getProfile(result.user.id);
-    onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,customAngles:profile&&profile.custom_angles?profile.custom_angles:null});
+  onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
   }
 
   async function handleLogin(){
