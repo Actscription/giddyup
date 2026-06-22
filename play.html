@@ -592,18 +592,18 @@ function loadHome(){
   document.getElementById('h-today-card').innerHTML=`
     <div class="card">
       <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">${formatDate(TODAY)}</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">${picked}</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Picked</div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;background:var(--green-light);border-radius:8px;padding:8px 6px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${picked}</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Picked</div>
         </div>
-        <div style="background:${scored?'var(--gold-light)':'var(--bg)'};border-radius:8px;padding:10px 16px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:${scored?'var(--gold-dark)':'var(--muted)'};">${scored}</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Races Scored</div>
+        <div style="flex:1;background:${scored?'var(--gold-light)':'var(--bg)'};border-radius:8px;padding:8px 6px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${scored?'var(--gold-dark)':'var(--muted)'};">${scored}</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Scored</div>
         </div>
-        ${scored?`<div style="background:var(--green-light);border-radius:8px;padding:10px 16px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">${Object.values(card.scores).reduce((a,s)=>a+s.raceTotal+s.streak,0)}</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Total Pts</div>
+        ${scored?`<div style="flex:1;background:var(--green-light);border-radius:8px;padding:8px 6px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${Object.values(card.scores).reduce((a,s)=>a+s.raceTotal+s.streak,0)}</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Total Pts</div>
         </div>`:''}
       </div>
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
