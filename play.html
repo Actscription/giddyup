@@ -138,9 +138,9 @@ input.pi:disabled{opacity:0.45;cursor:not-allowed;}
 .sdot.blank{background:var(--red-light);color:var(--red);border:1.5px solid var(--red);}
 .sdot.pending{background:var(--border);color:var(--muted);}
 .sc-table{width:100%;border-collapse:collapse;font-size:12px;}
-.sc-table th{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:7px 5px;border-bottom:1px solid var(--border);text-align:center;}
+.sc-table th{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:6px 3px;border-bottom:1px solid var(--border);text-align:center;}
 .sc-table th:first-child{text-align:left;}
-.sc-table td{padding:7px 5px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.sc-table td{padding:6px 3px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
 .sc-table td:first-child{text-align:left;}
 .sc-foot-row td{background:var(--green-light);font-weight:600;font-size:13px;border-top:2px solid var(--green)!important;}
 .sc-grand-row td{background:var(--green);color:var(--white);font-weight:600;font-size:14px;}
@@ -1121,16 +1121,16 @@ function renderHeadToHead(card,rns){
   });
   el.innerHTML=`
     <div class="section-title" style="margin-top:16px;">Head-to-Head — Race by Race</div>
-    <div class="card" style="padding:10px;overflow-x:auto;">
+    <div style="padding:0;">
       <table class="sc-table">
-        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Win</th><th>Field</th><th>Exotic</th><th>Sweep</th><th>Streak</th><th>Total</th></tr></thead>
+        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>W</th><th>Fld</th><th>Exot</th><th>Swp</th><th>Stk</th><th>Total</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
     <div class="section-title" style="margin-top:16px;">Exotic Bets Breakdown</div>
-    <div class="card" style="padding:10px;overflow-x:auto;">
+    <div style="padding:0;">
       <table class="sc-table">
-        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Exacta</th><th>Trifecta</th><th>Superfecta</th><th>Total</th></tr></thead>
+        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Ex</th><th>Tri</th><th>Sfcta</th><th>Total</th></tr></thead>
         <tbody>${exoticRows}</tbody>
         <tfoot>${exoticFootRows}</tfoot>
       </table>
