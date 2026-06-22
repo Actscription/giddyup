@@ -56,6 +56,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .hdr-actions{flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end;}
 .hdr-pill-btn{background:var(--gold);color:var(--ink);border:none;border-radius:12px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.3px;white-space:normal;line-height:1.2;text-align:center;flex:1;}
 .hdr-pill-btn:hover{background:#b8962a;}
+.hdr-icon-btn{background:rgba(255,255,255,0.15);border:none;color:rgba(255,255,255,0.85);font-size:16px;cursor:pointer;padding:5px 7px;border-radius:8px;line-height:1;flex-shrink:0;}
+.hdr-icon-btn:hover{background:rgba(255,255,255,0.25);color:var(--white);}
 /* ── BUTTONS ────────────────────────────────────────────────────── */
 .btn{width:100%;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:15px;cursor:pointer;border:none;transition:all 0.15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-green{background:var(--green);color:var(--white);}
@@ -233,6 +235,7 @@ input[type=file]{display:none;}
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="h-city" style="white-space:normal;text-align:center;line-height:1.2;flex:1;"></div>
       <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
   <div class="top-nav">
@@ -263,6 +266,7 @@ input[type=file]{display:none;}
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="p-date"></div>
       <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
   <div class="top-nav">
@@ -330,6 +334,7 @@ input[type=file]{display:none;}
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="r-date"></div>
       <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
   <div class="top-nav">
@@ -373,6 +378,7 @@ input[type=file]{display:none;}
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="sc-date"></div>
       <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
   <div class="top-nav">
@@ -427,6 +433,7 @@ input[type=file]{display:none;}
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="d-date"></div>
       <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
   <div class="top-nav">
@@ -466,6 +473,34 @@ input[type=file]{display:none;}
     <div class="section-title" style="margin-top:4px;">Previous Notes</div>
     <div id="d-entries-prev"></div>
     <div id="d-no-entries" class="notice" style="display:none;">No diary entries yet. Add your first note above.</div>
+  </div>
+</div>
+
+<!-- ── SETTINGS ─────────────────────────────────────────────────── -->
+<div id="screen-settings" class="screen">
+  <div class="auth-header">
+    <div class="back-btn" onclick="go('screen-home')">← Back</div>
+    <h1>Settings</h1><p id="s-subtitle">Your account</p>
+  </div>
+  <div class="form-body">
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px;">Account</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Username</div>
+        <div style="font-size:16px;font-weight:500;" id="s-username">—</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Email</div>
+        <div style="font-size:14px;color:var(--muted);" id="s-email">—</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">City</div>
+        <div style="font-size:14px;color:var(--muted);" id="s-city">—</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <button class="btn btn-red" onclick="handleLogout()">Sign Out</button>
+    </div>
   </div>
 </div>
 
@@ -1406,6 +1441,13 @@ function viewFullPhoto(id){
   </body></html>`);
 }
 
+function loadSettings(){
+  if(!CU) return;
+  document.getElementById('s-username').textContent=displayName(CU);
+  document.getElementById('s-email').textContent=CU.email||'—';
+  document.getElementById('s-city').textContent=CU.city||'—';
+  document.getElementById('s-subtitle').textContent=displayName(CU);
+}
 function displayName(user){
   if(!user) return '';
   const u=user.username||'';
