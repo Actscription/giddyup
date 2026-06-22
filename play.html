@@ -36,7 +36,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .back-btn:hover{color:var(--white);}
 .auth-header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--white);letter-spacing:2px;}
 .auth-header p{font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;}
-.top-bar{background:var(--green);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.top-bar{background:var(--green);padding:14px 16px;display:flex;align-items:center;flex-shrink:0;}
+.top-bar-left{flex:0 0 40%;}
 .top-bar-left .tb-ctx{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;}
 .top-bar-left .tb-name{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);letter-spacing:2px;line-height:1.1;}
 .top-bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
@@ -52,8 +53,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .nav-item .ni{font-size:20px;line-height:1;}
 .nav-item .nl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
 /* ── HEADER ACTION BUTTONS ─────────────────────────────────────── */
-.hdr-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
-.hdr-pill-btn{background:var(--gold);color:var(--ink);border:none;border-radius:12px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.3px;white-space:normal;line-height:1.2;text-align:center;max-width:54px;}
+.hdr-actions{flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+.hdr-pill-btn{background:var(--gold);color:var(--ink);border:none;border-radius:12px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.3px;white-space:normal;line-height:1.2;text-align:center;flex:1;}
 .hdr-pill-btn:hover{background:#b8962a;}
 /* ── BUTTONS ────────────────────────────────────────────────────── */
 .btn{width:100%;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:15px;cursor:pointer;border:none;transition:all 0.15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
@@ -230,7 +231,7 @@ input[type=file]{display:none;}
   <div class="top-bar">
     <div class="top-bar-left"><div class="tb-ctx">GiddyUp Play</div><div class="tb-name" id="h-name">user1</div></div>
     <div class="hdr-actions">
-      <div class="cpill cpill-gold" id="h-city" style="white-space:normal;text-align:center;line-height:1.2;max-width:52px;"></div>
+      <div class="cpill cpill-gold" id="h-city" style="white-space:normal;text-align:center;line-height:1.2;flex:1;"></div>
       <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
     </div>
   </div>
