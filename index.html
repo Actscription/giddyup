@@ -1,716 +1,1481 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>GiddyUp Silks v27.9</title>
- <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GiddyUp Silks">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1a2535">
-<link rel="manifest" href="manifest.json"> 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GiddyUp Play</title>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="giddyup-auth.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Georgia,serif;background:#f0f4ff;color:#1a2535}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;cursor:pointer;background:transparent}
-input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:#e2e8f0}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#c9a84c;cursor:pointer;margin-top:-7px;border:2px solid #fff}
-input[type=range]:disabled::-webkit-slider-thumb{background:#cbd5e1;cursor:not-allowed}
-textarea,input,select{font-family:Georgia,serif}
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Courier+Prime:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1a6b3c;--green-light:#e8f5ee;--green-mid:#2d9155;--green-dark:#0f4023;
+  --gold:#c9a84c;--gold-light:#fdf6e3;--gold-dark:#8a6a0a;
+  --red:#c0392b;--red-light:#fdf0ef;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --ink:#1a1a1a;--muted:#6b7280;--border:#e2e8f0;
+  --bg:#f8f7f4;--white:#ffffff;--radius:12px;
+  --nav-h:60px;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+.has-nav{}
+#screen-splash{background:linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%);align-items:center;justify-content:center;text-align:center;padding:48px 28px;position:relative;overflow:hidden;}
+#screen-splash::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.015) 0,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 50px);}
+#screen-splash::after{content:'🏇';position:absolute;font-size:200px;opacity:0.04;bottom:-30px;right:-30px;line-height:1;}
+.splash-eyebrow{font-family:'Courier Prime',monospace;font-size:11px;color:var(--gold);letter-spacing:4px;text-transform:uppercase;margin-bottom:16px;position:relative;}
+.splash-logo{font-family:'Bebas Neue',sans-serif;font-size:60px;color:var(--white);letter-spacing:6px;line-height:0.9;position:relative;}
+.splash-logo span{color:var(--gold);}
+.splash-sub{font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-top:10px;position:relative;}
+.splash-divider{width:40px;height:2px;background:var(--gold);margin:28px auto;position:relative;}
+.splash-tagline{font-family:'Courier Prime',monospace;font-size:15px;color:var(--white);font-style:italic;margin-bottom:40px;position:relative;line-height:1.6;}
+.splash-tagline strong{color:var(--gold);font-style:normal;}
+.splash-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;position:relative;}
+.auth-header{background:var(--green);padding:16px 24px 24px;}
+.back-btn{color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;}
+.back-btn:hover{color:var(--white);}
+.auth-header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--white);letter-spacing:2px;}
+.auth-header p{font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;}
+.top-bar{background:var(--green);padding:14px 16px;display:flex;align-items:center;flex-shrink:0;}
+.top-bar-left{flex:0 0 40%;}
+.top-bar-left .tb-ctx{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;}
+.top-bar-left .tb-name{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--white);letter-spacing:2px;line-height:1.1;}
+.top-bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.cpill{font-family:'Courier Prime',monospace;font-size:11px;font-weight:700;letter-spacing:2px;padding:3px 9px;border-radius:20px;}
+.cpill-gold{background:var(--gold);color:var(--ink);}
+.cpill-green{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);}
+/* ── TOP NAV (replaces bottom-nav) ─────────────────────────────── */
+.top-nav{background:#eef2ee;border-bottom:1px solid var(--border);display:flex;padding:5px 8px;gap:3px;flex-shrink:0;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--muted);transition:all 0.15s;border-radius:8px;padding:7px 4px;}
+.nav-item.active{color:var(--green);background:var(--white);box-shadow:0 1px 4px rgba(0,0,0,0.10);}
+@keyframes goldPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.4)}50%{box-shadow:0 0 0 6px rgba(201,168,76,0)}}
+.nav-item.pulse{animation:goldPulse 1.5s ease-in-out infinite;}
+.nav-item .ni{font-size:20px;line-height:1;}
+.nav-item .nl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
+/* ── HEADER ACTION BUTTONS ─────────────────────────────────────── */
+.hdr-actions{flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+.hdr-pill-btn{background:var(--gold);color:var(--ink);border:none;border-radius:12px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.3px;white-space:normal;line-height:1.2;text-align:center;flex:1;}
+.hdr-pill-btn:hover{background:#b8962a;}
+.hdr-icon-btn{background:rgba(255,255,255,0.15);border:none;color:rgba(255,255,255,0.85);font-size:16px;cursor:pointer;padding:5px 7px;border-radius:8px;line-height:1;flex-shrink:0;}
+.hdr-icon-btn:hover{background:rgba(255,255,255,0.25);color:var(--white);}
+/* ── BUTTONS ────────────────────────────────────────────────────── */
+.btn{width:100%;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:15px;cursor:pointer;border:none;transition:all 0.15s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-green{background:var(--green);color:var(--white);}
+.btn-green:hover{background:var(--green-mid);}
+.btn-gold{background:var(--gold);color:var(--ink);}
+.btn-gold:hover{background:#b8962a;}
+.btn-white{background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:var(--white);}
+.btn-white:hover{background:rgba(255,255,255,0.25);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--green);color:var(--green);}
+.btn-red{background:var(--red-light);border:1.5px solid var(--red);color:var(--red);}
+.btn-silks{background:var(--gold-light);border:1.5px solid var(--gold);color:var(--gold-dark);}
+.btn-sm{width:auto;padding:7px 14px;font-size:12px;margin-bottom:0;}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+.form-body{padding:22px 20px;max-width:480px;margin:0 auto;width:100%;}
+.fg{margin-bottom:15px;}
+.fg label{display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
+.fg input,.fg select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);transition:border-color 0.2s;}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--green);}
+.fg .hint{font-size:11px;color:var(--muted);margin-top:4px;}
+.err-msg{font-size:12px;color:var(--red);margin-bottom:12px;padding:8px 12px;background:var(--red-light);border-radius:8px;}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:44px;}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;color:var(--muted);user-select:none;}
+.pw-eye:hover{color:var(--green);}
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--green);margin-bottom:12px;}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:5px;}
+.tag-green{background:var(--green-light);color:var(--green);}
+.tag-gold{background:var(--gold-light);color:var(--gold-dark);}
+.tag-red{background:var(--red-light);color:var(--red);}
+.tag-muted{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.tag-blue{background:var(--blue-light);color:var(--blue);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.notice{background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--gold-dark);margin-bottom:14px;}
+.notice-green{background:var(--green-light);border:1px solid var(--green);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--green-dark);margin-bottom:14px;}
+.page-pad{padding:18px 20px;max-width:600px;margin:0 auto;width:100%;}
+.welcome-card{background:linear-gradient(135deg,var(--green-dark),var(--green));border-radius:var(--radius);padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.welcome-card::after{content:'🏇';position:absolute;font-size:90px;opacity:0.07;right:-10px;bottom:-10px;}
+.welcome-card .wc-ctx{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.welcome-card .wc-name{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--white);letter-spacing:2px;}
+.welcome-card .wc-tag{font-size:12px;color:rgba(255,255,255,0.6);margin-top:8px;font-style:italic;}
+.race-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.race-cell{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.race-cell:hover{border-color:var(--green);background:var(--green-light);}
+.race-cell.has-picks{border-color:var(--green);background:var(--green-light);}
+.race-cell.has-results{border-color:var(--gold);background:var(--gold-light);}
+.race-cell.scored{border-color:var(--green);background:var(--green-light);}
+.race-cell .rc-num{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--green);}
+.race-cell .rc-status{font-size:11px;color:var(--muted);margin-top:3px;}
+.race-cell.has-picks .rc-num,.race-cell.scored .rc-num{color:var(--green);}
+.race-cell.has-results .rc-num{color:var(--gold-dark);}
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.pick-slot label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;display:block;}
+.pick-slot.win label{color:var(--gold-dark);}
+.pick-slot.place label{color:var(--blue);}
+.pick-slot.show label{color:#7c3aed;}
+.pick-slot.fourth label{color:var(--muted);}
+input.pi{width:100%;padding:10px 4px;border:1.5px solid var(--border);border-radius:8px;font-size:18px;font-weight:700;font-family:'Courier Prime',monospace;color:var(--ink);background:var(--bg);text-align:center;-moz-appearance:textfield;}
+input.pi::-webkit-outer-spin-button,input.pi::-webkit-inner-spin-button{-webkit-appearance:none;}
+input.pi:focus{outline:none;background:var(--white);border-color:var(--green);}
+input.pi:disabled{opacity:0.45;cursor:not-allowed;}
+.pi-win{border-color:var(--gold)!important;background:var(--gold-light)!important;}
+.pi-place{border-color:#93c5fd!important;background:#eff6ff!important;}
+.pi-show{border-color:#c4b5fd!important;background:#f5f3ff!important;}
+.ml-section{background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-top:14px;}
+.ml-section .ml-title{font-size:11px;font-weight:500;color:var(--gold-dark);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+.gu-section{background:var(--green-light);border:1px solid var(--green);border-radius:10px;padding:14px;margin-top:14px;}
+.gu-section .gu-title{font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+.gu-section input.pi:disabled{opacity:0.7;background:var(--white);color:var(--green-dark);font-weight:700;}
+.score-bd{background:var(--green-light);border-radius:9px;padding:12px 14px;margin-top:10px;}
+.score-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+.score-row .pts{font-weight:500;color:var(--green);}
+.score-row .pts.zero{color:var(--muted);}
+.score-total-row{display:flex;justify-content:space-between;font-size:14px;font-weight:500;border-top:1px solid rgba(26,107,60,0.2);margin-top:8px;padding-top:8px;}
+.score-total-row .pts{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);}
+.streak-row{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0;}
+.sdot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;}
+.sdot.scored{background:var(--green);color:var(--white);}
+.sdot.blank{background:var(--red-light);color:var(--red);border:1.5px solid var(--red);}
+.sdot.pending{background:var(--border);color:var(--muted);}
+.sc-table{width:100%;border-collapse:collapse;font-size:12px;}
+.sc-table th{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:6px 3px;border-bottom:1px solid var(--border);text-align:center;}
+.sc-table th:first-child{text-align:left;}
+.sc-table td{padding:6px 3px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle;}
+.sc-table td:first-child{text-align:left;}
+.sc-foot-row td{background:var(--green-light);font-weight:600;font-size:13px;border-top:2px solid var(--green)!important;}
+.sc-grand-row td{background:var(--green);color:var(--white);font-weight:600;font-size:14px;}
+.compare-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.compare-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px;text-align:center;}
+.compare-card.winner{border-color:var(--gold);background:var(--gold-light);}
+.compare-card .cc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.compare-card .cc-score{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;color:var(--green);}
+.compare-card.winner .cc-score{color:var(--gold-dark);}
+.tbts-rule{background:var(--white);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.rule-badge{display:inline-flex;align-items:center;gap:6px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+.rule-tbts{font-family:'Courier Prime',monospace;font-size:12px;color:#b91c1c;background:#fef2f2;border-radius:6px;padding:6px 10px;font-style:italic;margin-top:8px;}
+.text-center{text-align:center;}
+.text-muted{color:var(--muted);font-size:13px;}
+.diary-entry{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.diary-entry .de-race{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--green);}
+.diary-entry .de-date{font-size:11px;color:var(--muted);}
+.diary-entry .de-note{font-size:13px;color:var(--ink);margin-top:6px;line-height:1.6;white-space:pre-wrap;}
+.diary-entry .de-ticket{width:100%;max-width:300px;border-radius:8px;margin-top:8px;cursor:pointer;}
+.diary-entry .de-actions{display:flex;gap:8px;margin-top:10px;}
+textarea.diary-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);resize:vertical;min-height:80px;transition:border-color 0.2s;}
+textarea.diary-input:focus{outline:none;border-color:var(--green);}
+.photo-upload-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border:1.5px dashed var(--border);border-radius:9px;cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.15s;background:var(--bg);}
+.photo-upload-btn:hover{border-color:var(--green);color:var(--green);}
+.ticket-preview{width:100%;max-width:280px;border-radius:8px;margin-top:8px;display:block;}
+input[type=file]{display:none;}
 </style>
 </head>
 <body>
-<div id="root"></div>
+
+<!-- ── SPLASH ─────────────────────────────────────────────────── -->
+<div id="screen-splash" class="screen">
+  <div class="splash-eyebrow">Free to play · No betting required</div>
+  <div class="splash-logo">GiddyUp<br><span>Play</span></div>
+  <div class="splash-sub">Part of the GiddyUp Family</div>
+  <div class="splash-divider"></div>
+  <div class="splash-tagline">Are you playing today?<br>Pick horses. Track your score.<br><strong>No betting required.</strong></div>
+  <div class="splash-btns">
+    <button class="btn btn-gold" onclick="clearReg();go('screen-register')">🏇 &nbsp;Create Account</button>
+    <button class="btn btn-white" onclick="go('screen-login')">Sign In</button>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:8px;cursor:pointer;" onclick="goToTBTS()" id="tbts-btn-splash">📖 How to Use</div>
+  </div>
+  <div style="position:relative;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);width:100%;max-width:320px;">
+    <p style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;text-align:center;">Handicapping tool</p>
+    <button class="btn btn-silks btn-sm" style="width:100%;" onclick="openSilks()">🔬 &nbsp;GiddyUp Silks</button>
+  </div>
+</div>
+
+<!-- ── REGISTER ───────────────────────────────────────────────── -->
+<div id="screen-register" class="screen">
+  <div class="auth-header">
+    <div class="back-btn" onclick="clearReg();go('screen-splash')">← Back</div>
+    <h1>Create Account</h1><p>Start tracking your picks today</p>
+  </div>
+  <div class="form-body">
+    <div class="notice-green">🏇 Free to use. No credit card. No betting required.</div>
+    <div class="fg"><label>Username</label><input type="text" id="reg-u" placeholder="e.g. FastEddie" maxlength="20"><div class="hint">Your display name</div></div>
+    <div class="fg"><label>Email</label><input type="email" id="reg-e" placeholder="your@email.com"><div class="hint">One account per email</div></div>
+    <div class="fg"><label>City</label><input type="text" id="reg-c" placeholder="e.g. Grande Prairie, AB"><div class="hint">For regional race day notifications</div></div>
+    <div class="fg"><label>Password</label>
+      <div class="pw-wrap"><input type="password" id="reg-p" placeholder="Min 8 characters"><span class="pw-eye" onclick="togglePW('reg-p',this)">👁</span></div>
+    </div>
+    <div id="reg-err" class="err-msg" style="display:none;"></div>
+    <button class="btn btn-green" onclick="handleRegister()">Create My Account →</button>
+    <div class="text-center"><span class="text-muted">Have an account? </span><span style="color:var(--green);cursor:pointer;font-size:13px;" onclick="go('screen-login')">Sign in</span></div>
+  </div>
+</div>
+
+<!-- ── LOGIN ──────────────────────────────────────────────────── -->
+<div id="screen-login" class="screen">
+  <div class="auth-header">
+    <div class="back-btn" onclick="go('screen-splash')">← Back</div>
+    <h1>Sign In</h1><p>Welcome back</p>
+  </div>
+  <div class="form-body">
+    <div class="fg"><label>Email</label><input type="email" id="login-e" placeholder="your@email.com"></div>
+    <div class="fg"><label>Password</label>
+      <div class="pw-wrap"><input type="password" id="login-p" placeholder="Your password"><span class="pw-eye" onclick="togglePW('login-p',this)">👁</span></div>
+    </div>
+    <div id="login-err" class="err-msg" style="display:none;"></div>
+    <button class="btn btn-green" onclick="handleLogin()">Sign In</button>
+    <div class="text-center"><span class="text-muted">New here? </span><span style="color:var(--green);cursor:pointer;font-size:13px;" onclick="clearReg();go('screen-register')">Create account</span></div>
+  </div>
+</div>
+
+<!-- ── HOME ───────────────────────────────────────────────────── -->
+<div id="screen-home" class="screen has-nav active">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">GiddyUp Play</div><div class="tb-name" id="h-name">user1</div></div>
+    <div class="hdr-actions">
+      <div class="cpill cpill-gold" id="h-city" style="white-space:normal;text-align:center;line-height:1.2;flex:1;"></div>
+      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
+    </div>
+  </div>
+  <div class="top-nav">
+    <div class="nav-item active" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" id="nav-picks-home" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+    <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+  <div class="page-pad">
+    <div class="section-title">Today's Card</div>
+    <div id="h-today-card"></div>
+    <div style="margin-top:12px;">
+      <div class="section-title" style="margin-bottom:6px;">Who Are You Playing Against Today?</div>
+      <input type="text" id="partner-name-input" placeholder="House Selections" maxlength="30"
+        style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);"
+        oninput="savePartnerName(this.value)">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Enter a friend's name or leave as "House Selections"</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── PICKS ──────────────────────────────────────────────────── -->
+<div id="screen-picks" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">My Picks</div><div class="tb-name" id="p-name">FastEddie</div></div>
+    <div class="hdr-actions">
+      <div class="cpill cpill-gold" id="p-date"></div>
+      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
+    </div>
+  </div>
+  <div class="top-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item active" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+    <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+  <div class="page-pad">
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--green);line-height:1;">🚦 They're at the Post</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">Select a race to enter your picks</div>
+    </div>
+    <div id="p-race-grid" class="race-grid"></div>
+    <div id="p-pick-panel" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="p-racenum">1</span></div>
+        <button class="btn btn-outline btn-sm" onclick="showGrid()">↑ All Races</button>
+      </div>
+      <div class="gu-section" id="gu-section">
+        <div class="gu-title">🔬 GiddyUp Picks</div>
+        <div id="gu-loaded-state">
+          <div style="font-size:12px;color:var(--green-dark);margin-bottom:10px;">Loaded from GiddyUp Silks — your AI handicapper's picks for this race.</div>
+          <div class="pick-grid">
+            <div class="pick-slot win"><label>★ Win</label><input type="number" id="gu1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
+            <div class="pick-slot place"><label>Place</label><input type="number" id="gu2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
+            <div class="pick-slot show"><label>Show</label><input type="number" id="gu3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
+            <div class="pick-slot fourth"><label>4th</label><input type="number" id="gu4" class="pi" placeholder="#" min="1" disabled=""></div>
+          </div>
+        </div>
+        <div id="gu-empty-state" style="display:none;font-size:13px;color:var(--muted);padding:6px 0;">⏳ Not loaded yet — go to <strong>All Races</strong> and tap <strong>Load</strong> on the GiddyUp Picks banner.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">My Picks</div>
+        <div class="pick-grid">
+          <div class="pick-slot win"><label>★ Win</label><input type="number" id="pp1" class="pi pi-win" placeholder="#" min="1"></div>
+          <div class="pick-slot place"><label>Place</label><input type="number" id="pp2" class="pi pi-place" placeholder="#" min="1"></div>
+          <div class="pick-slot show"><label>Show</label><input type="number" id="pp3" class="pi pi-show" placeholder="#" min="1"></div>
+          <div class="pick-slot fourth"><label>4th</label><input type="number" id="pp4" class="pi" placeholder="#" min="1"></div>
+        </div>
+        <div class="hint" style="margin-top:8px;">★ Win Pick finishes 1st = +20 pts bonus</div>
+        <div id="p-lock-msg" style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-light);border:1px solid var(--red);border-radius:8px;font-size:12px;color:var(--red);"></div>
+        <div id="p-err" class="err-msg" style="display:none;margin-top:8px;"></div>
+      </div>
+      <div class="ml-section">
+        <div class="ml-title">📰 <span id="ml-partner-label">House Selections</span> Picks (optional)</div>
+        <div style="font-size:12px;color:var(--gold-dark);margin-bottom:10px;">Enter the 4 selections printed in the race program — your handicapper opponent.</div>
+        <div class="pick-grid">
+          <div class="pick-slot win"><label>★ Win</label><input type="number" id="ml1" class="pi pi-win" placeholder="#" min="1"></div>
+          <div class="pick-slot place"><label>Place</label><input type="number" id="ml2" class="pi pi-place" placeholder="#" min="1"></div>
+          <div class="pick-slot show"><label>Show</label><input type="number" id="ml3" class="pi pi-show" placeholder="#" min="1"></div>
+          <div class="pick-slot fourth"><label>4th</label><input type="number" id="ml4" class="pi" placeholder="#" min="1"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn btn-green btn-sm" id="p-save-btn" onclick="savePicks()">Save Picks</button>
+        <button class="btn btn-outline btn-sm" onclick="clearPickInputs()">Clear</button>
+      </div>
+      <div id="p-saved" style="margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESULTS ─────────────────────────────────────────────────── -->
+<div id="screen-results" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">Enter Results</div><div class="tb-name" id="r-name">FastEddie</div></div>
+    <div class="hdr-actions">
+      <div class="cpill cpill-gold" id="r-date"></div>
+      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
+    </div>
+  </div>
+  <div class="top-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item active" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+    <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+  <div class="page-pad">
+    <div style="background:linear-gradient(135deg,var(--gold-light),#fff8dc);border:1px solid var(--gold);border-radius:12px;padding:14px 16px;margin-bottom:14px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--gold-dark);line-height:1;">🏆 The Winner's Circle</div>
+      <div style="font-size:11px;color:var(--gold-dark);margin-top:3px;opacity:0.8;">Enter the official top 4 finishers — picks score automatically</div>
+    </div>
+    <div id="r-race-grid" class="race-grid"></div>
+    <div id="r-entry-panel" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="r-racenum">1</span></div>
+        <button class="btn btn-outline btn-sm" onclick="showResultGrid()">↑ All Races</button>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Official Finish Order</div>
+        <div class="pick-grid">
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">1st</label><input type="number" id="rr1" class="pi" placeholder="#" min="1"></div>
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">2nd</label><input type="number" id="rr2" class="pi" placeholder="#" min="1"></div>
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">3rd</label><input type="number" id="rr3" class="pi" placeholder="#" min="1"></div>
+          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">4th</label><input type="number" id="rr4" class="pi" placeholder="#" min="1"></div>
+        </div>
+        <div id="r-err" class="err-msg" style="display:none;margin-top:8px;"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn btn-green btn-sm" onclick="submitResult()">Score This Race</button>
+          <button class="btn btn-outline btn-sm" onclick="clearResultInputs()">Clear</button>
+        </div>
+      </div>
+      <div id="r-score-display"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCORECARD ───────────────────────────────────────────────── -->
+<div id="screen-scorecard" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">My Scorecard</div><div class="tb-name" id="sc-name">FastEddie</div></div>
+    <div class="hdr-actions">
+      <div class="cpill cpill-gold" id="sc-date"></div>
+      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
+    </div>
+  </div>
+  <div class="top-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item active" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+    <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+  <div class="page-pad">
+    <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter your picks and results to get started.</div>
+    <div id="sc-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;"></div>
+    <div id="sc-ml-compare" style="display:none;margin-bottom:16px;"></div>
+    <div class="card" id="sc-card" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="section-title" style="margin-bottom:0;">Daily Card</div>
+        <div id="sc-cons-status" style="font-size:13px;"></div>
+      </div>
+      <div class="streak-row" id="sc-streak-dots"></div>
+      <div class="divider"></div>
+      <div style="overflow-x:auto;">
+        <table class="sc-table">
+          <thead><tr><th>Race</th><th>W</th><th>F</th><th>E</th><th>T</th><th>S</th><th>SW</th><th>ST</th><th>Total</th></tr></thead>
+          <tbody id="sc-body"></tbody>
+          <tfoot id="sc-foot"></tfoot>
+        </table>
+      </div>
+    </div>
+    <div id="sc-h2h"></div>
+  </div>
+</div>
+
+<!-- ── HOW TO USE / TBTS ──────────────────────────────────────── -->
+<div id="screen-tbts" class="screen">
+  <div class="auth-header" id="tbts-header" style="background:linear-gradient(135deg,#1a6b3c,#2d9155);">
+    <div class="back-btn" onclick="go(CU?'screen-home':'screen-splash')">← Back</div>
+    <h1 id="tbts-title">How to Use</h1><p id="tbts-subtitle">GiddyUp Play</p>
+  </div>
+  <div class="form-body" style="max-width:600px;">
+    <div id="tbts-top"></div>
+    <div id="tbts-rules"></div>
+    <div id="tbts-bottom"></div>
+    <div style="height:20px;"></div>
+    <button class="btn btn-green" onclick="go(CU?'screen-home':'screen-splash')">Got it — Let's Go</button>
+  </div>
+</div>
+
+<!-- ── DIARY ──────────────────────────────────────────────────── -->
+<div id="screen-diary" class="screen has-nav">
+  <div class="top-bar">
+    <div class="top-bar-left"><div class="tb-ctx">My Racing Diary</div><div class="tb-name" id="d-name">FastEddie</div></div>
+    <div class="hdr-actions">
+      <div class="cpill cpill-gold" id="d-date"></div>
+      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
+      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
+    </div>
+  </div>
+  <div class="top-nav">
+    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+    <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
+    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
+    <div class="nav-item active" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+  </div>
+  <div class="page-pad">
+    <div class="card" style="border-color:var(--green);">
+      <div class="section-title" style="margin-bottom:10px;">Add a Note</div>
+      <div class="fg" style="margin-bottom:8px;">
+        <label>Race (optional)</label>
+        <select id="d-race-select" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);">
+          <option value="">General note (not race-specific)</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:8px;">
+        <label>Your Notes</label>
+        <textarea class="diary-input" id="d-note" placeholder="e.g. Horse #4 looked strong in warm-ups. Trainer mentioned good workout this week. Backing my gut on this one..."></textarea>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Photo (optional)</label>
+        <div class="photo-upload-btn" onclick="document.getElementById('d-photo-input').click()">
+          📷 &nbsp;Add photo — winning ticket, race program, anything
+        </div>
+        <input type="file" id="d-photo-input" accept="image/*" onchange="handlePhotoSelect(event)">
+        <img id="d-photo-preview" class="ticket-preview" style="display:none;" alt="Photo preview">
+        <div id="d-photo-name" style="font-size:11px;color:var(--muted);margin-top:4px;"></div>
+      </div>
+      <div id="d-err" class="err-msg" style="display:none;"></div>
+      <button class="btn btn-green btn-sm" style="width:100%;" onclick="saveDiaryEntry()">💾 &nbsp;Save Note</button>
+    </div>
+    <div class="section-title" style="margin-top:4px;">Today's Notes</div>
+    <div id="d-entries-today"></div>
+    <div class="section-title" style="margin-top:4px;">Previous Notes</div>
+    <div id="d-entries-prev"></div>
+    <div id="d-no-entries" class="notice" style="display:none;">No diary entries yet. Add your first note above.</div>
+  </div>
+</div>
+
+<!-- ── SETTINGS ─────────────────────────────────────────────────── -->
+<div id="screen-settings" class="screen">
+  <div class="auth-header">
+    <div class="back-btn" onclick="go('screen-home')">← Back</div>
+    <h1>Settings</h1><p id="s-subtitle">Your account</p>
+  </div>
+  <div class="form-body">
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px;">Account</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Username</div>
+        <div style="font-size:16px;font-weight:500;" id="s-username">—</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Email</div>
+        <div style="font-size:14px;color:var(--muted);" id="s-email">—</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">City</div>
+        <div style="font-size:14px;color:var(--muted);" id="s-city">—</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <button class="btn btn-red" onclick="handleLogout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const {createElement:h,useState,useRef,useCallback,useEffect,Fragment}=React;
-const FACTOR_GROUPS=[
-  {id:"core",label:"Core Factors",icon:"⭐",factors:[
-    {id:"speed",label:"Speed Figures",icon:"⚡",tip:"Historical speed ratings"},
-    {id:"form",label:"Recent Form",icon:"📈",tip:"Last 3-5 race performance"},
-    {id:"jockey",label:"Jockey",icon:"🏇",tip:"Rider skill & recent form"},
-    {id:"trainer",label:"Trainer",icon:"🎯",tip:"Trainer win % & patterns"},
-    {id:"earnings",label:"Earnings",icon:"💰",tip:"Recent earnings per start vs the field"},
-  ]},
-  {id:"race",label:"Race Conditions",icon:"🏟",factors:[
-    {id:"distance",label:"Distance",icon:"📏",tip:"Distance history & fit"},
-    {id:"track",label:"Track / Surface",icon:"🏟",tip:"Surface preference & record"},
-    {id:"post",label:"Post Position",icon:"🎰",tip:"Starting gate advantage"},
-    {id:"class",label:"Class Change",icon:"📊",tip:"Moving up or down in class"},
-    {id:"days",label:"Days Since Race",icon:"📅",tip:"Freshness & fitness"},
-    {id:"weight",label:"Weight Carried",icon:"⚖",tip:"Actual weight on race day"},
-  ]},
-  {id:"deep",label:"Deep Dive",icon:"🔬",factors:[
-    {id:"workouts",label:"Workout Times",icon:"⏱",tip:"Recent workout speeds"},
-    {id:"equipment",label:"Equipment Changes",icon:"🔧",tip:"Blinkers, tongue tie etc."},
-    {id:"pedigree",label:"Pedigree",icon:"🧬",tip:"Breeding & distance suitability"},
-    {id:"style",label:"Running Style",icon:"💨",tip:"Front runner, closer, stalker"},
-    {id:"combo",label:"Trainer/Jockey Combo",icon:"🤝",tip:"Combined win rate together"},
-    {id:"bias",label:"Track Bias",icon:"📐",tip:"Rail, speed or post bias today"},
-  ]},
-];
-const ALL_FACTORS=FACTOR_GROUPS.flatMap(g=>g.factors);
-const PRESETS={
-  custom:{speed:5,form:13,jockey:13,trainer:13,distance:6,track:6,post:6,class:5,days:5,weight:4,workouts:4,equipment:3,pedigree:3,style:3,combo:3,bias:2,earnings:8},
-  stakes:{speed:10,form:18,jockey:6,trainer:13,distance:13,track:15,post:7,class:0,days:0,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:3,bias:0,earnings:15},
-  allowance:{speed:9,form:16,jockey:12,trainer:12,distance:12,track:12,post:10,class:3,days:2,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:2,bias:0,earnings:10},
-  claiming:{speed:9,form:12,jockey:19,trainer:10,distance:10,track:10,post:13,class:5,days:2,weight:0,workouts:0,equipment:2,pedigree:0,style:0,combo:2,bias:0,earnings:6},
-  maiden:{speed:7,form:8,jockey:19,trainer:19,distance:11,track:9,post:13,class:0,days:2,weight:0,workouts:5,equipment:0,pedigree:3,style:0,combo:1,bias:0,earnings:3},
-};
-Object.keys(PRESETS).forEach(k=>{const s=Object.values(PRESETS[k]).reduce((a,b)=>a+b,0);if(s!==100)PRESETS[k].speed+=(100-s);});
-const EARNINGS_WEIGHT={custom:2,stakes:5,allowance:3,claiming:1,maiden:1};
-const RACE_TYPES=[
-  {id:"custom",label:"Custom",icon:"⚙",color:"#6b7280"},
-  {id:"stakes",label:"Stakes",icon:"🏆",color:"#c9a84c"},
-  {id:"allowance",label:"Allowance",icon:"✅",color:"#4a9e6e"},
-  {id:"claiming",label:"Claiming",icon:"🏷",color:"#4a7ec9"},
-  {id:"maiden",label:"Maiden",icon:"🐎",color:"#9e4a9e"},
-];
-const FC={speed:"#4a7ec9",form:"#c97a4a",jockey:"#c9a84c",trainer:"#4a9e6e",distance:"#9e4a4a",track:"#7a9e4a",post:"#9e4a9e",class:"#4a9e9e",days:"#b87333",weight:"#6b7280",workouts:"#e07070",equipment:"#70b0c0",pedigree:"#a87ab5",style:"#d4a07a",combo:"#7ab5a8",bias:"#b5a87a",earnings:"#2e8b57"};
-const SILK_COLORS={
-  1:{bg:"#c41e28",fg:"#ffffff"},2:{bg:"#ffffff",fg:"#1a1a1a"},3:{bg:"#1e3aaa",fg:"#ffffff"},
-  4:{bg:"#e6c81e",fg:"#1a1a1a"},5:{bg:"#1e783c",fg:"#ffffff"},6:{bg:"#1a1a1a",fg:"#e6c81e"},
-  7:{bg:"#e6781e",fg:"#1a1a1a"},8:{bg:"#e66ea0",fg:"#1a1a1a"},9:{bg:"#1ec8c8",fg:"#1a1a1a"},
-  10:{bg:"#7a1ea0",fg:"#ffffff"},11:{bg:"#9e9e9e",fg:"#c41e28"},12:{bg:"#9ed61e",fg:"#1a1a1a"},
-  13:{bg:"#7a4a28",fg:"#ffffff"},14:{bg:"#7a1e3c",fg:"#e6c81e"},15:{bg:"#b5a96a",fg:"#1a1a1a"},
-  16:{bg:"#82c4e6",fg:"#c41e28"},17:{bg:"#1a2550",fg:"#ffffff"},18:{bg:"#1e5a3c",fg:"#e6c81e"},
-  19:{bg:"#28327a",fg:"#c41e28"},20:{bg:"#d6196e",fg:"#e6c81e"},21:{bg:"#b48ad2",fg:"#1a2550"},
-  default:{bg:"#6b7280",fg:"#ffffff"}
-};
-const C={gold:"#c9a84c",navy:"#1a2535",navy2:"#2d3f55",border:"#e2e8f0",muted:"#94a3b8",text:"#1a2535"};
-function golfRank(horses,factorId){const sorted=[...horses].sort((a,b)=>(b.stats[factorId]||0)-(a.stats[factorId]||0));const ranks={};let i=0;while(i<sorted.length){const val=sorted[i].stats[factorId]||0;let j=i;while(j<sorted.length&&(sorted[j].stats[factorId]||0)===val)j++;for(let k=i;k<j;k++)ranks[sorted[k].number]=i+1;i=j;}return ranks;}
-function computeEarningsRanks(horses){const eps=horses.map(hr=>{const e=hr.earnings||{};return{number:hr.number,eps_cy:e.cy_starts>0?e.cy_earnings/e.cy_starts:null,eps_ly:e.ly_starts>0?e.ly_earnings/e.ly_starts:null,eps_car:e.car_starts>0?e.car_earnings/e.car_starts:null,cy_starts:e.cy_starts||0,ly_starts:e.ly_starts||0};});const ra=(arr,key)=>{const n=arr.length,s=[...arr].filter(x=>x[key]!==null).sort((a,b)=>b[key]-a[key]),m={};s.forEach((x,i)=>m[x.number]=i+1);arr.filter(x=>x[key]===null).forEach(x=>m[x.number]=n+1);return m;};const rc=ra(eps,"eps_cy"),rl=ra(eps,"eps_ly"),rca=ra(eps,"eps_car");return eps.map(hr=>{const rel=Math.min(1,hr.cy_starts/3);let wc=0.6*rel,lost=0.6-wc,wl=0.3+(lost*0.75),wca=0.1+(lost*0.25);if(hr.ly_starts===0){wca+=wl;wl=0;}return{number:hr.number,earningsScore:wc*rc[hr.number]+wl*rl[hr.number]+wca*rca[hr.number]};});}
-function computeScores(horses,weights,raceType,scratched){raceType=raceType||"custom";const active_horses=horses.filter(hr=>!scratched[hr.number]);if(!active_horses.length)return[];const ed=computeEarningsRanks(active_horses),se=[...ed].sort((a,b)=>a.earningsScore-b.earningsScore),er={};se.forEach((e,i)=>{er[e.number]=i+1;});const active=ALL_FACTORS.filter(f=>weights[f.id]>0),maps={};active.forEach(f=>{maps[f.id]=f.id==="earnings"?er:golfRank(active_horses,f.id);});const totalWeight=active.reduce((s,f)=>s+weights[f.id],0);return active_horses.map(horse=>{let total=0;const bd={};active.forEach(f=>{const rank=maps[f.id][horse.number]||1,prop=weights[f.id]/totalWeight,pts=rank*prop;bd[f.id]={rank,rawStat:f.id==="earnings"?(horse.earnings&&horse.earnings.cy_earnings!=null?horse.earnings.cy_earnings:"-"):(horse.stats[f.id]!=null?horse.stats[f.id]:"-"),pts:Math.round(pts*100)/100};total+=pts;});return{...horse,totalScore:Math.round(total*10),breakdown:bd};}).sort((a,b)=>a.totalScore-b.totalScore);}
-function redistribute(weights,locks,changedId,newVal){const unlocked=ALL_FACTORS.filter(f=>f.id!==changedId&&!locks[f.id]);if(!unlocked.length)return weights;const uTotal=unlocked.reduce((s,f)=>s+weights[f.id],0),next={...weights,[changedId]:newVal},delta=newVal-weights[changedId];if(uTotal===0){const each=Math.floor(-delta/unlocked.length);unlocked.forEach(f=>{next[f.id]=Math.max(0,weights[f.id]+each);});}else{unlocked.forEach(f=>{next[f.id]=Math.max(0,Math.round(weights[f.id]+(weights[f.id]/uTotal)*(-delta)));});}const diff=100-Object.values(next).reduce((a,b)=>a+b,0);if(diff!==0){const t=unlocked.find(f=>next[f.id]+diff>=0)||unlocked[0];if(t)next[t.id]=Math.max(0,next[t.id]+diff);}return next;}
-function fillMissingFactors(savedWeights,savedLocks){const w={...savedWeights},l={...savedLocks};ALL_FACTORS.forEach(f=>{if(typeof w[f.id]!=="number")w[f.id]=0;if(typeof l[f.id]!=="boolean")l[f.id]=false;});return{weights:w,locks:l};}
-function normalizeCustomAngles(raw){if(!raw)return{};if(raw.weights)return{custom:{weights:raw.weights,locks:raw.locks||{}}};return raw;}
-function oddsToDecimal(o){if(!o||o==="N/A")return 5;const p=o.toString().split("-");if(p.length===2)return parseInt(p[0])/parseInt(p[1])+1;return parseFloat(o)+1||5;}
-function getConf(gap){if(gap>=50)return{label:"High",bars:9,color:"#4a9e6e"};if(gap>=25)return{label:"Moderate",bars:6,color:"#c9a84c"};return{label:"Low",bars:3,color:"#ef4444"};}
-function buildBets(scores){if(scores.length<3)return null;const h=scores,gap=h[1].totalScore-h[0].totalScore,wv=h.map(horse=>({...horse,decimal:oddsToDecimal(horse.odds),valueScore:Math.round((oddsToDecimal(horse.odds)/horse.totalScore)*1000)})),sm=[...wv].filter(x=>x.number!==h[0].number).sort((a,b)=>b.valueScore-a.valueScore)[0],bomb=[...wv].filter(horse=>{const ri=h.findIndex(hr=>hr.number===horse.number);return oddsToDecimal(horse.odds)>=8&&horse.totalScore<=h[0].totalScore*1.45&&ri<h.length-1;}).sort((a,b)=>b.valueScore-a.valueScore)[0];return{win:h[0],show:[h[0],h[1],h[2]],exactaBox:[h[0],h[1],h[2]],trifectaStraight:[h[0],h[1],h[2]],superfecta:h.length>=4?[h[0],h[1],h[2],h[3]]:null,smartWin:sm,smartExacta:sm?[sm,h[0]]:null,bomb,highConf:gap>=40,tightRace:gap<20,gap};}
-function shareContent(title,text){if(navigator.share)navigator.share({title,text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert("Copied!"));}
-const DEMO=[
-  {number:5,name:"Commandperformance",jockey:"I. Ortiz Jr.",trainer:"Todd Pletcher",odds:"50-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:96,form:85,jockey:92,trainer:95,distance:80,track:85,post:75,class:90,days:75,weight:75,workouts:82,equipment:70,pedigree:85,style:75,combo:88,bias:70}},
-  {number:17,name:"Pappacap",jockey:"J. Bravo",trainer:"Mark Casse",odds:"15-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:100,form:88,jockey:82,trainer:85,distance:82,track:88,post:72,class:92,days:80,weight:75,workouts:85,equipment:70,pedigree:88,style:80,combo:78,bias:72}},
-  {number:20,name:"Slow Down Andy",jockey:"M. Gutierrez",trainer:"Doug O Neill",odds:"20-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:101,form:90,jockey:80,trainer:82,distance:85,track:88,post:78,class:88,days:78,weight:75,workouts:80,equipment:70,pedigree:82,style:85,combo:75,bias:72}},
-  {number:22,name:"White Abarrio",jockey:"T. Gaffalione",trainer:"Saffie Joseph Jr.",odds:"8-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:97,form:92,jockey:88,trainer:88,distance:82,track:85,post:78,class:85,days:82,weight:75,workouts:85,equipment:70,pedigree:80,style:80,combo:85,bias:75}},
-  {number:4,name:"Classic Causeway",jockey:"J. Rosario",trainer:"Brian Lynch",odds:"50-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:94,form:85,jockey:88,trainer:80,distance:80,track:85,post:80,class:88,days:70,weight:75,workouts:78,equipment:70,pedigree:88,style:78,combo:78,bias:72}},
-  {number:8,name:"Epicenter",jockey:"J. Rosario",trainer:"Steve Asmussen",odds:"15-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:95,form:88,jockey:88,trainer:90,distance:82,track:85,post:78,class:88,days:82,weight:75,workouts:80,equipment:70,pedigree:82,style:82,combo:85,bias:72}},
-  {number:23,name:"Zandon",jockey:"J.R. Velazquez",trainer:"Chad Brown",odds:"30-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:93,form:85,jockey:88,trainer:92,distance:80,track:85,post:72,class:85,days:80,weight:75,workouts:78,equipment:70,pedigree:80,style:78,combo:85,bias:70}},
-  {number:16,name:"Mo Donegal",jockey:"I. Ortiz Jr.",trainer:"Todd Pletcher",odds:"30-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:93,form:85,jockey:92,trainer:95,distance:82,track:85,post:78,class:88,days:75,weight:75,workouts:80,equipment:70,pedigree:85,style:75,combo:90,bias:70}},
-];
-function HorseActionModal({horse,isScratched,onSave,onClose}){
-  const [mode,setMode]=useState("action");
-  const [form,setForm]=useState({name:horse.name,jockey:horse.jockey,trainer:horse.trainer,odds:horse.odds});
-  function ff(k,v){setForm(p=>({...p,[k]:v}));}
-  if(mode==="edit")return h("div",{style:{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.6)",zIndex:1000,display:"flex",alignItems:"flex-end",justifyContent:"center"},onClick:onClose},
-    h("div",{onClick:e=>e.stopPropagation(),style:{background:"#fff",borderRadius:"20px 20px 0 0",padding:"24px 20px 40px",width:"100%",maxWidth:520}},
-      h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}},
-        h("div",{style:{fontWeight:800,fontSize:16,color:C.navy}},"Edit: "+horse.name),
-        h("button",{onClick:onClose,style:{background:"#f1f5f9",border:"none",borderRadius:20,width:32,height:32,fontSize:16,cursor:"pointer"}},"✕")),
-      h("div",{style:{display:"grid",gap:12}},
-        h("div",null,h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,textTransform:"uppercase",letterSpacing:1}},"Horse Name"),h("input",{value:form.name,onChange:e=>ff("name",e.target.value),style:{width:"100%",padding:"10px 12px",border:"1.5px solid "+C.border,borderRadius:10,fontSize:14,fontWeight:700,color:C.text}})),
-        h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
-          h("div",null,h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,textTransform:"uppercase",letterSpacing:1}},"Jockey"),h("input",{value:form.jockey,onChange:e=>ff("jockey",e.target.value),style:{width:"100%",padding:"10px 12px",border:"1.5px solid "+C.border,borderRadius:10,fontSize:13,color:C.text}})),
-          h("div",null,h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,textTransform:"uppercase",letterSpacing:1}},"Odds"),h("input",{value:form.odds,onChange:e=>ff("odds",e.target.value),placeholder:"e.g. 5-2",style:{width:"100%",padding:"10px 12px",border:"1.5px solid "+C.border,borderRadius:10,fontSize:13,color:C.text}}))),
-        h("div",null,h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,marginBottom:4,textTransform:"uppercase",letterSpacing:1}},"Trainer"),h("input",{value:form.trainer,onChange:e=>ff("trainer",e.target.value),style:{width:"100%",padding:"10px 12px",border:"1.5px solid "+C.border,borderRadius:10,fontSize:13,color:C.text}})),
-        h("button",{onClick:()=>onSave(form),style:{width:"100%",padding:"14px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:15,fontWeight:800,cursor:"pointer",marginTop:4}},"Save Changes"))));
-  return h("div",{style:{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.6)",zIndex:1000,display:"flex",alignItems:"flex-end",justifyContent:"center"},onClick:onClose},
-    h("div",{onClick:e=>e.stopPropagation(),style:{background:"#fff",borderRadius:"20px 20px 0 0",padding:"20px 20px 36px",width:"100%",maxWidth:520}},
-      h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}},
-        h("div",{style:{fontWeight:800,fontSize:16,color:C.navy}},"#"+horse.number+" "+horse.name),
-        h("button",{onClick:onClose,style:{background:"#f1f5f9",border:"none",borderRadius:20,width:32,height:32,fontSize:16,cursor:"pointer"}},"✕")),
-      h("div",{style:{fontSize:12,color:C.muted,marginBottom:18}},horse.jockey+" · "+horse.trainer+" · "+horse.odds),
-      h("div",{style:{display:"flex",flexDirection:"column",gap:10}},
-        h("button",{onClick:()=>setMode("edit"),style:{width:"100%",padding:"14px",background:"rgba(201,168,76,0.1)",border:"1.5px solid rgba(201,168,76,0.4)",borderRadius:12,color:C.navy,fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:10}},
-          h("span",{style:{fontSize:18}},"✏️"),h("span",null,"Edit Horse Info")),
-        h("button",{onClick:()=>onSave(null),style:{width:"100%",padding:"14px",background:isScratched?"rgba(74,158,110,0.1)":"rgba(239,68,68,0.08)",border:"1.5px solid "+(isScratched?"rgba(74,158,110,0.4)":"rgba(239,68,68,0.35)"),borderRadius:12,color:isScratched?"#4a9e6e":"#dc2626",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:10}},
-          h("span",{style:{fontSize:18}},isScratched?"✅":"🚫"),
-          h("span",null,isScratched?"Reinstate Horse":"Mark as Scratched")),
-        h("button",{onClick:onClose,style:{width:"100%",padding:"12px",background:"transparent",border:"1.5px solid "+C.border,borderRadius:12,color:C.muted,fontSize:14,fontWeight:600,cursor:"pointer"}},"Cancel"))));
+const APP_MODE = 'solo';
+const MAX_RACES = 20;
+const TODAY = new Date().toISOString().split('T')[0];
+
+function emptyDayCard(){
+  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},partnerName:'House Selections'};
 }
-function HorseCard({horse,rank,weights,allScores,activeRace,onTap}){
-  const [exp,setExp]=useState(false);
-  const medals=["🥇","🥈","🥉"],bcs=["#c9a84c","#9ea8b0","#b87333","#4a7ec9","#4a9e6e","#9e4a9e"],bc=bcs[rank]||"#cbd5e1";
-const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
-  const ring=rank===0?"#c9a84c":rank===1?"#9ea8b0":rank===2?"#b87333":"transparent";
-  const active=ALL_FACTORS.filter(f=>weights[f.id]>0);
-  const minS=allScores[0]?allScores[0].totalScore:horse.totalScore,maxS=allScores[allScores.length-1]?allScores[allScores.length-1].totalScore:horse.totalScore;
-  const barW=Math.max(15,100-((horse.totalScore-minS)/Math.max(1,maxS-minS))*80);
-  return h("div",{style:{background:rank===0?"linear-gradient(135deg,#fffbf0,#fff8e6)":"#fff",border:rank===0?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10,cursor:"pointer"}},
-    h("div",{style:{display:"flex",alignItems:"center",gap:12}},
-      h("div",{onClick:()=>setExp(!exp),style:{position:"relative",minWidth:38,cursor:"pointer"}},
-        h("div",{style:{width:38,height:38,borderRadius:9,background:silk.bg,color:silk.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:15,border:ring!=="transparent"?"3px solid "+ring:"1px solid rgba(0,0,0,0.15)",boxShadow:silk.bg==="#ffffff"?"inset 0 0 0 1px rgba(0,0,0,0.12)":"none"}},horse.number),
-        rank<3&&h("div",{style:{position:"absolute",top:-8,right:-8,fontSize:13,lineHeight:1}},medals[rank])),
-      h("div",{onClick:()=>setExp(!exp),style:{flex:1,cursor:"pointer"}},
-        h("div",{style:{display:"flex",justifyContent:"space-between"}},
-          h("div",{style:{color:C.text,fontWeight:700,fontSize:15}},horse.name),
-          h("div",{style:{color:bc,fontSize:20,fontWeight:800}},horse.totalScore)),
-        h("div",{style:{color:"#475569",fontWeight:500,fontSize:12,marginTop:2}},horse.jockey+" · "+horse.trainer+" · "+horse.odds),
-        h("div",{style:{marginTop:8,height:5,background:"#f1f5f9",borderRadius:4,overflow:"hidden"}},
-          h("div",{style:{width:barW+"%",height:"100%",background:"linear-gradient(90deg,"+bc+","+bc+"99)",borderRadius:4}}))),
-      h("button",{onClick:e=>{e.stopPropagation();onTap&&onTap(horse);},style:{background:"rgba(201,168,76,0.18)",border:"1.5px solid rgba(201,168,76,0.55)",borderRadius:10,width:32,height:32,cursor:"pointer",fontSize:18,fontWeight:900,color:C.navy,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},"⋯")),
-    exp&&h("div",{style:{marginTop:12,paddingTop:12,borderTop:"1px solid "+C.border}},
-      h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}},
-      ...active.map(f=>{const bd=horse.breakdown[f.id];if(!bd)return null;const rawDisplay=f.id==="earnings"?"$"+(Number(bd.rawStat)||0).toLocaleString():bd.rawStat;return h("div",{key:f.id,style:{background:FC[f.id]+"10",borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:C.muted,fontSize:10}},f.icon+" "+f.label),h("span",{style:{color:FC[f.id],fontSize:11,fontWeight:800}},"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:C.muted,fontSize:10}},(f.id==="earnings"?"CY: ":"Stat: ")+rawDisplay),h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},bd.pts+"pts")));}))));}
-function ScratchedCard({horse,onTap}){
-  return h("div",{style:{background:"#f8fafc",border:"1px dashed #cbd5e1",borderRadius:14,padding:"12px 16px",marginBottom:8,opacity:0.65,cursor:"pointer"},onClick:()=>onTap(horse)},
-    h("div",{style:{display:"flex",alignItems:"center",gap:12}},
-      h("div",{style:{fontSize:18,minWidth:32,color:"#94a3b8"}},"🚫"),
-      h("div",{style:{flex:1}},
-        h("div",{style:{color:"#94a3b8",fontWeight:700,fontSize:14,textDecoration:"line-through"}},horse.number+". "+horse.name),
-        h("div",{style:{color:"#cbd5e1",fontSize:11,marginTop:2}},horse.jockey+" · "+horse.trainer)),
-      h("div",{style:{fontSize:10,fontWeight:700,color:"#94a3b8",background:"#e2e8f0",borderRadius:8,padding:"3px 8px"}},"SCRATCHED")));}
-function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeights,setLocks,angleMode,silksUser}){
-  const [drag,setDrag]=useState(false);
-  const [status,setStatus]=useState("idle");
-  const [errorMsg,setErrorMsg]=useState("");
-  const [progress,setProgress]=useState("");
-  const [analyzingId,setAnalyzingId]=useState(null);
-  const fileRef=useRef(),cameraRef=useRef();
-  // per-race "add page" refs stored as a map by race id
-  const pageRefs=useRef({});
 
-  function readFileToPage(file,callback){
-    const reader=new FileReader();
-    reader.onload=(e)=>{
-      const dataUrl=e.target.result,base64=dataUrl.split(",")[1];
-      const isPdf=file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf");
-      const mediaType=isPdf?"application/pdf":(file.type&&file.type.startsWith("image/")?file.type:"image/jpeg");
-      callback({base64,mediaType,isPdf,fileName:file.name,preview:isPdf?null:dataUrl});
-    };
-    reader.readAsDataURL(file);
-  }
+let CU = null;
+let dayCard = null;
+let curPickRace = 1;
+let curResultRace = 1;
 
-  function addFiles(files){
-    Array.from(files).forEach((file,i)=>{
-      readFileToPage(file,(page)=>{
-        setRaces(r=>{
-          const raceNum=r.length+1+i;
-          return[...r,{id:Date.now()+i,label:"Race "+raceNum,pages:[page],status:"ready"}];
-        });
-      });
-    });
-    setStatus("idle");
-  }
+async function loadDayCard(){
+  if(!CU) return emptyDayCard();
+  const remote = await GiddyUpAuth.getDayCard(CU.id, TODAY);
+  if(remote) return remote;
+  return emptyDayCard();
+}
 
-  function addPageToRace(raceId,file){
-    readFileToPage(file,(page)=>{
-      setRaces(r=>r.map(rc=>rc.id===raceId?{...rc,pages:[...rc.pages,page],status:"ready"}:rc));
-    });
-  }
+let saveQueued = false;
+async function persistDayCard(){
+  if(!CU||!dayCard) return;
+  if(saveQueued) return;
+  saveQueued = true;
+  await GiddyUpAuth.saveDayCard(CU.id, TODAY, dayCard);
+  saveQueued = false;
+}
 
-  function removePage(raceId,pageIdx){
-    setRaces(r=>r.map(rc=>{
-      if(rc.id!==raceId)return rc;
-      const pages=rc.pages.filter((_,i)=>i!==pageIdx);
-      return pages.length===0?null:{...rc,pages,status:"ready"};
-    }).filter(Boolean).map((rc,i)=>({...rc,label:"Race "+(i+1)})));
-  }
+function loadDiary(userId){
+  try{
+    const saved=localStorage.getItem('giddyup_diary_'+userId);
+    if(saved) return JSON.parse(saved);
+  }catch(e){}
+  return [];
+}
+function saveDiaryLocal(){
+  if(!CU) return;
+  try{localStorage.setItem('giddyup_diary_'+CU.id,JSON.stringify(CU.diary||[]));}catch(e){}
+}
 
-  function remove(id){
-    setRaces(r=>{
-      const f=r.filter(rc=>rc.id!==id);
-      return f.map((rc,i)=>({...rc,label:"Race "+(i+1)}));
-    });
-  }
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function nav(tab){
+  const map={home:'screen-home',picks:'screen-picks',results:'screen-results',scorecard:'screen-scorecard',diary:'screen-diary'};
+  if(tab==='home') loadHome();
+  if(tab==='picks') loadPicks();
+  if(tab==='results') loadResultsScreen();
+  if(tab==='scorecard') loadScorecard();
+  if(tab==='diary') loadDiaryScreen();
+  go(map[tab]);
+}
+function openSilks(){
+  window.open('https://giddyupsilks.app?tab=upload','_blank');
+}
+function togglePW(id,eye){
+  const el=document.getElementById(id);
+  el.type=el.type==='password'?'text':'password';
+  eye.textContent=el.type==='password'?'👁':'🙈';
+}
+function clearReg(){
+  ['reg-u','reg-e','reg-c','reg-p','login-e','login-p'].forEach(id=>{
+    const el=document.getElementById(id);if(el) el.value='';
+  });
+  ['reg-err','login-err'].forEach(id=>{const el=document.getElementById(id);if(el) el.style.display='none';});
+}
 
-  function clearAll(){setRaces([]);setStatus("idle");setErrorMsg("");}
+async function handleRegister(){
+  const u=v('reg-u'),e=v('reg-e').toLowerCase(),c=v('reg-c'),p=v('reg-p');
+  showErr('reg-err','');
+  if(!u||!e||!c||!p){showErr('reg-err','Please fill in all fields.');return;}
+  if(p.length<8){showErr('reg-err','Password must be at least 8 characters.');return;}
+  const result=await GiddyUpAuth.register(e,p,u,c);
+  if(!result.success){showErr('reg-err',result.error);return;}
+  const profile=await GiddyUpAuth.getProfile(result.user.id);
+  CU={id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,diary:loadDiary(result.user.id)};
+  dayCard=await loadDayCard();
+  loadHome();go('screen-home');
+}
+async function handleLogin(){
+  const e=v('login-e').toLowerCase(),p=v('login-p');
+  showErr('login-err','');
+  const result=await GiddyUpAuth.login(e,p);
+  if(!result.success){showErr('login-err',result.error);return;}
+  const profile=await GiddyUpAuth.getProfile(result.user.id);
+  CU={id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',diary:loadDiary(result.user.id)};
+  dayCard=await loadDayCard();
+  loadHome();go('screen-home');
+}
+async function handleLogout(){
+  await GiddyUpAuth.logout();
+  CU=null;dayCard=null;clearReg();go('screen-splash');
+}
 
-  function renameRace(id,newLabel){
-    setRaces(r=>r.map(rc=>rc.id===id?{...rc,label:newLabel}:rc));
-  }
+function getTodayCard(){
+  if(!dayCard) dayCard=emptyDayCard();
+  return dayCard;
+}
+function saveUser(){
+  persistDayCard();
+}
+function formatDate(d){
+  if(!d) return '';
+  const [y,m,day]=d.split('-').map(Number);
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[m-1]+' '+day+', '+y;
+}
 
-  async function analyzeOne(race){
-    if(!race||!race.pages||!race.pages.length)return;
-    setAnalyzingId(race.id);
-    setStatus("reading");
-    setErrorMsg("");
-    try{
-      const pageCount=race.pages.length;
-      setProgress("Reading "+race.label+(pageCount>1?" ("+pageCount+" pages)":"")+"...");
+function loadHome(){
+  document.getElementById('h-name').textContent=displayName(CU);
+  document.getElementById('h-city').textContent=(CU.city||'').split(',')[0];
+  const card=getTodayCard();
+  const scored=Object.keys(card.scores).length;
+  const picked=Object.keys(card.picks).length;
+  document.getElementById('h-today-card').innerHTML=`
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">${formatDate(TODAY)}</div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;background:var(--green-light);border-radius:8px;padding:8px 6px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${picked}</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Picked</div>
+        </div>
+        <div style="flex:1;background:${scored?'var(--gold-light)':'var(--bg)'};border-radius:8px;padding:8px 6px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${scored?'var(--gold-dark)':'var(--muted)'};">${scored}</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Scored</div>
+        </div>
+        ${scored?`<div style="flex:1;background:var(--green-light);border-radius:8px;padding:8px 6px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${Object.values(card.scores).reduce((a,s)=>a+s.raceTotal+s.streak,0)}</div>
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Total Pts</div>
+        </div>`:''}
+      </div>
 
-      // Build content blocks — one block per page, then one instruction text block
-      const contentArr=race.pages.map(pg=>
-        pg.isPdf
-          ?{type:"document",source:{type:"base64",media_type:"application/pdf",data:pg.base64}}
-          :{type:"image",source:{type:"base64",media_type:pg.mediaType,data:pg.base64}}
-      );
-      const isMulti=pageCount>1;
-      const promptText=isMulti
-        ?"You have been given "+pageCount+" files for the same race. One is a horse racing past performances card (DRF, Equibase, or similar). The others may include supplementary data such as speed figure reports, handicapping sheets, or other race-related documents from any provider. Use ALL files together to build the most complete and accurate picture of each horse — where hard numbers exist in any file (speed figures, jockey win %, trainer win %, pace figures etc.) prefer those over estimates. Return ONLY valid JSON: {raceType:string,horses:[{number,name,jockey,trainer,odds,earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. Stats 0-100."
-        :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,horses:[{number,name,jockey,trainer,odds,earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. Stats 0-100.";
-      contentArr.push({type:"text",text:promptText});
+    </div>
+    <div style="margin-top:8px;">
+      <div class="section-title">How Many Races Today?</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${[6,7,8,9,10,11,12,13].map(n=>`<button class="btn btn-outline btn-sm" style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
+        <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
+      </div>
+    </div>`;
+  const navPicks=document.getElementById('nav-picks-home');
+  if(navPicks){navPicks.classList.toggle('pulse',!picked);}
+  const partnerInput=document.getElementById('partner-name-input');
+  if(partnerInput){partnerInput.value=getPartnerName()==='House Selections'?'':getPartnerName();partnerInput.placeholder='House Selections';}
+}
+function savePartnerName(name){
+  const card=getTodayCard();
+  card.partnerName=name.trim()||'House Selections';
+  saveUser();
+}
+function getPartnerName(){
+  const card=getTodayCard();
+  return card.partnerName||'House Selections';
+}
+function setNumRaces(n){
+  const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
+}
+function promptCustomRaces(){
+  const n=parseInt(prompt('How many races? (1-20)'));
+  if(n&&n>=1&&n<=20) setNumRaces(n);
+}
 
-      const response=await fetch("https://giddyup-proxy.kleskun.workers.dev",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:4000,messages:[{role:"user",content:contentArr}]})});
-      const data=await response.json();
-      if(data.error)throw new Error(data.error.message);
-      const rawText=data.content.map(c=>c.text||"").join("").trim();
-      const jsonMatch=rawText.match(/\{[\s\S]*\}/);
-      if(!jsonMatch)throw new Error("No JSON found in response");
-      const parsed=JSON.parse(jsonMatch[0]);
-      const rt=(parsed.raceType||"custom").toLowerCase().trim();
-      const detectedRaceType=["stakes","allowance","claiming","maiden"].find(t=>rt.includes(t))||"custom";
-      const allHorses=(parsed.horses||[]).map((hh,idx)=>({
-        ...hh,
-        number:parseInt(hh.number)||(idx+1),
-        earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0,...(hh.earnings||{})},
-        stats:{speed:70,form:70,jockey:70,trainer:70,distance:70,track:70,post:70,class:70,days:70,weight:70,workouts:70,equipment:70,pedigree:70,style:70,combo:70,bias:70,...(hh.stats||{})}
-      }));
-      if(!allHorses.length)throw new Error("No horses found.");
-      setProgress("Found "+allHorses.length+" horses!");
-     setHorses(allHorses);
-      setActiveRace(detectedRaceType);
-      if(angleMode!=='custom'){
-        setWeights({...PRESETS[detectedRaceType]});
-      } else {
-        const all=(silksUser&&silksUser.customAngles)||{};
-        const slot=all[detectedRaceType];
-        if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}
+function loadPicks(){
+  document.getElementById('p-name').textContent=displayName(CU);
+  document.getElementById('p-date').textContent=formatDate(TODAY);
+  const mlLabel=document.getElementById('ml-partner-label');
+  if(mlLabel) mlLabel.textContent=getPartnerName();
+  checkSilksBridge();
+  showGrid();
+  renderRaceGrid();
+}
+function checkSilksBridge(){
+  try{
+    const incoming=localStorage.getItem('giddyup_play_incoming');
+    if(!incoming) return;
+    const data=JSON.parse(incoming);
+    if(!data||data.date!==TODAY) return;
+    const existing=document.getElementById('silks-bridge-banner');
+    if(existing) return;
+    const banner=document.createElement('div');
+    banner.id='silks-bridge-banner';
+    banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
+    const raceCount=Object.keys(data.picks||{}).length;
+    const raceLabel=raceCount===1?'1 race':raceCount+' races';
+    banner.innerHTML=`<div>🔬 <strong>GiddyUp Picks for ${raceLabel}</strong> ready from ${data.sentAt||'earlier today'}. Load as GiddyUp Picks?</div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn btn-gold btn-sm" onclick="loadSilksPicks()">Load</button>
+        <button class="btn btn-outline btn-sm" onclick="dismissSilksBridge()">Dismiss</button>
+      </div>`;
+    const grid=document.getElementById('p-race-grid');
+    grid.parentNode.insertBefore(banner,grid);
+  }catch(e){}
+}
+function loadSilksPicks(){
+  try{
+    const data=JSON.parse(localStorage.getItem('giddyup_play_incoming'));
+    if(!data||!data.picks) return;
+    const card=getTodayCard();
+    if(!card.guPicks) card.guPicks={};
+    let count=0;
+    Object.keys(data.picks).forEach(raceNum=>{
+      const p=data.picks[raceNum];
+      if(p&&p.length>=4){
+        card.guPicks[raceNum]=[p[0],p[1],p[2],p[3]];
+        count++;
       }
-      setRaces(r=>r.map(rc=>rc.id===race.id?{...rc,status:"analyzed",horseCount:allHorses.length,active:true}:{...rc,active:false}));
-      setStatus("done");
-      setTimeout(()=>setActiveTab("angles"),1200);
-    }catch(err){
-      setStatus("error");
-      setErrorMsg(err.message||"Could not read program.");
+    });
+    saveUser();
+    localStorage.removeItem('giddyup_play_incoming');
+    dismissSilksBridge();
+    renderRaceGrid();
+    alert('GiddyUp Picks loaded for '+count+' race'+(count!==1?'s':'')+'! These will compete against your picks and selections on the scorecard.');
+  }catch(e){alert('Could not load picks from Silks.');}
+}
+function dismissSilksBridge(){
+  const banner=document.getElementById('silks-bridge-banner');
+  if(banner) banner.remove();
+  localStorage.removeItem('giddyup_play_incoming');
+}
+function renderRaceGrid(){
+  const card=getTodayCard();
+  const grid=document.getElementById('p-race-grid');
+  let html='';
+  for(let r=1;r<=card.numRaces;r++){
+    const hasPicks=!!card.picks[r];
+    const hasResults=!!card.results[r];
+    const isScored=!!card.scores[r];
+    let cls='race-cell',status='Tap to pick';
+    if(isScored){cls='race-cell scored';status='✓ Scored';}
+    else if(hasResults){cls='race-cell has-results';status='Results in';}
+    else if(hasPicks){cls='race-cell has-picks';status='✓ Picks saved';}
+    html+=`<div class="${cls}" onclick="selectPickRace(${r})">
+      <div class="rc-num">Race ${r}</div>
+      <div class="rc-status">${status}</div>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+function showGrid(){
+  document.getElementById('p-race-grid').style.display='grid';
+  document.getElementById('p-pick-panel').style.display='none';
+}
+function selectPickRace(r){
+  curPickRace=r;
+  document.getElementById('p-racenum').textContent=r;
+  document.getElementById('p-race-grid').style.display='none';
+  document.getElementById('p-pick-panel').style.display='block';
+  loadPickRaceData(r);
+}
+function loadPickRaceData(r){
+  const card=getTodayCard();
+  const pk=card.picks[r];
+  const ml=card.mlPicks?card.mlPicks[r]:null;
+  const hasResults=!!card.results[r];
+  document.getElementById('pp1').value=pk?pk.field[0]:'';
+  document.getElementById('pp2').value=pk?pk.field[1]:'';
+  document.getElementById('pp3').value=pk?pk.field[2]:'';
+  document.getElementById('pp4').value=pk?pk.field[3]:'';
+  document.getElementById('ml1').value=ml?ml[0]:'';
+  document.getElementById('ml2').value=ml?ml[1]:'';
+  document.getElementById('ml3').value=ml?ml[2]:'';
+  document.getElementById('ml4').value=ml?ml[3]:'';
+  const gu=card.guPicks?card.guPicks[r]:null;
+  if(gu){
+    document.getElementById('gu1').value=gu[0];
+    document.getElementById('gu2').value=gu[1];
+    document.getElementById('gu3').value=gu[2];
+    document.getElementById('gu4').value=gu[3];
+    document.getElementById('gu-loaded-state').style.display='block';
+    document.getElementById('gu-empty-state').style.display='none';
+  } else {
+    document.getElementById('gu-loaded-state').style.display='none';
+    document.getElementById('gu-empty-state').style.display='block';
+  }
+  const locked=hasResults;
+  ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.disabled=locked;el.style.opacity=locked?'0.5':'1';
+  });
+  const saveBtn=document.getElementById('p-save-btn');
+  saveBtn.disabled=locked;
+  const lockMsg=document.getElementById('p-lock-msg');
+  if(locked){
+    const res=card.results[r];
+    lockMsg.style.display='block';
+    lockMsg.innerHTML=`🔒 Race ${r} is locked — official result: ${res.map((h,i)=>['1st','2nd','3rd','4th'][i]+' #'+h).join(' · ')}`;
+  } else lockMsg.style.display='none';
+  document.getElementById('p-err').style.display='none';
+  renderSavedPicksList();
+}
+function clearPickInputs(){
+  ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>document.getElementById(id).value='');
+}
+function savePicks(){
+  const p1=gi('pp1'),p2=gi('pp2'),p3=gi('pp3'),p4=gi('pp4');
+  if(!p1||!p2||!p3||!p4){showErr('p-err','Please fill in all 4 picks.');return;}
+  const card=getTodayCard();
+  if(card.results[curPickRace]){showErr('p-err','Results already entered for this race — picks locked.');return;}
+  card.picks[curPickRace]={win:p1,field:[p1,p2,p3,p4],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+  const ml1=gi('ml1'),ml2=gi('ml2'),ml3=gi('ml3'),ml4=gi('ml4');
+  if(ml1&&ml2&&ml3&&ml4){
+    if(!card.mlPicks) card.mlPicks={};
+    card.mlPicks[curPickRace]=[ml1,ml2,ml3,ml4];
+  }
+  saveUser();
+  document.getElementById('p-err').style.display='none';
+  renderSavedPicksList();
+  renderRaceGrid();
+  if(curPickRace<card.numRaces){
+    curPickRace++;
+    document.getElementById('p-racenum').textContent=curPickRace;
+    loadPickRaceData(curPickRace);
+  }
+}
+function renderSavedPicksList(){
+  const card=getTodayCard();
+  const races=Object.keys(card.picks).sort((a,b)=>a-b);
+  const div=document.getElementById('p-saved');
+  if(!races.length){div.innerHTML='';return;}
+  div.innerHTML=`<div class="section-title" style="margin-top:14px;">Saved Picks</div>
+  <div class="card" style="padding:10px;">
+  <table class="sc-table"><thead><tr><th>Race</th><th>★ Win</th><th>Place</th><th>Show</th><th>4th</th><th>ML</th><th>Saved</th><th></th></tr></thead><tbody>
+  ${races.map(r=>{
+    const pk=card.picks[r];
+    const ml=card.mlPicks?card.mlPicks[r]:null;
+    const sc=card.scores[r];
+    let badge=sc?'<span class="tag tag-green">Scored</span>':card.results[r]?'<span class="tag tag-gold">Results in</span>':'<span class="tag tag-muted">Pending</span>';
+    return`<tr><td><strong>R${r}</strong></td>
+      <td style="color:var(--gold-dark);font-weight:600;">${pk.field[0]}</td>
+      <td>${pk.field[1]}</td><td>${pk.field[2]}</td><td>${pk.field[3]}</td>
+      <td style="color:var(--muted);font-size:11px;">${ml?ml.join(','):'—'}</td>
+      <td style="font-size:11px;color:var(--muted);">${pk.savedAt||"—"}</td><td>${badge}</td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+function loadResultsScreen(){
+  document.getElementById('r-name').textContent=displayName(CU);
+  document.getElementById('r-date').textContent=formatDate(TODAY);
+  showResultGrid();
+  renderResultGrid();
+}
+function renderResultGrid(){
+  const card=getTodayCard();
+  const grid=document.getElementById('r-race-grid');
+  let html='';
+  for(let r=1;r<=card.numRaces;r++){
+    const hasPicks=!!card.picks[r];
+    const hasResults=!!card.results[r];
+    const isScored=!!card.scores[r];
+    let cls='race-cell',status='No picks yet';
+    if(isScored){cls='race-cell scored';status='✓ Scored';}
+    else if(hasResults){cls='race-cell has-results';status='✓ Result entered';}
+    else if(hasPicks){cls='race-cell has-picks';status='Ready to score';}
+    html+=`<div class="${cls}" onclick="selectResultRace(${r})" style="${isScored?'border-color:var(--gold);background:var(--gold-light);':''}${hasResults&&!isScored?'':''}">
+      <div class="rc-num" style="${isScored?'color:var(--gold-dark);':''}">${isScored?'🏆 ':''} Race ${r}</div>
+      <div class="rc-status">${status}</div>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+function showResultGrid(){
+  document.getElementById('r-race-grid').style.display='grid';
+  document.getElementById('r-entry-panel').style.display='none';
+}
+function selectResultRace(r){
+  curResultRace=r;
+  document.getElementById('r-racenum').textContent=r;
+  document.getElementById('r-race-grid').style.display='none';
+  document.getElementById('r-entry-panel').style.display='block';
+  const card=getTodayCard();
+  const existing=card.results[r];
+  document.getElementById('rr1').value=existing?existing[0]:'';
+  document.getElementById('rr2').value=existing?existing[1]:'';
+  document.getElementById('rr3').value=existing?existing[2]:'';
+  document.getElementById('rr4').value=existing?existing[3]:'';
+  document.getElementById('r-err').style.display='none';
+  document.getElementById('r-score-display').innerHTML='';
+}
+function clearResultInputs(){
+  ['rr1','rr2','rr3','rr4'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('r-score-display').innerHTML='';
+  document.getElementById('r-err').style.display='none';
+}
+function submitResult(){
+  const r1=gi('rr1'),r2=gi('rr2'),r3=gi('rr3'),r4=gi('rr4');
+  if(!r1||!r2||!r3||!r4){showErr('r-err','Please enter all 4 finishers.');return;}
+  const actual=[r1,r2,r3,r4];
+  const card=getTodayCard();
+  if(card.results[curResultRace]&&card.scores[curResultRace]){
+    if(!confirm('Race '+curResultRace+' is already scored. Re-entering will recalculate. Continue?')) return;
+  }
+  card.results[curResultRace]=actual;
+  const picks=card.picks[curResultRace];
+  let myScore=null,mlScore=null,guScore=null;
+  if(picks){
+    myScore=scoreRace(picks,actual,curResultRace,card,false,'scores');
+    card.scores[curResultRace]=myScore;
+  } else {
+    card.scores[curResultRace]={fieldPts:0,fieldHits:[],sweepPts:0,winHit:false,winPts:0,exacta:false,trifecta:false,superfecta:false,exactaPts:0,trifectaPts:0,superfectaPts:0,exoticPts:0,raceTotal:0,streak:0,actual,picks:null};
+  }
+  const ml=card.mlPicks?card.mlPicks[curResultRace]:null;
+  if(ml){
+    const mlPicks={win:ml[0],field:ml};
+    mlScore=scoreRace(mlPicks,actual,curResultRace,card,true,'mlScores');
+    if(!card.mlScores) card.mlScores={};
+    card.mlScores[curResultRace]=mlScore;
+  }
+  const gu=card.guPicks?card.guPicks[curResultRace]:null;
+  if(gu){
+    const guPicks={win:gu[0],field:gu};
+    guScore=scoreRace(guPicks,actual,curResultRace,card,true,'guScores');
+    if(!card.guScores) card.guScores={};
+    card.guScores[curResultRace]=guScore;
+  }
+  saveUser();
+  renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore);
+  renderResultGrid();
+}
+function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore){
+  const div=document.getElementById('r-score-display');
+  let html=`<div class="card" style="margin-top:14px;">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Official finish: ${actual.map((h,i)=>['1st','2nd','3rd','4th'][i]+' #'+h).join(' · ')}</div>`;
+  const competitors=[];
+  if(mlScore) competitors.push({name:getPartnerName(),icon:'📰',score:mlScore,color:'var(--blue)'});
+  if(guScore) competitors.push({name:'GiddyUp',icon:'🔬',score:guScore,color:'var(--gold-dark)'});
+  competitors.push({name:CU?displayName(CU):'You',icon:'🏇',score:myScore,color:'var(--green)',isMe:true});
+  if(competitors.length>1){
+    const sorted=[...competitors].sort((a,b)=>(b.score?b.score.raceTotal:0)-(a.score?a.score.raceTotal:0));
+    html+=`<div style="display:grid;grid-template-columns:repeat(${competitors.length},1fr);gap:8px;margin-bottom:14px;">`;
+    competitors.forEach(c=>{
+      const pts=c.score?c.score.raceTotal:0;
+      const isWinner=sorted[0]===c && pts>0;
+      html+=`<div style="background:${isWinner?'var(--gold-light)':'var(--bg)'};border:1.5px solid ${isWinner?'var(--gold)':'var(--border)'};border-radius:10px;padding:10px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px;">${c.icon} ${c.name}</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${c.color};">${pts}</div>
+        ${isWinner?'<div style="font-size:10px;color:var(--gold-dark);">🏆 Leading</div>':''}
+      </div>`;
+    });
+    html+='</div>';
+  }
+  if(myScore){
+    html+=`<div style="font-weight:500;margin-bottom:8px;">My Score: <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${myScore.raceTotal+myScore.streak} pts</span></div>
+    <div class="score-bd">
+      <div class="score-row"><span>Field picks (${myScore.fieldHits.length}/4)</span><span class="pts ${!myScore.fieldPts?'zero':''}">${myScore.fieldPts?'+'+myScore.fieldPts:'—'}</span></div>
+      <div class="score-row"><span>Sweep bonus</span><span class="pts ${!myScore.sweepPts?'zero':''}">${myScore.sweepPts?'+10':'—'}</span></div>
+      <div class="score-row"><span>Win bonus</span><span class="pts ${!myScore.winPts?'zero':''}">${myScore.winPts?'+20':'—'}</span></div>
+      <div class="score-row"><span>Exacta</span><span class="pts ${!myScore.exactaPts?'zero':''}">${myScore.exactaPts?'+30':'—'}</span></div>
+      <div class="score-row"><span>Trifecta</span><span class="pts ${!myScore.trifectaPts?'zero':''}">${myScore.trifectaPts?'+50':'—'}</span></div>
+      <div class="score-row"><span>Superfecta</span><span class="pts ${!myScore.superfectaPts?'zero':''}">${myScore.superfectaPts?'+70':'—'}</span></div>
+      <div class="score-total-row"><span>Race total</span><span class="pts">${myScore.raceTotal} pts</span></div>
+    </div>
+    ${myScore.streak?'<div style="margin-top:8px;background:var(--gold-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--gold-dark);font-weight:500;">🔥 Streak bonus: +5 pts</div>':''}`;
+  } else {
+    html+=`<div class="tag tag-red">No picks entered — 0 pts · streak broken</div>`;
+  }
+  html+='</div>';
+  div.innerHTML=html;
+  const card=getTodayCard();
+  if(curResultRace<card.numRaces){
+    curResultRace++;
+    document.getElementById('r-racenum').textContent=curResultRace;
+    const existing=card.results[curResultRace];
+    document.getElementById('rr1').value=existing?existing[0]:'';
+    document.getElementById('rr2').value=existing?existing[1]:'';
+    document.getElementById('rr3').value=existing?existing[2]:'';
+    document.getElementById('rr4').value=existing?existing[3]:'';
+  }
+}
+
+function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
+  const field=picks.field,win=picks.win;
+  let fieldPts=0,fieldHits=[];
+  field.forEach(h=>{if(actual.includes(h)){fieldPts+=5;fieldHits.push(h);}});
+  const sweep=fieldHits.length===4,sweepPts=sweep?10:0;
+  const winHit=actual[0]===win,winPts=winHit?20:0;
+  const exacta=field[0]===actual[0]&&field[1]===actual[1];
+  const trifecta=exacta&&field[2]===actual[2];
+  const superfecta=trifecta&&field[3]===actual[3];
+  const exactaPts=exacta?30:0,trifectaPts=trifecta?50:0,superfectaPts=superfecta?70:0;
+  const exoticPts=exactaPts+trifectaPts+superfectaPts;
+  const raceTotal=fieldPts+sweepPts+winPts+exoticPts;
+  let streak=0;
+  if(raceNum>1 && scoreKey){
+    let alive=true;
+    const history=card[scoreKey]||{};
+    for(let i=raceNum-1;i>=1;i--){
+      const prev=history[i];
+      if(!prev||prev.raceTotal===0){alive=false;break;}
     }
-    setAnalyzingId(null);
+    if(alive&&raceTotal>0) streak=5;
   }
-return h("div",{style:{paddingTop:14}},
-    h("div",{style:{display:"flex",flexDirection:"column",gap:10,marginBottom:14}},
-      h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{width:"100%",padding:"18px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:12}},
-        h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.2)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}},"📸"),
-        h("div",{style:{textAlign:"left"}},
-          h("div",{style:{fontSize:16,fontWeight:800,color:C.gold}},"Take a Photo"),
-          h("div",{style:{fontSize:11,color:"rgba(201,168,76,0.6)",marginTop:2}},"Point your camera at the race program")),
-        h("div",{style:{marginLeft:"auto",color:C.gold,fontSize:18}},"→")),
-     h("div",{style:{display:"flex",gap:8}},
-        h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{flex:1,padding:"14px 10px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:12,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6}},
-          h("div",{style:{fontSize:22}},"🖼📄"),
-          h("div",{style:{fontSize:12,fontWeight:700,color:C.text}},"Photo or PDF")),
-        h("a",{href:"https://drive.google.com/drive/folders/1zRnyaMAXfJOX9FIle8wYUa-TB9awIhfy?usp=sharing",target:"_blank",rel:"noopener noreferrer",style:{flex:1,padding:"14px 10px",background:"rgba(201,168,76,0.08)",border:"2px solid rgba(201,168,76,0.5)",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,minHeight:80,textDecoration:"none",cursor:"pointer"}},
-          h("div",{style:{fontSize:22}},"📁"),
-          h("div",{style:{fontSize:12,fontWeight:700,color:C.gold}},"Races Today"),
-          h("div",{style:{fontSize:10,color:"#a07830"}})))),
-    h("input",{ref:cameraRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:e=>addFiles(e.target.files)}),
-    h("input",{ref:fileRef,type:"file",accept:"image/*,application/pdf",multiple:true,style:{display:"none"},onChange:e=>addFiles(e.target.files)}),
-    h("div",{style:{background:"rgba(74,158,110,0.06)",border:"1px solid rgba(74,158,110,0.2)",borderRadius:10,padding:"8px 12px",marginBottom:10,fontSize:11,color:"#4a9e6e"}},"📄 PDFs supported — upload directly from DRF, Equibase or any past performances PDF"),
-
-    races.length>0&&h("div",{style:{marginBottom:12}},
-      h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
-        h("div",{style:{fontSize:11,color:C.muted}},races.length+" race"+(races.length!==1?"s":"")+" loaded"),
-        h("button",{onClick:clearAll,style:{background:"transparent",border:"none",color:"#ef4444",fontSize:11,cursor:"pointer",fontWeight:700}},"Clear all")),
-
-      races.map(race=>{
-        const pageCount=race.pages?race.pages.length:0;
-        // ensure a stable ref for this race's add-page input
-        if(!pageRefs.current[race.id])pageRefs.current[race.id]=React.createRef();
-        return h("div",{key:race.id,style:{background:race.active?"rgba(201,168,76,0.08)":"#fff",border:race.active?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:12,padding:"10px 14px",marginBottom:8}},
-          // ── Race header row ──
-          h("div",{style:{display:"flex",alignItems:"center",gap:10}},
-            // thumbnail: first page preview or PDF icon
-            (race.pages&&race.pages[0]&&!race.pages[0].isPdf&&race.pages[0].preview)
-              ?h("img",{src:race.pages[0].preview,style:{width:44,height:44,borderRadius:8,objectFit:"cover",flexShrink:0}})
-              :h("div",{style:{width:44,height:44,borderRadius:8,background:"#fee2e2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}},"📄"),
-            h("div",{style:{flex:1,minWidth:0}},
-              h("input",{value:race.label,onChange:e=>renameRace(race.id,e.target.value),style:{fontWeight:700,fontSize:13,color:C.text,border:"none",background:"transparent",width:"100%",outline:"none",padding:0}}),
-              h("div",{style:{fontSize:11,color:race.status==="analyzed"?"#4a9e6e":C.muted,marginTop:2}},
-                race.status==="analyzed"
-                  ?"✅ "+race.horseCount+" horses analyzed"
-                  :pageCount+" page"+(pageCount!==1?"s":"")+" · ready")),
-            // Analyze button
-            h("button",{
-              onClick:()=>analyzeOne(race),
-              disabled:analyzingId===race.id,
-              style:{background:race.status==="analyzed"?"rgba(74,158,110,0.1)":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:race.status==="analyzed"?"1px solid #4a9e6e":"none",borderRadius:10,padding:"8px 14px",color:race.status==="analyzed"?"#4a9e6e":C.gold,fontSize:12,fontWeight:700,cursor:analyzingId===race.id?"not-allowed":"pointer",flexShrink:0,opacity:analyzingId&&analyzingId!==race.id?0.4:1}},
-              analyzingId===race.id?"⏳":race.status==="analyzed"?"Re-analyze":"Analyze"),
-            // Remove race button
-            h("button",{onClick:()=>remove(race.id),style:{background:"#fee2e2",border:"none",borderRadius:8,width:28,height:28,cursor:"pointer",color:"#ef4444",flexShrink:0,marginLeft:4}},"✕")),
-
-          // ── Pages strip (shown when >1 page or after first upload) ──
-          h("div",{style:{marginTop:10,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}},
-            // thumbnail chips for each page
-            race.pages&&race.pages.map((pg,pi)=>
-              h("div",{key:pi,style:{position:"relative",flexShrink:0}},
-                pg.isPdf||!pg.preview
-                  ?h("div",{style:{width:38,height:38,borderRadius:6,background:"#fee2e2",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,border:"1px solid #fca5a5"}},"📄")
-                  :h("img",{src:pg.preview,style:{width:38,height:38,borderRadius:6,objectFit:"cover",border:"1px solid "+C.border}}),
-                h("div",{style:{position:"absolute",top:-5,left:-5,background:C.navy,color:C.gold,borderRadius:"50%",width:16,height:16,fontSize:9,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}},pi+1),
-                pageCount>1&&h("button",{onClick:()=>removePage(race.id,pi),style:{position:"absolute",top:-5,right:-5,background:"#ef4444",border:"none",borderRadius:"50%",width:16,height:16,fontSize:9,color:"#fff",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,lineHeight:1}},"✕")
-              )
-            ),
-            // "+ Add Page" button
-            h("div",{style:{position:"relative"}},
-              h("button",{
-                onClick:()=>{const ref=pageRefs.current[race.id];if(ref&&ref.current)ref.current.click();},
-                disabled:!!analyzingId,
-                style:{width:38,height:38,borderRadius:6,border:"2px dashed "+C.gold,background:"rgba(201,168,76,0.08)",color:C.gold,fontSize:18,cursor:analyzingId?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,flexShrink:0}
-              },"+"),
-              h("input",{
-                ref:pageRefs.current[race.id],
-                type:"file",
-                accept:"image/*,application/pdf",
-                capture:"environment",
-                style:{display:"none"},
-                onChange:e=>{if(e.target.files[0])addPageToRace(race.id,e.target.files[0]);e.target.value="";}
-              })
-            ),
-            pageCount>1&&h("div",{style:{fontSize:10,color:C.gold,fontWeight:700,marginLeft:2}},pageCount+" pages → analyzed together")
-          )
-        );
-      })
-    ),
-
-    status==="reading"&&h("div",{style:{background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.3)",borderRadius:14,padding:"16px",marginBottom:12,textAlign:"center"}},
-      h("div",{style:{fontSize:32,marginBottom:8}},"🐴"),
-      h("div",{style:{fontWeight:800,color:C.gold,fontSize:16,marginBottom:4}},"Playing Your Angles..."),
-      h("div",{style:{fontSize:12,color:C.muted}},progress)),
-    status==="done"&&h("div",{style:{background:"rgba(74,158,110,0.08)",border:"1px solid rgba(74,158,110,0.3)",borderRadius:12,padding:"14px",marginBottom:12,textAlign:"center"}},
-      h("div",{style:{fontSize:28,marginBottom:6}},"✅"),
-      h("div",{style:{fontWeight:700,color:"#4a9e6e"}},"Analysis Complete — switching to Angles...")),
-    status==="error"&&h("div",{style:{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:12,padding:"14px",marginBottom:12}},
-      h("div",{style:{fontWeight:700,color:"#ef4444",marginBottom:4}},"Could not read program"),
-      h("div",{style:{fontSize:12,color:C.muted}},errorMsg)),
-
-    races.length===0&&h("button",{onClick:()=>{setHorses(DEMO);setRaces([{id:1,label:"Race 1 — 2022 KY Derby Demo",pages:[{base64:"",mediaType:"image/jpeg",isPdf:false,fileName:"demo",preview:null}],status:"analyzed",horseCount:DEMO.length,active:true}]);setActiveTab("rankings");},style:{width:"100%",padding:"14px",background:"transparent",border:"1.5px solid "+C.border,borderRadius:12,color:C.muted,fontSize:14,fontWeight:700,cursor:"pointer"}},"🏇 Try Demo — 2022 KY Derby Future Wager"),
-
-    h(HowToUse,null));
+  return{fieldPts,fieldHits,sweepPts,winHit,winPts,exacta,trifecta,superfecta,exactaPts,trifectaPts,superfectaPts,exoticPts,raceTotal,streak,actual,picks};
 }
 
-function HowToUse(){
-  const [open,setOpen]=useState(true);
-  const steps=[
-    "Tap Races Today to open your Google Drive folder",
-    "Download all the race PDFs you need — grab them all at once for convenience",
-    "Tap Photo or PDF and choose your race file",
-    "Got extra files for that race (speed ratings, multiple pages)? Tap + to add them",
-    "GiddyUp will analyze every document you've added for that race together",
-    "Tap Analyze",
-    "You're off to the races 🏇",
-  ];
-  return h("div",{style:{marginTop:16,background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden"}},
-    h("div",{onClick:()=>setOpen(!open),style:{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",cursor:"pointer",background:open?"rgba(201,168,76,0.06)":"#fff"}},
-      h("div",{style:{fontSize:18}},"📋"),
-      h("div",{style:{flex:1,fontWeight:800,fontSize:14,color:C.text}},"How to Upload Your Races"),
-      h("div",{style:{color:C.muted,fontSize:12,fontWeight:700}},open?"Hide ▲":"Show ▼")),
-    open&&h("div",{style:{padding:"4px 16px 18px"}},
-      steps.map((step,i)=>h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:i<steps.length-1?10:0}},
-        h("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:C.gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}},i+1),
-h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},step)))));
+function loadScorecard(){
+  document.getElementById('sc-name').textContent=displayName(CU);
+  document.getElementById('sc-date').textContent=formatDate(TODAY);
+  const card=getTodayCard();
+  const rns=Object.keys(card.scores).map(Number).sort((a,b)=>a-b);
+  const noData=document.getElementById('sc-no-data'),scCard=document.getElementById('sc-card');
+  if(!rns.length){noData.style.display='block';scCard.style.display='none';document.getElementById('sc-summary').innerHTML='';return;}
+  noData.style.display='none';scCard.style.display='block';
+  let tF=0,tW=0,tE=0,tS=0,tSt=0,tR=0,tEx=0,tTri=0,tSf=0,consAlive=true;
+  let dots='';
+  for(let i=1;i<=card.numRaces;i++){
+    const sc=card.scores[i];
+    if(!sc) dots+=`<div class="sdot pending">${i}</div>`;
+    else if(sc.raceTotal>0) dots+=`<div class="sdot scored">${i}</div>`;
+    else{dots+=`<div class="sdot blank">${i}</div>`;consAlive=false;}
+  }
+  document.getElementById('sc-streak-dots').innerHTML=dots;
+  rns.forEach(r=>{if(card.scores[r].raceTotal===0) consAlive=false;});
+  const allScored=rns.length===card.numRaces,consBonus=allScored&&consAlive?card.numRaces*5:0;
+  let rows='';
+  rns.forEach(r=>{
+    const sc=card.scores[r];
+    tF+=sc.fieldPts;tW+=sc.winPts;tE+=sc.exoticPts;tS+=sc.sweepPts;tSt+=sc.streak;tR+=sc.raceTotal;
+    if(sc.exacta) tEx+=sc.exactaPts;
+    if(sc.trifecta) tTri+=sc.trifectaPts;
+    if(sc.superfecta) tSf+=sc.superfectaPts;
+    rows+=`<tr><td><strong>R${r}</strong></td>
+      <td>${sc.winHit?'<span style="color:var(--gold-dark);font-weight:500;">+20</span>':'—'}</td>
+      <td>${sc.fieldPts||'—'}</td>
+      <td>${sc.exacta?'<span class="tag tag-green">+30</span>':'—'}</td>
+      <td>${sc.trifecta?'<span class="tag tag-gold">+50</span>':'—'}</td>
+      <td>${sc.superfecta?'<span class="tag tag-gold">+70</span>':'—'}</td>
+      <td>${sc.sweepPts?'<span class="tag tag-green">+10</span>':'—'}</td>
+      <td>${sc.streak?'<span style="color:var(--gold-dark);font-weight:500;">+5</span>':'—'}</td>
+      <td><strong>${sc.raceTotal+sc.streak}</strong></td></tr>`;
+  });
+  const grand=tR+tSt+consBonus;
+  document.getElementById('sc-summary').innerHTML=`
+    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Race Score</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);">${tR}</div></div>
+    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Streak Bonus</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold-dark);">${tSt}</div></div>
+    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Grand Total</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);">${grand}</div></div>`;
+  document.getElementById('sc-cons-status').innerHTML=consAlive?'<span style="color:var(--green);font-weight:500;">🟢 Alive</span>':'<span style="color:var(--red);font-weight:500;">🔴 Lost</span>';
+  const mlScores=card.mlScores||{};
+  const guScores=card.guScores||{};
+  const mlRns=Object.keys(mlScores).map(Number);
+  const guRns=Object.keys(guScores).map(Number);
+  const mlEl=document.getElementById('sc-ml-compare');
+  if(mlRns.length||guRns.length){
+    const myTotal=tR;
+    const mlTotal=mlRns.reduce((a,r)=>a+mlScores[r].raceTotal,0);
+    const guTotal=guRns.reduce((a,r)=>a+guScores[r].raceTotal,0);
+    const competitors=[];
+    if(mlRns.length) competitors.push({name:getPartnerName(),icon:'📰',total:mlTotal,races:mlRns.length,color:'var(--blue)'});
+    if(guRns.length) competitors.push({name:'GiddyUp',icon:'🔬',total:guTotal,races:guRns.length,color:'var(--gold-dark)'});
+    competitors.push({name:CU?displayName(CU):'You',icon:'🏇',total:myTotal,races:rns.length,color:'var(--green)',isMe:true});
+    const ranked=[...competitors].sort((a,b)=>b.total-a.total);
+    mlEl.style.display='block';
+    mlEl.innerHTML=`<div class="section-title" style="margin-bottom:8px;">Leaderboard — Today</div>
+    <div class="card" style="padding:10px;">
+      ${ranked.map((c,i)=>{
+        const medal=['🥇','🥈','🥉'][i]||'';
+        return`<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;${i<ranked.length-1?'border-bottom:1px solid var(--border);':''}">
+          <div style="font-size:20px;width:28px;text-align:center;">${medal||c.icon}</div>
+          <div style="flex:1;">
+            <div style="font-weight:500;font-size:14px;${c.isMe?'color:var(--green);':''}">${c.icon} ${c.name}${c.isMe?' <span class=\"tag tag-green\" style=\"font-size:9px;\">You</span>':''}</div>
+            <div style="font-size:11px;color:var(--muted);">${c.races} race${c.races!==1?'s':''} scored</div>
+          </div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${c.color};">${c.total}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } else mlEl.style.display='none';
+  document.getElementById('sc-body').innerHTML=rows;
+  document.getElementById('sc-foot').innerHTML=`
+    <tr class="sc-foot-row"><td><strong>Totals</strong></td><td>${tW?'+'+tW:'—'}</td><td>${tF}</td><td>${tEx?'+'+tEx:'—'}</td><td>${tTri?'+'+tTri:'—'}</td><td>${tSf?'+'+tSf:'—'}</td><td>${tS?'+'+tS:'—'}</td><td>${tSt?'+'+tSt:'—'}</td><td><strong>${tR+tSt}</strong></td></tr>
+    ${consBonus?`<tr style="background:var(--gold-light);"><td colspan="8" style="text-align:right;color:var(--gold-dark);font-size:12px;">🏆 Consistency (${card.numRaces}×5)</td><td style="font-weight:600;color:var(--gold-dark);">+${consBonus}</td></tr>`:''}
+    <tr class="sc-grand-row"><td colspan="8"><strong>Grand Total</strong></td><td><strong>${grand}</strong></td></tr>`;
+  renderHeadToHead(card,rns);
+}
+function renderHeadToHead(card,rns){
+  const el=document.getElementById('sc-h2h');
+  const mlScores=card.mlScores||{};
+  const guScores=card.guScores||{};
+  const hasML=Object.keys(mlScores).length>0;
+  const hasGU=Object.keys(guScores).length>0;
+  if(!hasML&&!hasGU){el.innerHTML='';return;}
+  const competitors=[];
+  competitors.push({key:'me',icon:'🏇',name:CU?displayName(CU):'You',color:'var(--green)',scores:card.scores,isMe:true});
+  if(hasML) competitors.push({key:'ml',icon:'📰',name:getPartnerName(),color:'var(--blue)',scores:mlScores});
+  if(hasGU) competitors.push({key:'gu',icon:'🔬',name:'GiddyUp',color:'var(--gold-dark)',scores:guScores});
+  function exLabel(sc){
+    if(!sc) return '—';
+    if(sc.superfecta) return '<span class="tag tag-gold">Sfcta</span>';
+    if(sc.trifecta) return '<span class="tag tag-gold">Tri</span>';
+    if(sc.exacta) return '<span class="tag tag-green">Ex</span>';
+    return '—';
+  }
+  let rows='';
+  rns.forEach(r=>{
+    competitors.forEach((c,ci)=>{
+      const sc=c.scores[r];
+      if(!sc) return;
+      const isFirst=ci===0;
+      rows+=`<tr style="${isFirst?'border-top:2px solid var(--border);':''}">
+        <td style="${isFirst?'':'color:var(--muted);'}">${isFirst?'<strong>R'+r+'</strong>':''}</td>
+        <td style="text-align:left;${c.isMe?'font-weight:600;color:var(--green);':''}">${c.icon} ${c.name}</td>
+        <td>${sc.winHit?'<span style="color:var(--gold-dark);font-weight:500;">+20</span>':'—'}</td>
+        <td>${sc.fieldPts||'—'}</td>
+        <td>${exLabel(sc)}</td>
+        <td>${sc.sweepPts?'<span class="tag tag-green">+10</span>':'—'}</td>
+        <td>${sc.streak?'<span style="color:var(--gold-dark);font-weight:500;">+5</span>':'—'}</td>
+        <td><strong style="color:${c.color};">${sc.raceTotal+(sc.streak||0)}</strong></td>
+      </tr>`;
+    });
+  });
+  let exoticRows='';
+  const exoticTotals={};
+  competitors.forEach(c=>{exoticTotals[c.key]={ex:0,tri:0,sf:0,total:0};});
+  rns.forEach(r=>{
+    competitors.forEach((c,ci)=>{
+      const sc=c.scores[r];
+      if(!sc) return;
+      const exPts=sc.exactaPts||0;
+      const triPts=sc.trifectaPts||0;
+      const sfPts=sc.superfectaPts||0;
+      const rowTotal=exPts+triPts+sfPts;
+      const isFirst=ci===0;
+      exoticRows+=`<tr style="${isFirst?'border-top:2px solid var(--border);':''}">
+        <td style="${isFirst?'':'color:var(--muted);'}">${isFirst?'<strong>R'+r+'</strong>':''}</td>
+        <td style="text-align:left;${c.isMe?'font-weight:600;color:var(--green);':''}">${c.icon} ${c.name}</td>
+        <td>${exPts?'<span class="tag tag-green">+'+exPts+'</span>':'—'}</td>
+        <td>${triPts?'<span class="tag tag-gold">+'+triPts+'</span>':'—'}</td>
+        <td>${sfPts?'<span class="tag tag-gold">+'+sfPts+'</span>':'—'}</td>
+        <td><strong style="color:${c.color};">${rowTotal||'—'}</strong></td>
+      </tr>`;
+      exoticTotals[c.key].ex+=exPts;
+      exoticTotals[c.key].tri+=triPts;
+      exoticTotals[c.key].sf+=sfPts;
+      exoticTotals[c.key].total+=rowTotal;
+    });
+  });
+  let exoticFootRows='';
+  competitors.forEach(c=>{
+    const t=exoticTotals[c.key];
+    exoticFootRows+=`<tr style="background:${c.isMe?'var(--green-light)':'var(--bg)'};font-weight:600;">
+      <td colspan="2" style="text-align:left;${c.isMe?'color:var(--green);':''}">${c.icon} ${c.name}${c.isMe?' <span class="tag tag-green" style="font-size:9px;">You</span>':''}</td>
+      <td>${t.ex?'+'+t.ex:'—'}</td>
+      <td>${t.tri?'+'+t.tri:'—'}</td>
+      <td>${t.sf?'+'+t.sf:'—'}</td>
+      <td style="color:${c.color};">${t.total?t.total:'—'}</td>
+    </tr>`;
+  });
+  el.innerHTML=`
+    <div class="section-title" style="margin-top:16px;">Head-to-Head — Race by Race</div>
+    <div style="padding:0;">
+      <table class="sc-table">
+        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>W</th><th>Fld</th><th>Exot</th><th>Swp</th><th>Stk</th><th>Total</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="section-title" style="margin-top:16px;">Exotic Bets Breakdown</div>
+    <div style="padding:0;">
+      <table class="sc-table">
+        <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Ex</th><th>Tri</th><th>Sfcta</th><th>Total</th></tr></thead>
+        <tbody>${exoticRows}</tbody>
+        <tfoot>${exoticFootRows}</tfoot>
+      </table>
+    </div>`;
 }
 
-function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles}){const [openGroups,setOpenGroups]=useState({core:true,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount===ALL_FACTORS.length;
-function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...PRESETS[raceTypeId]});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
-function selectRace(id){setActiveRace(id);if(angleMode==='custom'){loadSlotFor(id);}else{setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...PRESETS[id]});}}
-function change(id,v){const ls=ALL_FACTORS.filter(f=>f.id!==id&&locks[f.id]).reduce((s,f)=>s+weights[f.id],0);setWeights(w=>redistribute(w,locks,id,Math.max(0,Math.min(v,100-ls))));}function toggleLock(id){setLocks(l=>({...l,[id]:!l[id]}));}function lockAll(){if(allLocked)setLocks({});else setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
-const [justSaved,setJustSaved]=useState(false);
-const uName=silksUser&&silksUser.username?silksUser.username:"My";
-const raceLabel=(RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0]).label;
-const savedSlot=silksUser&&silksUser.customAngles&&silksUser.customAngles[activeRace];
-const hasSaved=!!savedSlot;
-const isDirty=!hasSaved||JSON.stringify(weights)!==JSON.stringify(savedSlot.weights)||JSON.stringify(locks)!==JSON.stringify(savedSlot.locks);
-return h("div",{style:{paddingTop:14}},
-  h("div",{style:{display:"flex",gap:8,marginBottom:14}},
-    h("button",{onClick:()=>{setAngleMode('giddyup');setWeights({...PRESETS[activeRace]});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));},style:{flex:1,padding:"12px 8px",borderRadius:12,border:angleMode==='giddyup'?"2px solid "+C.gold:"2px solid "+C.border,background:angleMode==='giddyup'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:angleMode==='giddyup'?C.gold:C.muted}},"🐴 GiddyUp Angles"),
-    h("button",{onClick:()=>{setAngleMode('custom');loadSlotFor(activeRace);},style:{flex:1,padding:"12px 8px",borderRadius:12,border:angleMode==='custom'?"2px solid "+C.gold:"2px solid "+C.border,background:angleMode==='custom'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:angleMode==='custom'?C.gold:C.muted}},"⭐ "+uName+" Angles")),
-  angleMode==='custom'&&h("div",{style:{background:"rgba(201,168,76,0.06)",border:"1px solid rgba(201,168,76,0.25)",borderRadius:12,padding:"10px 14px",marginBottom:14}},
-    h("div",{style:{fontSize:12,fontWeight:700,color:isDirty?"#c2410c":"#4a9e6e"}},
-      !hasSaved?"⚠️ No saved "+raceLabel+" angles yet — adjust below, then Save":(isDirty?"⚠️ Unsaved changes — tap Save to keep these":"✅ Using your saved "+raceLabel+" angles")),
-   h("button",{onClick:async()=>{const ok=await onSaveAngles(activeRace,weights,locks);if(ok){setJustSaved(true);setTimeout(()=>setJustSaved(false),2500);}},style:{marginTop:8,padding:"10px 16px",background:justSaved?"#4a9e6e":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:10,color:justSaved?"#fff":C.gold,fontSize:13,fontWeight:700,cursor:"pointer"}},justSaved?"✅ Saved!":"💾 Save as "+uName+"'s "+raceLabel+" Angles")),
-  !horses||!horses.length?h("div",{onClick:()=>setActiveTab("upload"),style:{background:"rgba(201,168,76,0.08)",border:"1.5px dashed "+C.gold,borderRadius:14,padding:"12px 16px",marginBottom:16,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},h("div",{style:{fontSize:26}},"📷"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:13,color:C.gold}},"Upload a Race Program First")),h("div",{style:{color:C.gold,fontSize:16}},"→")):h("div",{style:{background:"rgba(201,168,76,0.08)",border:"2px solid rgba(201,168,76,0.4)",borderRadius:14,padding:"12px 16px",marginBottom:16}},h("div",{style:{display:"flex",alignItems:"center",gap:10}},h("div",{style:{fontSize:22}},"🤖"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:800,fontSize:15,color:activeRace==="custom"?"#ef4444":C.gold}},activeRace==="custom"?"Select Your Race Type Below!":activeRace.charAt(0).toUpperCase()+activeRace.slice(1)+" Race Detected"),h("div",{style:{fontSize:11,color:"#a07830",marginTop:2}},"Angles preset — adjust below if needed"))),h("div",{style:{fontSize:11,color:"#a07830",paddingTop:8,borderTop:"1px solid rgba(201,168,76,0.2)",marginTop:8}},"✅ "+(horses?horses.length:0)+" horses loaded")),h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:10}},"Select Race Type"),h("div",{style:{display:"flex",gap:6,marginBottom:14}},RACE_TYPES.map(rt=>h("button",{key:rt.id,onClick:()=>selectRace(rt.id),style:{flex:1,padding:"10px 2px",borderRadius:12,border:activeRace===rt.id?"2px solid "+rt.color:"2px solid "+C.border,background:activeRace===rt.id?rt.color+"18":"#fff",cursor:"pointer"}},h("div",{style:{fontSize:15,marginBottom:2}},rt.icon),h("div",{style:{fontSize:9,fontWeight:700,color:activeRace===rt.id?rt.color:C.muted,textTransform:"uppercase"}},rt.label)))),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},h("div",null,h("div",{style:{fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:2}},"Angle Points"),h("div",{style:{display:"flex",alignItems:"baseline",gap:3}},h("span",{style:{fontSize:34,fontWeight:900,color:total===100?C.gold:"#ef4444"}},total),h("span",{style:{color:C.muted,fontSize:13}},"/100 pts"))),h("div",{style:{textAlign:"right"}},h("div",{style:{fontSize:11,color:total===100?"#4a9e6e":"#ef4444",fontWeight:700}},total===100?"✅ Allocated":total<100?"⚠ "+(100-total)+" left":"⚠ "+(total-100)+" over"),lockedCount>0&&h("div",{style:{fontSize:10,color:C.muted}},"🔒 "+lockedCount+" locked"))),h("div",{style:{height:8,background:"#f1f5f9",borderRadius:6,overflow:"hidden",display:"flex"}},ALL_FACTORS.map(f=>h("div",{key:f.id,style:{width:weights[f.id]+"%",height:"100%",background:FC[f.id]}})))),h("button",{onClick:lockAll,style:{width:"100%",marginBottom:14,padding:"12px",background:allLocked?"linear-gradient(135deg,"+C.navy+","+C.navy2+")":"#f8fafc",border:allLocked?"none":"1.5px solid "+C.border,borderRadius:12,color:allLocked?C.gold:"#64748b",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",null,allLocked?"🔓":"🔒"),allLocked?"Unlock All Angles":"Lock All Angles"),FACTOR_GROUPS.map(group=>h("div",{key:group.id,style:{marginBottom:12}},h("div",{onClick:()=>setOpenGroups(g=>({...g,[group.id]:!g[group.id]})),style:{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:openGroups[group.id]?"rgba(26,37,53,0.04)":"#fff",border:"1px solid "+C.border,borderRadius:12,cursor:"pointer",marginBottom:openGroups[group.id]?8:0}},h("span",{style:{fontSize:16}},group.icon),h("span",{style:{fontWeight:700,fontSize:14,color:C.text,flex:1}},group.label),h("span",{style:{fontSize:11,color:C.muted}},group.factors.reduce((s,f)=>s+weights[f.id],0)+"pts"),h("span",{style:{color:C.muted,fontSize:11}},openGroups[group.id]?"▲":"▼")),openGroups[group.id]&&group.factors.map(f=>{const locked=!!locks[f.id],pct=weights[f.id];return h("div",{key:f.id,style:{background:locked?FC[f.id]+"08":"#fff",border:locked?"1.5px solid "+FC[f.id]+"55":"1px solid "+C.border,borderRadius:12,padding:"11px 13px",marginBottom:8}},h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:8}},h("div",{style:{width:34,height:34,background:FC[f.id]+"18",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}},f.icon),h("div",{style:{flex:1}},h("div",{style:{color:C.text,fontSize:13,fontWeight:700}},f.label),h("div",{style:{color:C.muted,fontSize:10}},f.tip)),h("div",{style:{background:pct>=15?FC[f.id]:FC[f.id]+"22",color:pct>=15?"#fff":FC[f.id],borderRadius:20,padding:"3px 10px",fontSize:13,fontWeight:800,minWidth:46,textAlign:"center"}},pct,h("span",{style:{fontSize:8,opacity:.7}},"pts")),h("button",{onClick:()=>toggleLock(f.id),style:{background:locked?FC[f.id]+"22":"#f8fafc",border:locked?"1.5px solid "+FC[f.id]+"66":"1.5px solid "+C.border,borderRadius:10,width:32,height:32,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}},locked?"🔒":"🔓")),h("div",{style:{position:"relative"}},h("div",{style:{position:"absolute",top:"50%",left:0,right:0,height:6,marginTop:-3,borderRadius:3,background:"linear-gradient(90deg,"+FC[f.id]+"99 "+pct+"%,#e2e8f0 "+pct+"%)",pointerEvents:"none"}}),h("input",{type:"range",min:0,max:100,value:pct,disabled:locked,onChange:e=>change(f.id,Number(e.target.value)),style:{position:"relative",zIndex:1,width:"100%"}})));})))  ,h("div",{style:{display:"flex",gap:10,marginTop:8}},h("button",{onClick:()=>{if(angleMode==='custom'){loadSlotFor(activeRace);}else{setLocks({});setWeights({...PRESETS[activeRace]});}},style:{flex:1,padding:"13px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:12,color:"#64748b",fontSize:13,fontWeight:700,cursor:"pointer"}},angleMode==='custom'?"↩ Discard Changes":"🔄 Reset"),h("button",{onClick:()=>setActiveTab("rankings"),style:{flex:2,padding:"13px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"See Rankings →")));}
-function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,raceName,horses,setHorses,scratched,setScratched}){
-  const [actionHorse,setActionHorse]=useState(null);
-  function handleAction(form){
-    if(form===null){setScratched(s=>({...s,[actionHorse.number]:!s[actionHorse.number]}));}
-    else{setHorses(hs=>hs.map(hh=>hh.number===actionHorse.number?{...hh,...form}:hh));}
-    setActionHorse(null);
-  }
-  const scratchedHorses=horses.filter(hr=>scratched[hr.number]);
-  const scratchCount=scratchedHorses.length;
-  if(!scores.length&&!scratchCount)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"📷"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));
-  return h("div",{style:{paddingTop:14}},
-    actionHorse&&h(HorseActionModal,{horse:actionHorse,isScratched:!!scratched[actionHorse.number],onSave:handleAction,onClose:()=>setActionHorse(null)}),
-    raceName&&h("div",{style:{fontSize:13,color:C.muted,marginBottom:10,fontStyle:"italic"}},raceName),
-    scratchCount>0&&h("div",{style:{background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:10,padding:"8px 12px",marginBottom:10,fontSize:11,color:"#dc2626",display:"flex",alignItems:"center",gap:8}},h("span",null,"🚫"),h("span",null,scratchCount+" horse"+(scratchCount>1?"s":"")+" scratched — rankings updated")),
-    h("div",{style:{background:"#f0f7ff",border:"1px solid #bfdbfe",borderRadius:12,padding:"10px 14px",marginBottom:14,fontSize:12,color:C.text,lineHeight:1.8}},
-      h("div",null,"🎽 Tap a horse's colors for in-depth handicapping data."),
-      h("div",{style:{display:"flex",alignItems:"center",gap:6}},
-        "Tap ",
-        h("span",{style:{background:"rgba(201,168,76,0.18)",border:"1.5px solid rgba(201,168,76,0.55)",borderRadius:7,width:22,height:18,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:C.navy}},"⋯"),
-        " to edit a horse or scratch it from the race."),
-      h("div",null,"📊 Lower GiddyUp score = better horse.")),
-    scores.length>0&&h("div",{style:{background:"linear-gradient(135deg,#fffbf0,#fff8e6)",border:"2px solid "+C.gold,borderRadius:16,padding:"16px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14}},
-      h("div",{style:{fontSize:38}},"🏆"),
-      h("div",{style:{flex:1}},
-        h("div",{style:{color:C.muted,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}},"Top Pick · "+activeRaceData.icon+" "+activeRaceData.label),
-        h("div",{style:{fontSize:21,fontWeight:900,color:C.gold}},scores[0].name),
-        h("div",{style:{color:"#64748b",fontSize:12,marginTop:2}},"Score "+scores[0].totalScore+" · "+scores[0].odds+" · "+scores[0].jockey))),
-    ...scores.map((horse,i)=>h(HorseCard,{key:horse.number,horse,rank:i,weights,allScores:scores,activeRace,onTap:hs=>setActionHorse(hs)})),
-    scratchCount>0&&h("div",null,
-      h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"16px 0 8px",display:"flex",alignItems:"center",gap:6}},h("span",null,"🚫 Scratches"),h("span",null,"("+scratchCount+")")),
-      ...scratchedHorses.map(hs=>h(ScratchedCard,{key:hs.number,horse:hs,onTap:hr=>setActionHorse(hr)}))),
-    h("div",{style:{display:"flex",gap:10,marginTop:12}},
-      h("button",{onClick:()=>shareContent("GiddyUp Picks",scores.slice(0,3).map((hh,i)=>["🥇","🥈","🥉"][i]+" #"+hh.number+" "+hh.name+" ("+hh.totalScore+")").join("\n")),style:{padding:"10px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:13,fontWeight:700,cursor:"pointer"}},"📤 Share"),
-      h("button",{onClick:()=>setActiveTab("giddyup"),style:{flex:2,padding:"14px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"🐴 GiddyUp Suggestions →")));}
-function GiddyUpTab({scores,setActiveTab}){if(!scores.length)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));const bets=buildBets(scores);if(!bets)return h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses.");const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);function SL(text){return h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"20px 0 10px",borderBottom:"1px solid "+C.border,paddingBottom:6}},text);}function BC(icon,title,horses,note,highlight){
-  const list=Array.isArray(horses)?horses:[horses];
-  return h("div",{style:{background:highlight?"#fffbf0":"#fff",border:"1px solid "+(highlight?"#e8d48a":C.border),borderRadius:12,padding:"14px 16px",marginBottom:8}},
-    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
-      h("div",{style:{fontSize:13,fontWeight:800,color:C.text}},icon+" "+title),
-      highlight&&h("span",{style:{fontSize:10,fontWeight:700,color:"#a07830",background:"#fef3c7",borderRadius:8,padding:"2px 8px"}},"TOP PICK")),
-    h("div",{style:{display:"flex",flexDirection:"column",gap:8,marginBottom:note?12:0}},
-      list.map((hh,i)=>{
-        const silk=SILK_COLORS[hh.number]||SILK_COLORS.default;
-        return h("div",{key:hh.number,style:{display:"flex",alignItems:"center",gap:10}},
-          h("div",{style:{width:18,fontSize:14,fontWeight:700,color:C.muted,textAlign:"right",flexShrink:0}},list.length>1?(i+1)+".":""),
-          h("div",{style:{width:32,height:32,borderRadius:8,background:silk.bg,color:silk.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,border:"1px solid rgba(0,0,0,0.12)",flexShrink:0}},hh.number),
-          h("div",{style:{fontSize:16,fontWeight:700,color:C.navy}},hh.name));
-      })),
-    note&&h("div",{style:{fontSize:12,color:"#475569",fontWeight:500,lineHeight:1.6}},note));
-}return h("div",{style:{paddingTop:14}},h("div",{style:{background:"#fff",border:"2px solid #e8d48a",borderRadius:14,padding:"14px 16px",marginBottom:10}},h("div",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"🐴 GiddyUp Silks Choice"),h("div",{style:{fontSize:22,fontWeight:900,color:C.navy,marginBottom:2}},"#"+top.number+" "+top.name),h("div",{style:{fontSize:12,color:C.muted,marginBottom:10}},top.odds+" · Score: "+top.totalScore+" · "+top.jockey),h("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:4}},h("span",{style:{fontSize:10,color:C.muted}},"Confidence:"),h("div",{style:{display:"flex",gap:2}},[...Array(10)].map((_,i)=>h("div",{key:i,style:{width:8,height:8,borderRadius:2,background:i<conf.bars?conf.color:"#e2e8f0"}}))),h("span",{style:{fontSize:10,color:conf.color,fontWeight:700}},conf.label))),SL("Win Bets"),BC("🥇","Best Bet — Win",top,"Scored "+top.totalScore+" — best in a field of "+scores.length+". "+(gap>=50?"Clear top choice, leads by "+gap+" points.":gap>=25?"Solid edge, "+gap+" points clear of #"+second.number+".":"Tight race — only "+gap+" points separate 1st and 2nd."),true),smartWin&&smartWin.number!==top.number&&BC("💎","Smart Money",smartWin,"#"+smartWin.number+" is "+smartWin.odds+" but scored "+smartWin.totalScore+" — only "+(smartWin.totalScore-top.totalScore)+" points off our top pick. Real value here."),SL("Exacta"),BC("📦","Box "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap<20?"Tight field — boxing gives you 6 combinations and covers all likely orders.":"Top 3 boxed. These three stand clear of the field."),SL("Trifecta"),BC("🎲","Straight "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap>=40?"High confidence — straight trifecta is the play.":"Competitive field — consider boxing rather than straight."),bets.superfecta&&scores.length>=4&&h(Fragment,null,SL("Superfecta"),BC("💎","Top 4 Box",bets.superfecta,"Top 4 in any order. Small bet, big potential payout.")),bomb&&h(Fragment,null,SL("The Bomb"),h("div",{style:{background:"#fff8f0",border:"2px solid #f59e42",borderRadius:14,padding:"14px 16px"}},h("div",{style:{fontSize:10,fontWeight:700,color:"#c2410c",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"💥 Longshot Alert"),h("div",{style:{fontSize:20,fontWeight:900,color:"#92400e",marginBottom:3}},"#"+bomb.number+" "+bomb.name),h("div",{style:{fontSize:12,color:"#a16207",marginBottom:4}},bomb.odds+" · Score: "+bomb.totalScore),h("div",{style:{fontSize:12,color:"#78350f",lineHeight:1.6}},"Within "+(bomb.totalScore-top.totalScore)+" points of our top pick. Algorithm found a real angle. Small wager only."))),h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px",marginTop:12,fontSize:11,color:C.muted,textAlign:"center"}},"Always check current odds. Bet responsibly."));}
-function PlayTab({scores,raceName}){
-  var PLAY_URL='https://giddyupsilks.app/play.html';
-  var [raceNum,setRaceNum]=useState('');
-  var [sent,setSent]=useState(false);
-  var [raceWarn,setRaceWarn]=useState(false);
-  var top4=scores&&scores.length>=4?scores.slice(0,4):null;
-  function sendToPlay(){
-    if(top4&&!raceNum){setRaceWarn(true);return;}
-    setRaceWarn(false);
-    try{
-      var incoming={from:'silks',date:new Date().toISOString().split('T')[0],
-        picks:{},sentAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
-      if(top4){
-        incoming.picks[raceNum]=top4.map(function(hh){return hh.number;});
-      }
-      try{
-        var existing=JSON.parse(localStorage.getItem('giddyup_play_incoming')||'null');
-        if(existing&&existing.date===incoming.date&&existing.picks){
-          Object.keys(existing.picks).forEach(function(k){
-            if(!incoming.picks[k]) incoming.picks[k]=existing.picks[k];
-          });
-        }
-      }catch(ex){}
-      localStorage.setItem('giddyup_play_incoming',JSON.stringify(incoming));
-      setSent(true);
-    }catch(ex){}
-    window.open(PLAY_URL,'_blank');
-  }
-  return h('div',{style:{paddingTop:14}},
-    h('div',{style:{background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',borderRadius:16,padding:'16px 18px',marginBottom:16}},
-      h('div',{style:{fontSize:10,color:'#c9a84c88',letterSpacing:3,textTransform:'uppercase',marginBottom:4}},'Free to Play'),
-      h('div',{style:{fontSize:20,fontWeight:900,background:'linear-gradient(135deg,#c9a84c,#f0d080)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}},'GiddyUp Play')
-    ),
-    h('div',{style:{background:'#fff',borderRadius:14,padding:'18px',border:'1px solid '+C.border,marginBottom:14,textAlign:'center'}},
-      h('div',{style:{fontSize:48,marginBottom:8}},'\ud83c\udfc7'),
-      h('div',{style:{fontFamily:'Georgia,serif',fontSize:18,fontWeight:900,color:C.text,marginBottom:6}},'Are you playing today?'),
-      h('div',{style:{fontSize:13,color:C.muted,lineHeight:1.6,marginBottom:16}},'Pick horses. Track your score. No betting required.'),
-      top4
-        ? h('div',{style:{background:'#f0fdf4',border:'1px solid #86efac',borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
-            h('div',{style:{fontSize:11,fontWeight:700,color:'#15803d',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\ud83d\udd2c Your GiddyUp Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')),
-            h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10}},
-              top4.map(function(hh,i){
-                var lbl=['\u2605 Win','Place','Show','4th'][i];
-                return h('div',{key:i,style:{textAlign:'center'}},
-                  h('div',{style:{fontSize:9,color:'#15803d',textTransform:'uppercase',marginBottom:3}},lbl),
-                  h('div',{style:{fontSize:18,fontWeight:900,color:C.navy,background:'#fff',borderRadius:8,padding:'6px 0',border:'1px solid #86efac'}},'#'+hh.number)
-                );
-              })
-            ),
-            h('div',{style:{background:raceWarn?'#fff5f5':'#fff',border:'2px solid '+(raceWarn?'#ef4444':'#1a6b3c'),borderRadius:10,padding:'10px 12px',marginBottom:4}},
-              h('div',{style:{fontSize:11,color:raceWarn?'#ef4444':'#15803d',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:6}},
-                raceWarn?'\u26a0\ufe0f Choose the race number before sending':'\u26a1 Confirm which race these picks are for'
-              ),
-              h('select',{value:raceNum,onChange:function(e){setRaceNum(e.target.value);setSent(false);setRaceWarn(false);},
-                style:{width:'100%',padding:'12px',borderRadius:8,border:'2px solid '+(raceWarn?'#ef4444':'#1a6b3c'),fontSize:16,fontWeight:900,color:raceNum?C.navy:'#94a3b8',background:raceNum?'#f0fdf4':'#f8fafc',cursor:'pointer'}},
-                h('option',{value:''},'\u2014 Select Race Number \u2014'),
-                [...Array(20)].map(function(_,i){return h('option',{key:i+1,value:String(i+1)},'Race '+(i+1));})
-              )
-            )
-          )
-        : h('div',{style:{background:'#fff8f0',border:'1px solid #f0d080',borderRadius:12,padding:'12px',marginBottom:14,fontSize:12,color:'#92620a'}},
-            '\ud83d\udcc8 Handicap a race first (Upload \u2192 Rankings) to send your GiddyUp Picks to Play. You can still open Play and enter picks manually.'
-          ),
-      h('button',{onClick:sendToPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,#1a6b3c,#2d9155)',border:'none',borderRadius:12,color:'#c9a84c',fontSize:15,fontWeight:700,cursor:'pointer',marginBottom:10}},
-        top4?(raceNum?'Send Race '+raceNum+' Picks \u2192 Open GiddyUp Play':'Send Picks \u2192 Open GiddyUp Play'):'Open GiddyUp Play \u2192'
-      ),
-      sent&&h('div',{style:{fontSize:11,color:'#15803d',background:'#f0fdf4',borderRadius:6,padding:'6px 10px'}},'\u2713 Sent! Look for the gold banner in GiddyUp Play to load these picks.'),
-      h('div',{style:{fontSize:11,color:C.muted,marginTop:6}},'Repeat for each race you handicap \u2014 picks accumulate until loaded in Play')
-    ),
-    h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border}},
-      h('div',{style:{fontSize:11,fontWeight:700,color:C.muted,textTransform:'uppercase',letterSpacing:2,marginBottom:12}},'How it works'),
-      [
-        ['\ud83d\udcf7','Handicap in GiddyUp Silks','Upload the race program, set your angles, get rankings'],
-        ['\ud83c\udfab','Send picks to Play','Pick the race number, tap Send \u2014 repeat for each race'],
-        ['\u270f\ufe0f','Confirm your picks in Play','Review the GiddyUp Picks, enter your own picks too'],
-        ['\ud83d\udccb','Enter results after the race','Type in the official finish and score automatically'],
-        ['\ud83c\udfc6','Check the leaderboard','Selections vs GiddyUp vs You \u2014 who wins the day?'],
-        ['\ud83d\udcd3','Keep a diary','Notes and photos including winning tickets'],
-      ].map(function(item,i){
-        return h('div',{key:i,style:{display:'flex',gap:12,marginBottom:i<5?12:0,paddingBottom:i<5?12:0,borderBottom:i<5?'1px solid '+C.border:'none'}},
-          h('div',{style:{fontSize:22,flexShrink:0,width:32,textAlign:'center'}},item[0]),
-          h('div',null,
-            h('div',{style:{fontSize:13,fontWeight:700,color:C.text}},item[1]),
-            h('div',{style:{fontSize:12,color:C.muted,marginTop:2}},item[2])
-          )
-        );
-      })
-    )
-  );
+const TBTS_RULES=[
+  {num:0,icon:"👑",title:"Who Runs This Platform",rule:"GiddyUp Play is operated by the platform administrator. All Master Steward appointments are made personally by the platform administrator. If you represent a racetrack and want to bring GiddyUp Play to your facility, contact us. The platform administrator's decision is final.",tbts:"Want to run a track? Contact us. We decide. Full stop."},
+  {num:1,icon:"🚫",title:"Scratches",rule:"If your horse is scratched before the race, it scores zero. No substitutions, no replacements, no do-overs.",tbts:"Your horse didn't run. Too Bad Too Sad."},
+  {num:2,icon:"🔢",title:"Wrong Number Entry",rule:"You typed #12 when you meant #2. You entered a horse number that doesn't exist in the field. You picked the same horse twice. Pay attention — your picks are your responsibility.",tbts:"You entered it wrong. Too Bad Too Sad."},
+  {num:3,icon:"⏰",title:"Missed the Cutoff",rule:"Picks are made before the races start. If you didn't enter your picks in time, you have no picks for the day. Set an alarm. Enter early.",tbts:"The gate opened without you. Too Bad Too Sad."},
+  {num:4,icon:"💾",title:"Forgot to Save",rule:"You filled in your picks but didn't tap Save Picks. Unsaved picks do not exist. The app does not read minds.",tbts:"It was never saved. Too Bad Too Sad."},
+  {num:5,icon:"📵",title:"Device Issues",rule:"Your phone died. Your wifi dropped. The app crashed. Technical problems on your end are not the pool's problem. Enter early.",tbts:"Not our circus, not our horse. Too Bad Too Sad."},
+  {num:6,icon:"🥈",title:"No Partial Credit",rule:"Close doesn't count. Your Win Pick finished second. The scoring system is the scoring system. There is no almost.",tbts:"Almost only counts in horseshoes. Too Bad Too Sad."},
+  {num:7,icon:"🤝",title:"Dead Heats",rule:"In a dead heat, both horses are awarded the finishing position. If you picked either one for that position, you get full credit. Dead heats expand your winning combinations.",tbts:"This one works in your favour. You're welcome."},
+  {num:8,icon:"📋",title:"Official Result is Final",rule:"If stewards change the official result, you may correct the entry and scores recalculate. The corrected official result stands. No further disputes.",tbts:"Stewards rule. Deal with it."},
+  {num:9,icon:"🌧️",title:"Rain and Cancellations",rule:"If a race is cancelled, it is removed from scoring. The consistency bonus recalculates against races actually run. Same rules for everyone.",tbts:"Nobody controls the weather. We all suffer together."},
+  {num:10,icon:"🎩",title:"The Steward's Decision is Final",rule:"All decisions on any dispute are final. There is no appeal process. There is no commissioner. There is no tribunal. This is a free game.",tbts:"The steward has spoken. Too Bad Too Sad."},
+];
+const HOW_TO_USE = [
+  {icon:"🎟️", title:"Step 1 — Set Your Race Card",
+   desc:"On the Home screen, tap how many races are on today's card. This sets up your pick grid for the day."},
+  {icon:"✏️", title:"Step 2 — Enter Your Picks Before the Races Start",
+   desc:"Tap the Picks tab. You'll see a grid of all today's races. Tap any race to enter your 4 picks — Win, Place, Show and 4th. Your Win Pick is your bonus horse — if it finishes 1st you get +20 bonus points on top of your regular score."},
+  {icon:"📰", title:"Step 3 — Optional: Enter Selections and Load GiddyUp Picks",
+   desc:"Below your picks you'll see a Selections section — enter the 4 picks printed in the race program if you want to compare yourself against the house experts. If you came from GiddyUp Silks, your AI-ranked picks are also loaded automatically as GiddyUp Picks. This is optional — the app works fine with just your own picks."},
+  {icon:"🏆", title:"Three-Way Leaderboard",
+   desc:"After each race, see how Selections, GiddyUp, and you stack up head to head. The Scorecard shows a running leaderboard for the day — who's leading after every race scored. It's the ultimate test: can you beat the house? Can you beat the AI?"},
+  {icon:"📋", title:"Step 4 — Enter the Official Results",
+   desc:"After each race, tap the Results tab. Select the race and enter the official top 4 finishers in order. Your picks are scored automatically the moment you submit."},
+  {icon:"📊", title:"Step 5 — Check Your Scorecard",
+   desc:"Tap the Scorecard tab to see your full daily breakdown — race by race scores, streak bonus, consistency bonus and grand total. If you entered morning line picks, you'll see a head-to-head comparison showing whether you beat the chalk."},
+  {icon:"⭐", title:"How Scoring Works",
+   desc:"Each of your 4 picks that lands anywhere in the top 4 (any order) = 5 pts. Sweep all 4 = +10 bonus. Win Pick finishes 1st = +20 bonus. Exacta (Win + Place in correct order) = +30. Trifecta = +50. Superfecta = +70. Perfect race = 200 pts."},
+  {icon:"🔥", title:"Streak Bonus",
+   desc:"Score at least 1 point in a race and your streak stays alive. Each race you extend your streak = +5 pts. Miss a race or score zero = streak resets to zero."},
+  {icon:"🏆", title:"Consistency Bonus",
+   desc:"Score at least 1 point in every single race on the card = bonus points equal to the number of races × 5. On a 9-race card that's 45 bonus points. One blank race and it's gone for the day."},
+  {icon:"🔒", title:"Picks Lock When Results Are Entered",
+   desc:"Once you enter results for a race, that race's picks are locked and cannot be changed. Enter your picks honestly — if you cheat you are only cheating yourself."},
+  {icon:"💾", title:"Your Data is Saved",
+   desc:"Your picks, results and scores are saved automatically to your account and sync across devices. Sign in anywhere to pick up where you left off."},
+  {icon:"📓", title:"Keep a Racing Diary",
+   desc:"The Diary tab is your personal racing journal. Add notes before a race (your read on a horse, trainer tips, track conditions), after a race (what you noticed, what you missed), and attach photos of your winning tickets or race programs. Over time your diary becomes a powerful handicapping study tool."},
+];
+function initTBTSButtons(){
+  const isSolo=APP_MODE==='solo';
+  const label=isSolo?'📖 How to Use':'🐴 Too Bad Too Sad Rules';
+  ['tbts-btn-splash'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=label;
+  });
 }
-function DiaryTab(){const [entries,setEntries]=useState([]),[note,setNote]=useState(""),[image,setImage]=useState(null),[raceName,setRaceName]=useState(""),[saving,setSaving]=useState(false);const fileRef=useRef(),cameraRef=useRef();function handleImg(file){if(!file)return;const r=new FileReader();r.onload=e=>setImage(e.target.result);r.readAsDataURL(file);}function nowStr(){const d=new Date();return{date:d.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),time:d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true})};}function save(){if(!note&&!image)return;setSaving(true);const ts=nowStr();setTimeout(()=>{setEntries(e=>[{id:Date.now(),raceName:raceName||"Paddock Note",note,image,date:ts.date,time:ts.time},...e]);setNote("");setImage(null);setRaceName("");setSaving(false);},400);}const ts=nowStr();return h("div",{style:{paddingTop:14}},h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"center"}},h("div",{style:{fontSize:10,color:"#c9a84c88",letterSpacing:3,textTransform:"uppercase",marginBottom:6}},"📒 Your Racing Journal"),h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}},"A Day at the Races")),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},h("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:14,padding:"8px 12px",background:"#f8fafc",borderRadius:10}},h("div",{style:{fontSize:14}},"📅"),h("div",{style:{flex:1}},h("div",{style:{fontSize:11,fontWeight:700,color:C.text}},ts.date),h("div",{style:{fontSize:10,color:C.muted}},"⏰ "+ts.time))),h("input",{value:raceName,onChange:e=>setRaceName(e.target.value),placeholder:"Race or note title",style:{width:"100%",padding:"10px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:13,color:C.text,marginBottom:10,outline:"none",background:"#f8fafc"}}),h("div",{style:{display:"flex",gap:8,marginBottom:10}},h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{flex:1,padding:"12px 8px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:18}},"📸"),h("span",{style:{fontSize:12,fontWeight:700,color:C.gold}},"Take Photo")),h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{flex:1,padding:"12px 8px",background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:18}},"🖼"),h("span",{style:{fontSize:12,fontWeight:700,color:C.text}},"Library"))),image&&h("div",{style:{position:"relative",marginBottom:10}},h("img",{src:image,style:{width:"100%",maxHeight:200,borderRadius:10,objectFit:"cover"}}),h("button",{onClick:()=>setImage(null),style:{position:"absolute",top:8,right:8,background:"rgba(0,0,0,.6)",border:"none",borderRadius:20,color:"#fff",width:26,height:26,cursor:"pointer",fontSize:13}},"✕")),h("input",{ref:cameraRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("input",{ref:fileRef,type:"file",accept:"image/*",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("textarea",{value:note,onChange:e=>setNote(e.target.value),placeholder:"Your observations...",style:{width:"100%",padding:"10px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:13,color:C.text,minHeight:90,resize:"vertical",outline:"none",background:"#f8fafc",lineHeight:1.6}}),h("button",{onClick:save,disabled:!note&&!image,style:{width:"100%",marginTop:10,padding:"13px",background:(!note&&!image)?"#e2e8f0":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:(!note&&!image)?C.muted:C.gold,fontSize:14,fontWeight:700,cursor:(!note&&!image)?"not-allowed":"pointer"}},saving?"Saving...":"💾 Save to My Day")),entries.length>0&&h(Fragment,null,h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:12}},"Today's Entries · "+entries.length),entries.map(entry=>h("div",{key:entry.id,style:{background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden",marginBottom:12}},h("div",{style:{padding:"10px 14px",borderBottom:"1px solid "+C.border,display:"flex",alignItems:"center",gap:10}},h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:14,color:C.text}},entry.raceName),h("div",{style:{fontSize:10,color:C.muted}},"📅 "+entry.date+" · ⏰ "+entry.time)),h("button",{onClick:()=>setEntries(e=>e.filter(en=>en.id!==entry.id)),style:{background:"#fee2e2",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,color:"#ef4444",cursor:"pointer"}},"Delete")),h("div",{style:{padding:"12px 14px"}},entry.image&&h("img",{src:entry.image,style:{width:"100%",maxHeight:180,borderRadius:10,objectFit:"cover",marginBottom:10}}),entry.note&&h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.7,marginBottom:10}},entry.note))))),entries.length===0&&h("div",{style:{textAlign:"center",padding:"30px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🏇"),h("div",{style:{fontWeight:700,fontSize:15,color:C.text}},"Your story starts here")));}
-
-// ── AUTH SCREEN (Supabase) ──────────────────────────────────────
-function AuthScreen({mode,setMode,onAuthed}){
-  const [u,setU]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
-  const [err,setErr]=useState(''),[busy,setBusy]=useState(false);
-
- async function handleRegister(){
-    setErr('');
-    if(!u||!e||!c||!p){setErr('Please fill in all fields.');return;}
-    if(p.length<8){setErr('Password must be at least 8 characters.');return;}
-    setBusy(true);
-    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c);
-    setBusy(false);
-    if(!result.success){setErr(result.error);return;}
-    const profile=await GiddyUpAuth.getProfile(result.user.id);
-  onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
+function goToTBTS(){
+  const isSolo=APP_MODE==='solo';
+  const header=document.getElementById('tbts-header');
+  const title=document.getElementById('tbts-title');
+  const subtitle=document.getElementById('tbts-subtitle');
+  const topEl=document.getElementById('tbts-top');
+  const bottomEl=document.getElementById('tbts-bottom');
+  const rulesEl=document.getElementById('tbts-rules');
+  if(isSolo){
+    header.style.background='linear-gradient(135deg,#1a6b3c,#2d9155)';
+    title.textContent='GiddyUp Play — How to Use';
+    subtitle.textContent='GiddyUp Play';
+    topEl.innerHTML=`<div style="text-align:center;padding:20px 0 10px;">
+      <div style="font-size:64px;line-height:1;">🏇</div>
+      <div style="font-family:'Courier Prime',monospace;font-size:13px;color:var(--muted);margin-top:6px;font-style:italic;">"Pick your horses. Track your score."</div>
+    </div>
+    <div style="background:var(--green-light);border:2px solid var(--green);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--green);">Free to use. No betting required.</div>
+      <div style="font-size:13px;color:var(--green-dark);margin-top:4px;">Pick horses, score your races, keep notes, improve your handicapping.</div>
+    </div>`;
+    rulesEl.innerHTML=HOW_TO_USE.map(r=>`
+      <div class="tbts-rule">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="font-size:26px;flex-shrink:0;">${r.icon}</div>
+          <div style="flex:1;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--ink);margin-bottom:6px;">${r.title}</div>
+            <div style="font-size:13px;color:var(--ink);line-height:1.6;">${r.desc}</div>
+          </div>
+        </div>
+      </div>`).join('');
+    bottomEl.innerHTML=`<div style="margin-top:24px;text-align:center;">
+      <div style="font-size:48px;">🏇</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--green);margin-top:8px;">Now go pick some winners.</div>
+    </div>`;
+  } else {
+    header.style.background='linear-gradient(135deg,#7c2d12,#9a3412)';
+    title.textContent='Too Bad Too Sad Rules';
+    subtitle.textContent='The official rules of GiddyUp Play';
+    topEl.innerHTML=`<div style="text-align:center;padding:20px 0 10px;">
+      <div style="font-size:72px;line-height:1;">🐴</div>
+      <div style="font-family:'Courier Prime',monospace;font-size:13px;color:var(--muted);margin-top:6px;font-style:italic;">"Not our problem, partner."</div>
+    </div>
+    <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#b91c1c;">By entering picks you agree to all rules below.</div>
+      <div style="font-size:13px;color:#991b1b;margin-top:4px;">No exceptions. No appeals. This is a free game — enjoy it.</div>
+    </div>`;
+    rulesEl.innerHTML=TBTS_RULES.map(r=>`
+      <div class="tbts-rule">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="font-size:26px;flex-shrink:0;">${r.icon}</div>
+          <div style="flex:1;">
+            <div class="rule-badge">Rule ${r.num}</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--ink);margin-bottom:6px;">${r.title}</div>
+            <div style="font-size:13px;color:var(--ink);line-height:1.6;margin-bottom:8px;">${r.rule}</div>
+            <div class="rule-tbts">😤 ${r.tbts}</div>
+          </div>
+        </div>
+      </div>`).join('');
+    bottomEl.innerHTML=`<div style="margin-top:24px;text-align:center;">
+      <div style="font-size:48px;">🐴</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--green);margin-top:8px;">Now go pick some winners.</div>
+    </div>`;
   }
-
-  async function handleLogin(){
-    setErr('');
-    if(!e||!p){setErr('Please enter email and password.');return;}
-    setBusy(true);
-    const result=await GiddyUpAuth.login(e.toLowerCase(),p);
-    setBusy(false);
-    if(!result.success){setErr(result.error);return;}
-    const profile=await GiddyUpAuth.getProfile(result.user.id);
-   onAuthed({id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
-  }
-
-  const isRegister=mode==='register';
-
-  return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
-    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden"}},
-      h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"24px 24px 20px",textAlign:"center"}},
-        h("div",{style:{fontSize:36,marginBottom:6}},"🐴"),
-        h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}},"GiddyUp"),
-        h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:6}},isRegister?"Create your account":"Sign in to continue")),
-      h("div",{style:{padding:"24px 24px 28px"}},
-        isRegister&&h("div",{style:{marginBottom:14}},
-          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Username"),
-          h("input",{value:u,onChange:ev=>setU(ev.target.value),placeholder:"e.g. FastEddie",maxLength:20,style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
-        h("div",{style:{marginBottom:14}},
-          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Email"),
-          h("input",{type:"email",value:e,onChange:ev=>setE(ev.target.value),placeholder:"your@email.com",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
-        isRegister&&h("div",{style:{marginBottom:14}},
-          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"City"),
-          h("input",{value:c,onChange:ev=>setC(ev.target.value),placeholder:"e.g. Grande Prairie, AB",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
-        h("div",{style:{marginBottom:14}},
-          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Password"),
-          h("input",{type:"password",value:p,onChange:ev=>setP(ev.target.value),placeholder:isRegister?"Min 8 characters":"Your password",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
-        err&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:14,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},err),
-        h("button",{onClick:isRegister?handleRegister:handleLogin,disabled:busy,style:{width:"100%",padding:14,background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:15,fontWeight:800,cursor:busy?"not-allowed":"pointer",opacity:busy?0.6:1}},busy?"Please wait...":(isRegister?"Create My Account →":"Sign In")),
-        h("div",{style:{textAlign:"center",marginTop:16,fontSize:13}},
-          isRegister
-            ?h(Fragment,null,h("span",{style:{color:C.muted}},"Have an account? "),h("span",{style:{color:C.navy2,cursor:"pointer",fontWeight:700},onClick:()=>{setMode('login');setErr('');}},"Sign in"))
-            :h(Fragment,null,h("span",{style:{color:C.muted}},"New here? "),h("span",{style:{color:C.navy2,cursor:"pointer",fontWeight:700},onClick:()=>{setMode('register');setErr('');}},"Create account"))))));
+  go('screen-tbts');
 }
 
-function GiddyUp(){
-const [weights,setWeights]=useState({...PRESETS.custom});
-  const [locks,setLocks]=useState(()=>Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
-  const [activeRace,setActiveRace]=useState("custom");
-  const [angleMode,setAngleMode]=useState('giddyup');
-  const [activeTab,setActiveTab]=useState("upload");
-  const [races,setRaces]=useState([]);
-  const [horses,setHorses]=useState([]);
-  const [scratched,setScratched]=useState({});
-  const [showSplash,setShowSplash]=useState(!new URLSearchParams(window.location.search).get('tab'));
-
-  // ── Auth state (Supabase) ──
-  const [silksUser,setSilksUser]=useState(null);
-  const [authMode,setAuthMode]=useState('login'); // 'login' | 'register'
-  const [authChecked,setAuthChecked]=useState(false);
-
-useEffect(()=>{
-    (async()=>{
-      const session=await GiddyUpAuth.getSession();
-      if(session&&session.user){
-        const profile=await GiddyUpAuth.getProfile(session.user.id);
-       const customAnglesAll=normalizeCustomAngles(profile&&profile.custom_angles);
-        setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',customAngles:customAnglesAll});
-        if(customAnglesAll.custom){const filled=fillMissingFactors(customAnglesAll.custom.weights,customAnglesAll.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
-      }
-      setAuthChecked(true);
-    })();
-  },[]);
-
- async function handleSilksLogout(){
-    await GiddyUpAuth.logout();
-    setSilksUser(null);
-    setShowSplash(true);
+let pendingPhotoData = null;
+let pendingPhotoName = null;
+function loadDiaryScreen(){
+  document.getElementById('d-name').textContent = displayName(CU);
+  document.getElementById('d-date').textContent = formatDate(TODAY);
+  const card = getTodayCard();
+  const sel = document.getElementById('d-race-select');
+  sel.innerHTML = '<option value="">General note — not race specific</option>';
+  for(let r=1; r<=card.numRaces; r++){
+    const scored = !!card.scores[r];
+    const picked = !!card.picks[r];
+    sel.innerHTML += `<option value="${r}">Race ${r}${scored?' ✓ Scored':picked?' (picks saved)':''}</option>`;
   }
-
-async function handleSaveAngles(raceType,currentWeights,currentLocks){
-    if(!silksUser) return false;
-    const merged={...(silksUser.customAngles||{}),[raceType]:{weights:currentWeights,locks:currentLocks}};
-    const result=await GiddyUpAuth.saveCustomAngles(silksUser.id,merged);
-    if(result.success){
-      setSilksUser(u=>({...u,customAngles:merged}));
-      return true;
+  renderDiaryEntries();
+}
+function handlePhotoSelect(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  pendingPhotoName = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    pendingPhotoData = e.target.result;
+    const preview = document.getElementById('d-photo-preview');
+    preview.src = pendingPhotoData;
+    preview.style.display = 'block';
+    document.getElementById('d-photo-name').textContent = '📷 ' + file.name;
+    document.querySelector('.photo-upload-btn').textContent = '📷 Change photo';
+  };
+  reader.readAsDataURL(file);
+}
+function saveDiaryEntry(){
+  const note = document.getElementById('d-note').value.trim();
+  const race = document.getElementById('d-race-select').value;
+  showErr('d-err','');
+  if(!note && !pendingPhotoData){showErr('d-err','Please add a note or photo.');return;}
+  if(!CU.diary) CU.diary = [];
+  const entry = {
+    id: Date.now(),
+    date: TODAY,
+    race: race ? parseInt(race) : null,
+    note: note,
+    photo: pendingPhotoData || null,
+    photoName: pendingPhotoName || null,
+    savedAt: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+  };
+  CU.diary.unshift(entry);
+  saveDiaryLocal();
+  document.getElementById('d-note').value = '';
+  document.getElementById('d-race-select').value = '';
+  document.getElementById('d-photo-preview').style.display = 'none';
+  document.getElementById('d-photo-name').textContent = '';
+  document.querySelector('.photo-upload-btn').textContent = '📷  Add photo — winning ticket, race program, anything';
+  pendingPhotoData = null;
+  pendingPhotoName = null;
+  renderDiaryEntries();
+}
+function deleteDiaryEntry(id){
+  if(!confirm('Delete this diary entry?')) return;
+  CU.diary = (CU.diary||[]).filter(e=>e.id!==id);
+  saveDiaryLocal();
+  renderDiaryEntries();
+}
+function renderDiaryEntries(){
+  const entries = CU.diary || [];
+  const todayEntries = entries.filter(e=>e.date===TODAY);
+  const prevEntries = entries.filter(e=>e.date!==TODAY);
+  const noEl = document.getElementById('d-no-entries');
+  noEl.style.display = entries.length===0?'block':'none';
+  document.getElementById('d-entries-today').innerHTML = todayEntries.length
+    ? todayEntries.map(e=>renderDiaryCard(e)).join('')
+    : '<p style="color:var(--muted);font-size:13px;margin-bottom:12px;">No notes yet today.</p>';
+  const dateGroups = {};
+  prevEntries.forEach(e=>{
+    if(!dateGroups[e.date]) dateGroups[e.date]=[];
+    dateGroups[e.date].push(e);
+  });
+  const prevDates = Object.keys(dateGroups).sort((a,b)=>b.localeCompare(a));
+  document.getElementById('d-entries-prev').innerHTML = prevDates.length
+    ? prevDates.map(date=>`
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px;">${formatDate(date)}</div>
+        ${dateGroups[date].map(e=>renderDiaryCard(e)).join('')}
+      `).join('')
+    : '<p style="color:var(--muted);font-size:13px;">No previous entries.</p>';
+}
+function renderDiaryCard(e){
+  return `<div class="diary-entry">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        ${e.race?`<span class="de-race">Race ${e.race}</span>&nbsp;`:'<span style="font-size:11px;color:var(--muted);">General Note</span>'}
+        <span class="de-date">· ${formatDate(e.date)} · ${e.savedAt}</span>
+      </div>
+      <button class="btn btn-outline btn-sm" style="color:var(--red);border-color:var(--red);padding:4px 10px;font-size:11px;" onclick="deleteDiaryEntry(${e.id})">✕</button>
+    </div>
+    ${e.note?`<div class="de-note">${e.note}</div>`:''}
+    ${e.photo?`<div style="margin-top:8px;">
+      <img src="${e.photo}" class="ticket-preview" onclick="viewFullPhoto('${e.id}')" title="Tap to enlarge" alt="${e.photoName||'Photo'}">
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">📷 ${e.photoName||'Photo'}</div>
+    </div>`:''}
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="btn btn-green btn-sm" onclick="shareDiaryEntry(${e.id})">📤 &nbsp;Share</button>
+      <button class="btn btn-outline btn-sm" onclick="copyDiaryEntry(${e.id})">📋 &nbsp;Copy Text</button>
+    </div>
+  </div>`;
+}
+function shareDiaryEntry(id){
+  const entry=(CU.diary||[]).find(e=>e.id==id);
+  if(!entry) return;
+  const raceLabel=entry.race?'Race '+entry.race+' — ':'';
+  const text=`GiddyUp Play 🏇\n${raceLabel}${formatDate(entry.date)}\n\n${entry.note||''}\n\nTracked with GiddyUp Play — giddyupsilks.app`;
+  if(navigator.share){
+    const shareData={title:'GiddyUp Play — '+raceLabel+formatDate(entry.date),text:text};
+    if(entry.photo){
+      fetch(entry.photo)
+        .then(r=>r.blob())
+        .then(blob=>{
+          const file=new File([blob],entry.photoName||'giddyup-ticket.jpg',{type:blob.type});
+          if(navigator.canShare&&navigator.canShare({files:[file]})){
+            navigator.share({...shareData,files:[file]}).catch(()=>navigator.share(shareData));
+          } else {
+            navigator.share(shareData);
+          }
+        }).catch(()=>navigator.share(shareData));
     } else {
-      alert('Could not save angles: '+result.error);
-      return false;
+      navigator.share(shareData).catch(err=>console.log('Share cancelled'));
     }
+  } else {
+    copyToClipboard(text);
+    alert('Copied to clipboard — paste anywhere to share!');
   }
+}
+function copyDiaryEntry(id){
+  const entry=(CU.diary||[]).find(e=>e.id==id);
+  if(!entry) return;
+  const raceLabel=entry.race?'Race '+entry.race+' — ':'';
+  const text=`GiddyUp Play 🏇\n${raceLabel}${formatDate(entry.date)}\n\n${entry.note||''}\n\nTracked with GiddyUp Play — giddyupsilks.app`;
+  copyToClipboard(text);
+  alert('Note copied to clipboard!');
+}
+function copyToClipboard(text){
+  if(navigator.clipboard){navigator.clipboard.writeText(text);}
+  else{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+  }
+}
+function viewFullPhoto(id){
+  const entry=(CU.diary||[]).find(e=>e.id==id);
+  if(!entry||!entry.photo) return;
+  const win=window.open('','_blank');
+  win.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+    <img src="${entry.photo}" style="max-width:100%;max-height:100vh;object-fit:contain;">
+  </body></html>`);
+}
 
-  const scores=computeScores(horses,weights,activeRace,scratched);
-  const activeRaceData=RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0];
-  const raceName=races[0]?races[0].label:"";
-  const scratchCount=Object.values(scratched).filter(Boolean).length;
-  const TABS=[{id:"upload",label:"📷",full:"Upload"},{id:"angles",label:"🎯",full:"Angles"},{id:"rankings",label:"🏇",full:"Rankings"},{id:"giddyup",label:"🐴",full:"GiddyUp"},{id:"play",label:"🎫",full:"Play"},{id:"diary",label:"📒",full:"Diary"}];
+function loadSettings(){
+  if(!CU) return;
+  document.getElementById('s-username').textContent=displayName(CU);
+  document.getElementById('s-email').textContent=CU.email||'—';
+  document.getElementById('s-city').textContent=CU.city||'—';
+  document.getElementById('s-subtitle').textContent=displayName(CU);
+}
+function displayName(user){
+  if(!user) return '';
+  const u=user.username||'';
+  if(!u||u.includes('@')) return (user.email||'').split('@')[0];
+  return u;
+}
+function v(id){return document.getElementById(id).value.trim();}
+function gi(id){return parseInt(document.getElementById(id).value)||0;}
+function showErr(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display=msg?'block':'none';}}
 
-  // Wait for auth check before rendering anything (avoids flash of login screen)
-  if(!authChecked)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
-
-  // Not signed in → show auth screen, gating everything else
-if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{
-    setSilksUser(user);
-    if(user.customAngles&&user.customAngles.custom){const filled=fillMissingFactors(user.customAngles.custom.weights,user.customAngles.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
-    setShowSplash(true);
-  }});
-
-  if(showSplash)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(180deg,#87CEEB 0%,#b8e4f0 32%,#5a9e5a 32%,#2d7a2d 58%,#1b5e20 100%)",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",overflow:"hidden",position:"relative"}},h("style",null,"@keyframes sunPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.9;transform:scale(1.05)}}@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}"),
-h("div",{onClick:handleSilksLogout,style:{position:"absolute",top:"max(14px, env(safe-area-inset-top))",right:14,zIndex:10,fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.9)",cursor:"pointer",background:"rgba(0,0,0,0.28)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:20,padding:"6px 14px"}},"Sign Out"),
-h("div",{style:{position:"absolute",top:"4%",right:"8%",zIndex:1,animation:"sunPulse 4s ease-in-out infinite"}},h("svg",{width:70,height:70,viewBox:"0 0 70 70"},h("circle",{cx:"35",cy:"35",r:"18",fill:"#FFD700",opacity:"0.95"}),h("circle",{cx:"35",cy:"35",r:"14",fill:"#FFF176"}),...["0","45","90","135","180","225","270","315"].map((angle,i)=>h("line",{key:i,x1:"35",y1:"35",x2:String(35+28*Math.cos(Number(angle)*Math.PI/180)),y2:String(35+28*Math.sin(Number(angle)*Math.PI/180)),stroke:"#FFD700",strokeWidth:2.5,strokeLinecap:"round"})))),h("div",{style:{position:"absolute",top:0,left:0,right:0,height:"32%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:5,animation:"fadeIn 1s ease both"}},h("div",{style:{fontSize:48,fontWeight:900,color:"#1b5e20",textShadow:"0 2px 12px rgba(255,255,255,0.95)",letterSpacing:3,lineHeight:1.1}},"GiddyUp"),h("div",{style:{fontSize:24,fontWeight:700,color:"#1b5e20",textShadow:"0 2px 8px rgba(255,255,255,0.95)",letterSpacing:2,marginTop:8}},"Welcome back, "+(silksUser.username||"Rider")+"!")),h("div",{style:{position:"absolute",top:"30%",left:0,right:0,height:10,background:"#ffffff",zIndex:2,boxShadow:"0 3px 10px rgba(0,0,0,0.15)"}}),h("div",{style:{position:"absolute",top:"36%",left:0,right:0,bottom:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",padding:"20px 28px 20px",zIndex:4}},h("button",{onClick:()=>setShowSplash(false),style:{padding:"16px 48px",background:"linear-gradient(135deg,#c9a84c,#f0d080)",border:"none",borderRadius:20,fontSize:18,fontWeight:900,color:"#1b5e20",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:14,boxShadow:"0 6px 24px rgba(201,168,76,0.6)",letterSpacing:1,marginBottom:22}},h("span",null,"🏇"),h("span",null,"Riders Up!"),h("span",null,"🏇")),h("div",{style:{textAlign:"center",marginBottom:18}},h("div",{style:{fontSize:52,fontWeight:900,color:"#ffffff",letterSpacing:2,textShadow:"0 3px 12px rgba(0,0,0,0.5)",lineHeight:1,marginBottom:10}},"GiddyUp"),h("div",{style:{fontSize:13,color:"rgba(255,255,255,0.95)",letterSpacing:2,textTransform:"uppercase",fontStyle:"italic",textShadow:"0 1px 4px rgba(0,0,0,0.4)"}},"The Pro's Edge — Right in Your Pocket.")),h("div",{style:{width:"100%",maxWidth:400,display:"flex",flexDirection:"column",gap:10,margin:"18px 0"}},[{icon:"📸",text:"Snap the program. GiddyUp does the work."},{icon:"🎯",text:"GiddyUp — your picks are ready before the paddock."},{icon:"🐴",text:"Watch them run — Log it in your Diary."}].map((item,i)=>h("div",{key:i,style:{background:"rgba(0,0,0,0.25)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:14}},h("span",{style:{fontSize:22,flexShrink:0}},item.icon),h("span",{style:{fontSize:14,color:"#ffffff",lineHeight:1.4,fontWeight:600}},item.text)))),h("div",{style:{fontSize:14,fontStyle:"italic",color:"rgba(255,255,255,0.9)",textAlign:"center",marginBottom:18,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}},"\"We do the numbers. You enjoy the race.\"")));
-  return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#f0f4ff 0%,#faf8f2 50%,#f5f0ff 100%)",color:C.text}},
-    h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"16px 20px 12px",position:"sticky",top:0,zIndex:100}},
-      h("div",{style:{maxWidth:520,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}},
-        h("div",{onClick:()=>setShowSplash(true),style:{display:"flex",alignItems:"center",gap:12,cursor:"pointer"}},
-          h("div",{style:{width:40,height:40,background:"linear-gradient(135deg,#c9a84c,#f0d080)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}},"🐴"),
-          h("div",null,
-            h("div",{style:{fontSize:22,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}},"GiddyUp"),
-            h("div",{style:{fontSize:9,color:"#c9a84c99",letterSpacing:3,textTransform:"uppercase"}},"Silks · v27.9"))),
-        h("div",{style:{display:"flex",alignItems:"center",gap:8}},
-          scratchCount>0&&h("div",{style:{background:"rgba(239,68,68,0.2)",border:"1px solid rgba(239,68,68,0.4)",borderRadius:20,padding:"3px 10px",fontSize:10,color:"#ef4444",fontWeight:700}},"🚫 "+scratchCount),
-          horses.length>0&&h("div",{style:{background:"rgba(74,158,110,.2)",border:"1px solid rgba(74,158,110,.4)",borderRadius:20,padding:"3px 10px",fontSize:10,color:"#4a9e6e",fontWeight:700}},horses.length+" horses"),
-          h("div",{style:{background:"rgba(201,168,76,.15)",border:"1px solid rgba(201,168,76,.3)",borderRadius:20,padding:"4px 12px",fontSize:11,color:C.gold,fontWeight:700}},activeRaceData.icon+" "+activeRaceData.label)))),
-    h("div",{style:{maxWidth:520,margin:"0 auto",padding:"0 16px 100px"}},
-      h("div",{style:{display:"flex",gap:3,padding:"12px 0 4px"}},
-        TABS.map(tab=>h("button",{key:tab.id,onClick:()=>setActiveTab(tab.id),style:{flex:1,padding:"10px 2px",borderRadius:10,border:"none",background:activeTab===tab.id?"#ffffff":"transparent",boxShadow:activeTab===tab.id?"0 2px 10px rgba(0,0,0,0.08)":"none",borderBottom:activeTab===tab.id?"3px solid "+C.gold:"3px solid transparent",color:activeTab===tab.id?C.text:C.muted,fontSize:10,fontWeight:700,cursor:"pointer"}},
-          h("div",{style:{fontSize:16,marginBottom:2}},tab.label),h("div",null,tab.full)))),
-      activeTab==="upload"&&h(UploadTab,{races,setRaces,setActiveTab,setHorses:hs=>{setHorses(hs);setScratched({});},setActiveRace,setWeights,setLocks,angleMode,silksUser}),
-      activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles}),
-      activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,horses,setHorses,scratched,setScratched}),
-      activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab}),
-      activeTab==="play"&&h(PlayTab,{scores,raceName}),
-      activeTab==="diary"&&h(DiaryTab,null)));}
-ReactDOM.render(h(GiddyUp,null),document.getElementById("root"));
+(async function init(){
+  initTBTSButtons();
+  const session=await GiddyUpAuth.getSession();
+  if(session&&session.user){
+    const profile=await GiddyUpAuth.getProfile(session.user.id);
+    CU={id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',diary:loadDiary(session.user.id)};
+    dayCard=await loadDayCard();
+    loadHome();go('screen-home');
+    return;
+  }
+  go('screen-splash');
+})();
 </script>
-</body>
-</html>
+</body></html>
