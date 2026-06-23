@@ -694,6 +694,9 @@ useEffect(()=>{
  async function handleSilksLogout(){
     await GiddyUpAuth.logout();
     setSilksUser(null);
+    setRaces([]);
+    setHorses([]);
+    setScratched({});
     setShowSplash(true);
   }
 
@@ -722,6 +725,9 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks){
   // Not signed in → show auth screen, gating everything else
 if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{
     setSilksUser(user);
+    setRaces([]);
+    setHorses([]);
+    setScratched({});
     if(user.customAngles&&user.customAngles.custom){const filled=fillMissingFactors(user.customAngles.custom.weights,user.customAngles.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
     setShowSplash(true);
   }});
