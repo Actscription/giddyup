@@ -732,6 +732,123 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
     setShowSplash(true);
   }});
 
+  if(showSplash)return h("div",{style:{minHeight:"100vh",background:"#0a150a",backgroundImage:"url('Finish_Line.png')",backgroundSize:"cover",backgroundPosition:"center 35%",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}},
+    h("div",{style:{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.78) 0%,rgba(0,0,0,0.42) 45%,rgba(0,0,0,0.82) 100%)"}}),
+    h("div",{style:{position:"relative",zIndex:1,width:"100%",maxWidth:480,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"max(54px,env(safe-area-inset-top)) 28px 36px"}},
+      h("div",{onClick:handleSilksLogout,style:{position:"absolute",top:14,right:14,zIndex:10,fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.85)",cursor:"pointer",background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:20,padding:"6px 14px"}},"Sign Out"),
+      h("div",{style:{textAlign:"center",marginBottom:6}},
+        h("div",{style:{fontSize:54,fontWeight:900,color:"#ffffff",letterSpacing:4,lineHeight:1,textShadow:"0 2px 24px rgba(0,0,0,0.9)"}},
+          h("span",{style:{color:"#ffffff"}},"Giddy"),h("span",{style:{color:C.gold}},"Up")),
+        h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.5)",letterSpacing:4,textTransform:"uppercase",marginTop:8}},"Silks · The Pro's Edge")),
+      h("div",{style:{width:36,height:2,background:C.gold,margin:"18px 0"}}),
+      h("div",{style:{textAlign:"center",marginBottom:20}},
+        h("div",{style:{fontSize:10,color:"rgba(255,255,255,0.5)",letterSpacing:4,textTransform:"uppercase",marginBottom:8}},"Welcome back"),
+        h("div",{style:{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,maxWidth:280,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:"0 2px 12px rgba(0,0,0,0.8)"}},(silksUser.username||"Rider"))),
+      h("div",{style:{flex:1}}),
+      h("button",{onClick:()=>setShowSplash(false),style:{padding:"17px 52px",background:"linear-gradient(135deg,#c9a84c,#f0d080)",border:"none",borderRadius:20,fontSize:19,fontWeight:900,color:"#0a150a",cursor:"pointer",display:"flex",alignItems:"center",gap:14,boxShadow:"0 6px 28px rgba(201,168,76,0.55)",letterSpacing:1,marginBottom:26}},
+        h("span",null,"🏇"),h("span",null,"Riders Up!"),h("span",null,"🏇")),
+      h("div",{style:{width:"100%",maxWidth:400,display:"flex",flexDirection:"column",gap:8,marginBottom:22}},
+        [{icon:"📸",text:"Snap the program. GiddyUp does the work."},{icon:"🎯",text:"Your picks are ready before the paddock."},{icon:"🐴",text:"Watch them run — Log it in your Diary."}].map((item,i)=>h("div",{key:i,style:{background:"rgba(0,0,0,0.52)",border:"1px solid rgba(255,255,255,0.14)",borderRadius:12,padding:"10px 16px",display:"flex",alignItems:"center",gap:14}},
+          h("span",{style:{fontSize:20,flexShrink:0}},item.icon),
+          h("span",{style:{fontSize:13,color:"#ffffff",lineHeight:1.4,fontWeight:500}},item.text)))),
+      h("div",{style:{fontSize:13,fontStyle:"italic",color:"rgba(255,255,255,0.65)",textAlign:"center",textShadow:"0 1px 6px rgba(0,0,0,0.7)"}},"\"We do the numbers. You enjoy the race.\"")));
+  return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
+    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden"}},
+      h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"24px 24px 20px",textAlign:"center"}},
+        h("div",{style:{fontSize:36,marginBottom:6}},"🐴"),
+        h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}},"GiddyUp"),
+        h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:6}},isRegister?"Create your account":"Sign in to continue")),
+      h("div",{style:{padding:"24px 24px 28px"}},
+        isRegister&&h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Username"),
+          h("input",{value:u,onChange:ev=>setU(ev.target.value),placeholder:"e.g. FastEddie",maxLength:20,style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Email"),
+          h("input",{type:"email",value:e,onChange:ev=>setE(ev.target.value),placeholder:"your@email.com",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        isRegister&&h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"City"),
+          h("input",{value:c,onChange:ev=>setC(ev.target.value),placeholder:"e.g. Grande Prairie, AB",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Password"),
+          h("input",{type:"password",value:p,onChange:ev=>setP(ev.target.value),placeholder:isRegister?"Min 8 characters":"Your password",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+        err&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:14,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},err),
+        h("button",{onClick:isRegister?handleRegister:handleLogin,disabled:busy,style:{width:"100%",padding:14,background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:15,fontWeight:800,cursor:busy?"not-allowed":"pointer",opacity:busy?0.6:1}},busy?"Please wait...":(isRegister?"Create My Account →":"Sign In")),
+        h("div",{style:{textAlign:"center",marginTop:16,fontSize:13}},
+          isRegister
+            ?h(Fragment,null,h("span",{style:{color:C.muted}},"Have an account? "),h("span",{style:{color:C.navy2,cursor:"pointer",fontWeight:700},onClick:()=>{setMode('login');setErr('');}},"Sign in"))
+            :h(Fragment,null,h("span",{style:{color:C.muted}},"New here? "),h("span",{style:{color:C.navy2,cursor:"pointer",fontWeight:700},onClick:()=>{setMode('register');setErr('');}},"Create account"))))));
+}
+
+function GiddyUp(){
+const [weights,setWeights]=useState({...PRESETS.custom});
+  const [locks,setLocks]=useState(()=>Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
+  const [activeRace,setActiveRace]=useState("custom");
+  const [angleMode,setAngleMode]=useState('giddyup');
+  const [activeTab,setActiveTab]=useState("upload");
+  const [races,setRaces]=useState([]);
+  const [horses,setHorses]=useState([]);
+  const [scratched,setScratched]=useState({});
+  const [showSplash,setShowSplash]=useState(!new URLSearchParams(window.location.search).get('tab'));
+
+  // ── Auth state (Supabase) ──
+  const [silksUser,setSilksUser]=useState(null);
+  const [authMode,setAuthMode]=useState('login'); // 'login' | 'register'
+  const [authChecked,setAuthChecked]=useState(false);
+
+useEffect(()=>{
+    (async()=>{
+      const session=await GiddyUpAuth.getSession();
+      if(session&&session.user){
+        const profile=await GiddyUpAuth.getProfile(session.user.id);
+       const customAnglesAll=normalizeCustomAngles(profile&&profile.custom_angles);
+        setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',customAngles:customAnglesAll});
+        if(customAnglesAll.custom){const filled=fillMissingFactors(customAnglesAll.custom.weights,customAnglesAll.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
+      }
+      setAuthChecked(true);
+    })();
+  },[]);
+
+ async function handleSilksLogout(){
+    await GiddyUpAuth.logout();
+    setSilksUser(null);
+    setRaces([]);
+    setHorses([]);
+    setScratched({});
+    setShowSplash(true);
+  }
+
+async function handleSaveAngles(raceType,currentWeights,currentLocks){
+    if(!silksUser) return false;
+    const merged={...(silksUser.customAngles||{}),[raceType]:{weights:currentWeights,locks:currentLocks}};
+    const result=await GiddyUpAuth.saveCustomAngles(silksUser.id,merged);
+    if(result.success){
+      setSilksUser(u=>({...u,customAngles:merged}));
+      return true;
+    } else {
+      alert('Could not save angles: '+result.error);
+      return false;
+    }
+  }
+
+  const scores=computeScores(horses,weights,activeRace,scratched);
+  const activeRaceData=RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0];
+  const raceName=races[0]?races[0].label:"";
+  const scratchCount=Object.values(scratched).filter(Boolean).length;
+  const TABS=[{id:"upload",label:"📷",full:"Upload"},{id:"angles",label:"🎯",full:"Angles"},{id:"rankings",label:"🏇",full:"Rankings"},{id:"giddyup",label:"🐴",full:"GiddyUp"},{id:"play",label:"🎫",full:"Play"},{id:"diary",label:"📒",full:"Diary"}];
+
+  // Wait for auth check before rendering anything (avoids flash of login screen)
+  if(!authChecked)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
+
+  // Not signed in → show auth screen, gating everything else
+if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{
+    setSilksUser(user);
+    setRaces([]);
+    setHorses([]);
+    setScratched({});
+    if(user.customAngles&&user.customAngles.custom){const filled=fillMissingFactors(user.customAngles.custom.weights,user.customAngles.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
+    setShowSplash(true);
+  }});
+
   if(showSplash)return h("div",{style:{minHeight:"100vh",background:"#0a150a",backgroundImage:"url('Finish_Line.png')",backgroundSize:"cover",backgroundPosition:"center top",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}},
     h("div",{style:{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.78) 0%,rgba(0,0,0,0.42) 45%,rgba(0,0,0,0.82) 100%)"}}),
     h("div",{onClick:handleSilksLogout,style:{position:"absolute",top:"max(14px,env(safe-area-inset-top))",right:14,zIndex:10,fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.85)",cursor:"pointer",background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:20,padding:"6px 14px"}},"Sign Out"),
