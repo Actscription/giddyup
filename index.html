@@ -141,7 +141,8 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
   const minS=allScores[0]?allScores[0].totalScore:horse.totalScore,maxS=allScores[allScores.length-1]?allScores[allScores.length-1].totalScore:horse.totalScore;
   const barW=Math.max(15,100-((horse.totalScore-minS)/Math.max(1,maxS-minS))*80);
   return h("div",{style:{background:rank===0?"linear-gradient(135deg,#fffbf0,#fff8e6)":"#fff",border:rank===0?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10,cursor:"pointer"}},
-    h("div",{style:{display:"flex",alignItems:"center",gap:12}},
+    h("div",{style:{display:"flex",alignItems:"center",gap:dragHandle?8:12}},
+      dragHandle&&h("div",null,dragHandle),
       h("div",{onClick:()=>setExp(!exp),style:{position:"relative",minWidth:38,cursor:"pointer"}},
         h("div",{style:{width:38,height:38,borderRadius:9,background:silk.bg,color:silk.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:15,border:ring!=="transparent"?"3px solid "+ring:"1px solid rgba(0,0,0,0.15)",boxShadow:silk.bg==="#ffffff"?"inset 0 0 0 1px rgba(0,0,0,0.12)":"none"}},horse.number),
         rank<3&&h("div",{style:{position:"absolute",top:-8,right:-8,fontSize:13,lineHeight:1}},medals[rank])),
