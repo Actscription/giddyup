@@ -545,7 +545,8 @@ function TicketBuilder({scores}){
             horses.map(horse=>{
               const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
               const picked=sel[pos].includes(horse.number);
-              return h('div',{key:horse.number,onClick:()=>toggle(pos,horse.number),style:{width:36,height:36,borderRadius:8,background:picked?silk.bg:'#f1f5f9',color:picked?silk.fg:C.muted,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:13,cursor:'pointer',border:picked?'2px solid '+posColor(pos):'2px solid transparent',boxShadow:picked?'0 2px 8px rgba(0,0,0,0.15)':'none',transition:'all 0.1s'}},horse.number);
+              const lockedAbove=Object.entries(sel).some(([pp,v])=>Number(pp)<pos&&v.length===1&&v[0]===horse.number);
+              return h('div',{key:horse.number,onClick:()=>!lockedAbove&&toggle(pos,horse.number),style:{width:36,height:36,borderRadius:8,background:picked&&!lockedAbove?silk.bg:'#f1f5f9',color:picked&&!lockedAbove?silk.fg:C.muted,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:13,cursor:lockedAbove?'not-allowed':'pointer',border:picked&&!lockedAbove?'2px solid '+posColor(pos):'2px solid transparent',opacity:lockedAbove?0.3:1,transition:'all 0.1s'}},horse.number);
             })
           )
         )
@@ -560,18 +561,20 @@ function TicketBuilder({scores}){
             )
           )
         ),
-        [1,2,3,4].filter(p=>sel[p].length>0).map(p=>
-          h('div',{key:p,style:{display:'flex',gap:8,alignItems:'center',marginBottom:6}},
+        [1,2,3,4].filter(p=>sel[p].length>0).map(p=>{
+          const above=Object.entries(sel).filter(([pp])=>Number(pp)<p&&sel[Number(pp)].length===1).map(([,v])=>v[0]);
+          const validHorses=sel[p].filter(n=>!above.includes(n));
+          if(!validHorses.length) return null;
+          return h('div',{key:p,style:{display:'flex',gap:8,alignItems:'center',marginBottom:6}},
             h('div',{style:{fontSize:11,color:posColor(p),fontWeight:700,width:28,flexShrink:0}},posLabel(p)+':'),
             h('div',{style:{display:'flex',gap:4,flexWrap:'wrap'}},
-              sel[p].map(num=>{
+              validHorses.map(num=>{
                 const silk=SILK_COLORS[num]||SILK_COLORS.default;
                 return h('div',{key:num,style:{width:24,height:24,borderRadius:5,background:silk.bg,color:silk.fg,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:11}},num);
-              }),
-              sel[p].length===horses.filter(h=>![1,2,3,4].filter(pp=>pp!==p).flatMap(pp=>sel[pp]).includes(h.number)).length&&h('span',{style:{fontSize:11,color:C.muted,alignSelf:'center'}},'(field)')
+              })
             )
-          )
-        )
+          );
+        })
       ),
       h('div',{style:{display:'flex',justifyContent:'flex-end',marginTop:10}},
         h('button',{onClick:clearAll,style:{fontSize:11,color:'#ef4444',background:'transparent',border:'none',cursor:'pointer',fontWeight:700}},'Clear All')
