@@ -817,7 +817,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
   }});
 
   if(showSplash)return h("div",{style:{minHeight:"100vh",background:"#0a150a",backgroundImage:"url('Finish_Line.png')",backgroundSize:"cover",backgroundPosition:"center 35%",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}},
-    h("div",{style:{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.78) 0%,rgba(0,0,0,0.25) 45%,rgba(0,0,0,0.82) 100%)"}}),
+    h("div",{style:{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 45%,rgba(0,0,0,0.88) 100%)"}}),
     h("div",{style:{position:"relative",zIndex:1,width:"100%",maxWidth:480,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"max(54px,env(safe-area-inset-top)) 28px 36px"}},
       h("div",{onClick:handleSilksLogout,style:{position:"absolute",top:14,right:14,zIndex:10,fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.85)",cursor:"pointer",background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:20,padding:"6px 14px"}},"Sign Out"),
       h("div",{style:{textAlign:"center",marginBottom:6}},
@@ -831,7 +831,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       h("button",{onClick:()=>setShowSplash(false),style:{padding:"17px 52px",background:"linear-gradient(135deg,#c9a84c,#f0d080)",border:"none",borderRadius:20,fontSize:19,fontWeight:900,color:"#0a150a",cursor:"pointer",display:"flex",alignItems:"center",gap:14,boxShadow:"0 6px 28px rgba(201,168,76,0.55)",letterSpacing:1,marginBottom:26}},
         h("span",null,"🏇"),h("span",null,"Riders Up!"),h("span",null,"🏇")),
       h("div",{style:{flex:1}}),
-      h("div",{style:{fontSize:13,fontStyle:"italic",color:"rgba(255,255,255,0.65)",textAlign:"center",textShadow:"0 1px 6px rgba(0,0,0,0.7)"}},"\"We do the numbers. You enjoy the race.\"")));
+      h("div",{style:{fontSize:15,fontStyle:"italic",color:"rgba(255,255,255,0.90)",textAlign:"center",textShadow:"0 2px 8px rgba(0,0,0,0.9)",lineHeight:1.6,fontWeight:500}},h("div",null,"\u201cWe do the numbers."),h("div",null,"You enjoy the race.\u201d"))));
   return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#f0f4ff 0%,#faf8f2 50%,#f5f0ff 100%)",color:C.text}},
     h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"16px 20px 12px",position:"sticky",top:0,zIndex:100}},
       h("div",{style:{maxWidth:520,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}},
