@@ -513,11 +513,7 @@ function TicketBuilder({scores}){
     });
   }
   function setField(pos){
-    setSel(s=>{
-      const others=Object.entries(s).filter(([p])=>p!==String(pos)).flatMap(([,v])=>v);
-      const field=horses.map(h=>h.number).filter(n=>!others.includes(n));
-      return{...s,[pos]:field};
-    });
+    setSel(s=>({...s,[pos]:horses.map(h=>h.number)}));
   }
   function clearAll(){setSel({1:[],2:[],3:[],4:[]});}
   const s1=sel[1],s2=sel[2],s3=sel[3],s4=sel[4];
