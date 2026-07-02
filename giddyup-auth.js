@@ -106,6 +106,38 @@ const GiddyUpAuth = {
       .maybeSingle();
     if (error || !data) return null;
     return data.picks;
+  },
+
+  // ── PUBLISHED RACE CARDS (daily card for all users) ─────────────
+  // One row per race day in the race_cards table. The `card` column
+  // (jsonb) holds the entire analyzed day:
+  // { track, races: [ { label, raceType, horses:[...] } ] }
+  // Admin (Carm) publishes once each morning; all users load it
+  // instantly — no PDF upload, no Vision API call.
+
+  async publishCard(raceDate, cardObj, userId) {
+    const { data, error } = await giddyupSupabase
+      .from("race_cards")
+      .upsert({
+        race_date: raceDate,
+        card: cardObj,
+        published_by: userId,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "race_date" })
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
+  async getPublishedCard(raceDate) {
+    const { data, error } = await giddyupSupabase
+      .from("race_cards")
+      .select("*")
+      .eq("race_date", raceDate)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.card;
   }
 
 };
