@@ -285,6 +285,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
 
   // ── PUBLISHED DAY CARD (Supabase race_cards) ──
   const [pubStatus,setPubStatus]=useState("");
+  const [pubDate,setPubDate]=useState(new Date().toLocaleDateString("en-CA"));
   const isAdmin=silksUser&&GIDDYUP_ADMIN_USERNAMES.includes((silksUser.username||"").toLowerCase());
   function todayStr(){return new Date().toLocaleDateString("en-CA");}
 
@@ -307,10 +308,11 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
   async function publishTodayCard(){
     const analyzed=races.filter(r=>r.horses&&r.horses.length);
     if(!analyzed.length){setPubStatus("Nothing to publish — analyze at least one race first.");return;}
-    setPubStatus("Publishing "+analyzed.length+" race"+(analyzed.length!==1?"s":"")+"...");
+    const target=pubDate||todayStr();
+    setPubStatus("Publishing "+analyzed.length+" race"+(analyzed.length!==1?"s":"")+" for "+target+"...");
     const cardObj={track:"Evergreen Park",races:analyzed.map(r=>({label:r.label,raceType:r.raceType||"custom",horses:r.horses}))};
-    const res=await GiddyUpAuth.publishCard(todayStr(),cardObj,silksUser.id);
-    setPubStatus(res.success?"✅ Card published — all users can now load "+analyzed.length+" races.":"❌ "+res.error);
+    const res=await GiddyUpAuth.publishCard(target,cardObj,silksUser.id);
+    setPubStatus(res.success?"✅ Card published for "+target+" — users can load "+analyzed.length+" races that day.":"❌ "+res.error);
   }
 
   async function loadTodayCard(){
@@ -348,9 +350,11 @@ return h("div",{style:{paddingTop:14}},
       h("span",{style:{fontSize:18}},"⚡"),
       h("span",{style:{fontSize:14,fontWeight:800,color:C.gold}},"Load Today's Card"),
       h("span",{style:{fontSize:11,color:"rgba(201,168,76,0.6)"}},"instant · no upload needed")),
-    isAdmin&&h("button",{onClick:publishTodayCard,style:{width:"100%",padding:"12px 16px",background:"rgba(201,168,76,0.08)",border:"2px dashed rgba(201,168,76,0.6)",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}},
-      h("span",{style:{fontSize:16}},"📤"),
-      h("span",{style:{fontSize:13,fontWeight:800,color:"#a07830"}},"Publish Today's Card (Admin)")),
+    isAdmin&&h("div",{style:{display:"flex",gap:8,marginBottom:8}},
+      h("input",{type:"date",value:pubDate,onChange:e=>setPubDate(e.target.value),style:{flexShrink:0,padding:"10px 8px",background:"#fff",border:"2px dashed rgba(201,168,76,0.6)",borderRadius:12,fontSize:13,fontWeight:700,color:"#a07830",fontFamily:"inherit"}}),
+      h("button",{onClick:publishTodayCard,style:{flex:1,padding:"12px 16px",background:"rgba(201,168,76,0.08)",border:"2px dashed rgba(201,168,76,0.6)",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},
+        h("span",{style:{fontSize:16}},"📤"),
+        h("span",{style:{fontSize:13,fontWeight:800,color:"#a07830"}},"Publish Card (Admin)"))),
     pubStatus&&h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:10,padding:"8px 12px",marginBottom:10,fontSize:12,fontWeight:600,color:C.text}},pubStatus),
 
     races.length>0&&h("div",{style:{marginBottom:12}},
