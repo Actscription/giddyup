@@ -327,25 +327,33 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
 return h("div",{style:{paddingTop:14}},
     h(HowToUse,null),
     h("div",{style:{display:"flex",flexDirection:"column",gap:10,marginBottom:14}},
-      h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{width:"100%",padding:"18px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:12}},
-        h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.2)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}},"📸"),
+      // 1 — Load Today's Card (published by GiddyUp)
+      h("button",{onClick:loadTodayCard,style:{width:"100%",padding:"16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"2px solid "+C.gold,borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+        h("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",background:C.gold,color:C.navy,fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},"1"),
+        h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.2)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}},"⚡"),
         h("div",{style:{textAlign:"left"}},
-          h("div",{style:{fontSize:16,fontWeight:800,color:C.gold}},"Take a Photo"),
-          h("div",{style:{fontSize:11,color:"rgba(201,168,76,0.6)",marginTop:2}},"Point your camera at the race program")),
+          h("div",{style:{fontSize:16,fontWeight:900,color:C.gold}},"Load Today's Card"),
+          h("div",{style:{fontSize:11,color:"rgba(201,168,76,0.7)",marginTop:2}},"Instant — GiddyUp already did the numbers")),
         h("div",{style:{marginLeft:"auto",color:C.gold,fontSize:18}},"→")),
-     h("div",{style:{display:"flex",gap:8}},
-        h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{flex:1,padding:"14px 10px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:12,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6}},
-          h("div",{style:{fontSize:22}},"🖼📄"),
-          h("div",{style:{fontSize:12,fontWeight:700,color:C.text}},"Photo or PDF")))),
+      // 2 — Upload a file from device
+      h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{width:"100%",padding:"16px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+        h("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:"#a07830",fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},"2"),
+        h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.08)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}},"🖼📄"),
+        h("div",{style:{textAlign:"left"}},
+          h("div",{style:{fontSize:16,fontWeight:900,color:C.text}},"Upload Photo or PDF"),
+          h("div",{style:{fontSize:11,color:C.muted,marginTop:2}},"A race file saved on your phone or computer")),
+        h("div",{style:{marginLeft:"auto",color:C.muted,fontSize:18}},"→")),
+      // 3 — Take a photo of the program
+      h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{width:"100%",padding:"16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+        h("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",background:"rgba(201,168,76,0.3)",color:C.gold,fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},"3"),
+        h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.2)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}},"📸"),
+        h("div",{style:{textAlign:"left"}},
+          h("div",{style:{fontSize:16,fontWeight:900,color:C.gold}},"TAKE A PHOTO of the Program"),
+          h("div",{style:{fontSize:11,color:"rgba(201,168,76,0.7)",marginTop:2}},"Snap the race page with your camera")),
+        h("div",{style:{marginLeft:"auto",color:C.gold,fontSize:18}},"→"))),
     h("input",{ref:cameraRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:e=>addFiles(e.target.files)}),
     h("input",{ref:fileRef,type:"file",accept:"image/*,application/pdf",multiple:true,style:{display:"none"},onChange:e=>addFiles(e.target.files)}),
     h("div",{style:{background:"rgba(74,158,110,0.06)",border:"1px solid rgba(74,158,110,0.2)",borderRadius:10,padding:"8px 12px",marginBottom:10,fontSize:11,color:"#4a9e6e"}},"📄 PDFs supported — upload directly from DRF, Equibase or any past performances PDF"),
-
-    // ── Published day card: load (everyone) / publish (admin) ──
-    h("button",{onClick:loadTodayCard,style:{width:"100%",padding:"14px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"2px solid "+C.gold,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:8}},
-      h("span",{style:{fontSize:18}},"⚡"),
-      h("span",{style:{fontSize:14,fontWeight:800,color:C.gold}},"Load Today's Card"),
-      h("span",{style:{fontSize:11,color:"rgba(201,168,76,0.6)"}},"instant · no upload needed")),
     isAdmin&&h("div",{style:{display:"flex",gap:8,marginBottom:8}},
       h("input",{type:"date",value:pubDate,onChange:e=>setPubDate(e.target.value),style:{flexShrink:0,padding:"10px 8px",background:"#fff",border:"2px dashed rgba(201,168,76,0.6)",borderRadius:12,fontSize:13,fontWeight:700,color:"#a07830",fontFamily:"inherit"}}),
       h("button",{onClick:publishTodayCard,style:{flex:1,padding:"12px 16px",background:"rgba(201,168,76,0.08)",border:"2px dashed rgba(201,168,76,0.6)",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},
@@ -436,24 +444,22 @@ return h("div",{style:{paddingTop:14}},
 
 function HowToUse(){
   const [open,setOpen]=useState(false);
-  const steps=[
-    "Tap Races Today to open your Google Drive folder",
-    "Download all the race PDFs you need to your phone or computer — grab them all at once for convenience",
-    "Tap the \"Photo or PDF\" button and choose your race file",
-    "Got extra files for that race (speed ratings, multiple pages)? Tap + to add them",
-    "GiddyUp will analyze every document you've added for that race together — one race at a time",
-    "Tap Analyze",
-    "You're off to the races 🏇 — head to the Angles tab next",
+  const methods=[
+    {n:"1",title:"⚡ Load Today's Card — easiest",body:"GiddyUp has already analyzed today's races. One tap and every race is ready — hit View on any race to see the rankings. No files, no waiting."},
+    {n:"2",title:"🖼📄 Upload Photo or PDF",body:"Have a race file on your phone or computer? Tap Upload Photo or PDF and pick it. Extra pages for the same race (speed ratings, page 2)? Tap + to add them, then Analyze."},
+    {n:"3",title:"📸 Take a Photo",body:"At the track with a paper program? Point your camera at the race page and snap it. Add more pages with +, then tap Analyze."},
   ];
   return h("div",{style:{marginBottom:14,background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden"}},
     h("div",{onClick:()=>setOpen(!open),style:{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",cursor:"pointer",background:open?"rgba(201,168,76,0.06)":"#fff"}},
       h("div",{style:{fontSize:18}},"📋"),
-      h("div",{style:{flex:1,fontWeight:800,fontSize:14,color:C.text}},"How to Upload Your Races"),
+      h("div",{style:{flex:1,fontWeight:800,fontSize:14,color:C.text}},"3 Ways to Load Your Races"),
       h("div",{style:{color:C.muted,fontSize:12,fontWeight:700}},open?"Hide ▲":"Show ▼")),
     open&&h("div",{style:{padding:"4px 16px 18px"}},
-      steps.map((step,i)=>h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:i<steps.length-1?10:0}},
-        h("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:C.gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}},i+1),
-h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},step)))));
+      methods.map((m,i)=>h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:i<methods.length-1?14:0}},
+        h("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:C.gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}},m.n),
+        h("div",null,
+          h("div",{style:{fontSize:13,fontWeight:800,color:C.text,marginBottom:2}},m.title),
+          h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},m.body))))));
 }
 
 function TabHelp({title,steps}){
