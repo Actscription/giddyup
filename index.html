@@ -286,6 +286,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
   // ── PUBLISHED DAY CARD (Supabase race_cards) ──
   const [pubStatus,setPubStatus]=useState("");
   const [pubDate,setPubDate]=useState(new Date().toLocaleDateString("en-CA"));
+  const [loadDate,setLoadDate]=useState(new Date().toLocaleDateString("en-CA"));
   const isAdmin=silksUser&&GIDDYUP_ADMIN_USERNAMES.includes((silksUser.username||"").toLowerCase());
   function todayStr(){return new Date().toLocaleDateString("en-CA");}
 
@@ -316,11 +317,13 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
   }
 
   async function loadTodayCard(){
-    setPubStatus("Loading today's card...");
-    const card=await GiddyUpAuth.getPublishedCard(todayStr());
-    if(!card||!card.races||!card.races.length){setPubStatus("No card published yet for today — check back soon.");return;}
+    const target=loadDate||todayStr();
+    const isToday=target===todayStr();
+    setPubStatus("Loading "+(isToday?"today's card":"card for "+target)+"...");
+    const card=await GiddyUpAuth.getPublishedCard(target);
+    if(!card||!card.races||!card.races.length){setPubStatus(isToday?"No card published yet for today — check back soon.":"No card published for "+target+".");return;}
     setRaces(card.races.map((rc,i)=>({id:Date.now()+i,label:rc.label||("Race "+(i+1)),pages:[],status:"analyzed",horseCount:(rc.horses||[]).length,horses:rc.horses||[],raceType:rc.raceType||"custom",active:false})));
-    setPubStatus("✅ Loaded "+card.races.length+" races — tap View on any race.");
+    setPubStatus("✅ Loaded "+card.races.length+" races"+(isToday?"":" for "+target)+" — tap View on any race.");
     setStatus("idle");
   }
 
@@ -335,6 +338,10 @@ return h("div",{style:{paddingTop:14}},
           h("div",{style:{fontSize:16,fontWeight:900,color:C.gold}},"Load Today's Card"),
           h("div",{style:{fontSize:11,color:"rgba(201,168,76,0.7)",marginTop:2}},"Instant — GiddyUp already did the numbers")),
         h("div",{style:{marginLeft:"auto",color:C.gold,fontSize:18}},"→")),
+      h("div",{style:{display:"flex",alignItems:"center",gap:8,padding:"0 4px"}},
+        h("span",{style:{fontSize:11,fontWeight:700,color:C.muted}},"📅 Race day:"),
+        h("input",{type:"date",value:loadDate,onChange:e=>setLoadDate(e.target.value),style:{padding:"6px 8px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:10,fontSize:12,fontWeight:700,color:C.text,fontFamily:"inherit"}}),
+        loadDate!==new Date().toLocaleDateString("en-CA")&&h("button",{onClick:()=>setLoadDate(new Date().toLocaleDateString("en-CA")),style:{background:"transparent",border:"none",color:C.gold,fontSize:11,fontWeight:700,cursor:"pointer",textDecoration:"underline"}},"back to today")),
       // 2 — Upload a file from device
       h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{width:"100%",padding:"16px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
         h("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:"#a07830",fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},"2"),
