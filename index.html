@@ -322,7 +322,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
     setPubStatus("Loading "+(isToday?"today's card":"card for "+target)+"...");
     const card=await GiddyUpAuth.getPublishedCard(target);
     if(!card||!card.races||!card.races.length){setPubStatus(isToday?"No card published yet for today — check back soon.":"No card published for "+target+".");return;}
-    setRaces(card.races.map((rc,i)=>({id:Date.now()+i,label:rc.raceNumber?("Race "+rc.raceNumber):(rc.label||("Race "+(i+1))),pages:[],status:"analyzed",horseCount:(rc.horses||[]).length,horses:rc.horses||[],raceType:rc.raceType||"custom",raceNumber:rc.raceNumber||null,postTime:rc.postTime||"",track:card.track||"Evergreen Park",active:false})));
+    setRaces(card.races.map((rc,i)=>({id:Date.now()+i,label:rc.raceNumber?("Race "+rc.raceNumber):(rc.label||("Race "+(i+1))),pages:[],status:"analyzed",horseCount:(rc.horses||[]).length,horses:rc.horses||[],raceType:rc.raceType||"custom",raceNumber:rc.raceNumber||null,postTime:rc.postTime||"",track:card.track||"Evergreen Park",raceDate:target,active:false})));
     setPubStatus("✅ Loaded "+card.races.length+" races"+(isToday?"":" for "+target)+" — tap View on any race.");
     setStatus("idle");
   }
@@ -537,7 +537,14 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
       "Tap GiddyUp Suggestions for bet recommendations based on these rankings.",
     ]}),
     actionHorse&&h(HorseActionModal,{horse:actionHorse,isScratched:!!scratched[actionHorse.number],onSave:handleAction,onClose:()=>setActionHorse(null)}),
-    raceName&&h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"1.5px solid "+C.gold,borderRadius:12,padding:"10px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},h("span",{style:{color:C.gold,fontWeight:900,fontSize:15}},(raceMeta&&raceMeta.track?raceMeta.track+"  ·  ":"")+raceName),h("span",{style:{marginLeft:"auto",textAlign:"right"}},raceMeta&&raceMeta.post?h("div",{style:{color:"#f2e5bd",fontSize:12.5,fontWeight:700}},"Approx Post "+raceMeta.post):null,nowStr?h("div",{style:{color:"rgba(242,229,189,0.75)",fontSize:11.5,fontWeight:600,marginTop:1}},"Now "+nowStr):null)),
+    raceName&&(function(){
+      var dateLabel="";
+      if(raceMeta&&raceMeta.date){try{var p=raceMeta.date.split("-");var d=new Date(+p[0],+p[1]-1,+p[2]);dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}catch(err){dateLabel=raceMeta.date;}}
+      return h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"1.5px solid "+C.gold,borderRadius:12,padding:"12px 14px",marginBottom:12,display:"flex",flexDirection:"column",alignItems:"center",gap:3,textAlign:"center"}},
+        h("div",{style:{color:C.gold,fontWeight:900,fontSize:16,letterSpacing:0.3}},(raceMeta&&raceMeta.track?raceMeta.track+" · ":"")+raceName),
+        (dateLabel||(raceMeta&&raceMeta.post))?h("div",{style:{color:"#f2e5bd",fontSize:13.5,fontWeight:700}},[dateLabel,(raceMeta&&raceMeta.post?"Approx Post "+raceMeta.post:"")].filter(Boolean).join("  ·  ")):null,
+        nowStr?h("div",{style:{color:"rgba(242,229,189,0.8)",fontSize:12.5,fontWeight:600}},"Now "+nowStr):null);
+    })(),
     scratchCount>0&&h("div",{style:{background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:10,padding:"8px 12px",marginBottom:10,fontSize:11,color:"#dc2626",display:"flex",alignItems:"center",gap:8}},h("span",null,"🚫"),h("span",null,scratchCount+" horse"+(scratchCount>1?"s":"")+" scratched — rankings updated")),
 
     scores.length>0&&h("div",{style:{background:"linear-gradient(135deg,#fffbf0,#fff8e6)",border:"2px solid "+C.gold,borderRadius:16,padding:"16px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14}},
@@ -879,7 +886,7 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks){
   const activeRaceData=RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0];
   const activeRaceObj=races.find(r=>r.active)||races[0]||null;
   const raceName=activeRaceObj?activeRaceObj.label:"";
-  const raceMeta=activeRaceObj?{track:activeRaceObj.track||"",post:activeRaceObj.postTime||""}:null;
+  const raceMeta=activeRaceObj?{track:activeRaceObj.track||"",post:activeRaceObj.postTime||"",date:activeRaceObj.raceDate||""}:null;
   const scratchCount=Object.values(scratched).filter(Boolean).length;
   const TABS=[{id:"upload",label:"📷",full:"Upload"},{id:"angles",label:"🎯",full:"Angles"},{id:"rankings",label:"🏇",full:"Rankings"},{id:"giddyup",label:"🐴",full:"GiddyUp"},{id:"play",label:"🎫",full:"Play"},{id:"diary",label:"📒",full:"Diary"}];
 
