@@ -339,6 +339,7 @@ input[type=file]{display:none;}
       </div>
       <div class="card">
         <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">My Picks</div>
+        <div id="pp-rank-badge" style="display:none;font-size:11px;color:var(--gold-dark);background:var(--gold-light);border:1px solid var(--gold);border-radius:8px;padding:6px 10px;margin-bottom:10px;">⭐ Pre-filled from your GiddyUp Silks My Rankings — edit freely, then Save Picks.</div>
         <div class="pick-grid">
           <div class="pick-slot win"><label>★ Win</label><input type="number" id="pp1" class="pi pi-win" placeholder="#" min="1"></div>
           <div class="pick-slot place"><label>Place</label><input type="number" id="pp2" class="pi pi-place" placeholder="#" min="1"></div>
@@ -777,12 +778,21 @@ function checkSilksBridge(){
     if(!data||data.date!==TODAY) return;
     const existing=document.getElementById('silks-bridge-banner');
     if(existing) return;
+    const guCount=Object.keys(data.picks||{}).length;
+    const rankCount=Object.keys(data.rankPicks||{}).length;
+    if(!guCount&&!rankCount) return;
     const banner=document.createElement('div');
     banner.id='silks-bridge-banner';
     banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
-    const raceCount=Object.keys(data.picks||{}).length;
-    const raceLabel=raceCount===1?'1 race':raceCount+' races';
-    banner.innerHTML=`<div>🔬 <strong>GiddyUp Picks for ${raceLabel}</strong> ready from ${data.sentAt||'earlier today'}. Load as GiddyUp Picks?</div>
+    let label;
+    if(guCount&&rankCount){
+      label=`GiddyUp Picks + Your Ranking Picks for ${Math.max(guCount,rankCount)} race${Math.max(guCount,rankCount)!==1?'s':''}`;
+    } else if(guCount){
+      label=`GiddyUp Picks for ${guCount} race${guCount!==1?'s':''}`;
+    } else {
+      label=`Your Ranking Picks for ${rankCount} race${rankCount!==1?'s':''}`;
+    }
+    banner.innerHTML=`<div>🔬 <strong>${label}</strong> ready from ${data.sentAt||'earlier today'}. Load them in?</div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
         <button class="btn btn-gold btn-sm" onclick="loadSilksPicks()">Load</button>
         <button class="btn btn-outline btn-sm" onclick="dismissSilksBridge()">Dismiss</button>
@@ -794,22 +804,39 @@ function checkSilksBridge(){
 function loadSilksPicks(){
   try{
     const data=JSON.parse(localStorage.getItem('giddyup_play_incoming'));
-    if(!data||!data.picks) return;
+    if(!data) return;
     const card=getTodayCard();
-    if(!card.guPicks) card.guPicks={};
-    let count=0;
-    Object.keys(data.picks).forEach(raceNum=>{
-      const p=data.picks[raceNum];
-      if(p&&p.length>=4){
-        card.guPicks[raceNum]=[p[0],p[1],p[2],p[3]];
-        count++;
-      }
-    });
+    let guCount=0,rankCount=0,rankSkipped=0;
+    if(data.picks){
+      if(!card.guPicks) card.guPicks={};
+      Object.keys(data.picks).forEach(raceNum=>{
+        const p=data.picks[raceNum];
+        if(p&&p.length>=4){
+          card.guPicks[raceNum]=[p[0],p[1],p[2],p[3]];
+          guCount++;
+        }
+      });
+    }
+    if(data.rankPicks){
+      Object.keys(data.rankPicks).forEach(raceNum=>{
+        const p=data.rankPicks[raceNum];
+        if(!p||p.length<4) return;
+        if(card.picks[raceNum]){ rankSkipped++; return; } // don't clobber picks the user already saved/edited
+        if(card.results[raceNum]) return; // race already locked
+        card.picks[raceNum]={win:p[0],field:[p[0],p[1],p[2],p[3]],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),source:'myRankings'};
+        rankCount++;
+      });
+    }
     saveUser();
     localStorage.removeItem('giddyup_play_incoming');
     dismissSilksBridge();
     renderRaceGrid();
-    alert('GiddyUp Picks loaded for '+count+' race'+(count!==1?'s':'')+'! These will compete against your picks and selections on the scorecard.');
+    let msg='';
+    if(guCount) msg+='GiddyUp Picks loaded for '+guCount+' race'+(guCount!==1?'s':'')+' (locked). ';
+    if(rankCount) msg+='Your Ranking Picks loaded for '+rankCount+' race'+(rankCount!==1?'s':'')+' as My Picks \u2014 still editable. ';
+    if(rankSkipped) msg+=rankSkipped+' race'+(rankSkipped!==1?'s':'')+' already had saved picks and '+(rankSkipped!==1?'were':'was')+' left untouched.';
+    if(!msg) msg='Nothing new to load.';
+    alert(msg.trim());
   }catch(e){alert('Could not load picks from Silks.');}
 }
 function dismissSilksBridge(){
@@ -856,6 +883,7 @@ function loadPickRaceData(r){
   document.getElementById('pp2').value=pk?pk.field[1]:'';
   document.getElementById('pp3').value=pk?pk.field[2]:'';
   document.getElementById('pp4').value=pk?pk.field[3]:'';
+  document.getElementById('pp-rank-badge').style.display=(pk&&pk.source==='myRankings')?'block':'none';
   document.getElementById('ml1').value=ml?ml[0]:'';
   document.getElementById('ml2').value=ml?ml[1]:'';
   document.getElementById('ml3').value=ml?ml[2]:'';
