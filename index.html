@@ -517,7 +517,7 @@ return h("div",{style:{paddingTop:14}},
         !hasSaved?"⚠️ No saved "+raceLabel+" DNA yet — adjust your angles below, then Save":(isDirty?"⚠️ Unsaved changes — tap Save to keep these":"✅ Using your saved "+raceLabel+" DNA")),
       h("button",{onClick:async()=>{const ok=await onSaveAngles(activeRace,weights,locks);if(ok){setJustSaved(true);setTimeout(()=>setJustSaved(false),2500);}},style:{width:"100%",padding:"10px 16px",background:justSaved?"#4a9e6e":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:10,color:justSaved?"#fff":C.gold,fontSize:13,fontWeight:700,cursor:"pointer"}},justSaved?"✅ Saved!":"💾 Save as "+uName+"'s "+raceLabel+" DNA"))),
   !horses||!horses.length?h("div",{onClick:()=>setActiveTab("upload"),style:{background:"rgba(201,168,76,0.08)",border:"1.5px dashed "+C.gold,borderRadius:14,padding:"12px 16px",marginBottom:16,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},h("div",{style:{fontSize:26}},"📷"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:13,color:C.gold}},"Upload a Race Program First")),h("div",{style:{color:C.gold,fontSize:16}},"→")):h("div",{style:{background:"rgba(201,168,76,0.08)",border:"2px solid rgba(201,168,76,0.4)",borderRadius:14,padding:"12px 16px",marginBottom:16}},h("div",{style:{display:"flex",alignItems:"center",gap:10}},h("div",{style:{fontSize:22}},"🤖"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:800,fontSize:15,color:activeRace==="custom"?"#ef4444":C.gold}},activeRace==="custom"?"Select Your Race Type Below!":activeRace.charAt(0).toUpperCase()+activeRace.slice(1)+" Race Detected"),h("div",{style:{fontSize:11,color:"#a07830",marginTop:2}},"Angles preset — adjust below if needed"))),h("div",{style:{fontSize:11,color:"#a07830",paddingTop:8,borderTop:"1px solid rgba(201,168,76,0.2)",marginTop:8}},"✅ "+(horses?horses.length:0)+" horses loaded")),h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:10}},"Select Race Type"),h("div",{style:{display:"flex",gap:6,marginBottom:14}},RACE_TYPES.map(rt=>h("button",{key:rt.id,onClick:()=>selectRace(rt.id),style:{flex:1,padding:"10px 2px",borderRadius:12,border:activeRace===rt.id?"2px solid "+rt.color:"2px solid "+C.border,background:activeRace===rt.id?rt.color+"18":"#fff",cursor:"pointer"}},h("div",{style:{fontSize:15,marginBottom:2}},rt.icon),h("div",{style:{fontSize:9,fontWeight:700,color:activeRace===rt.id?rt.color:C.muted,textTransform:"uppercase"}},rt.label)))),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},h("div",null,h("div",{style:{fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:2}},"Angle Points"),h("div",{style:{display:"flex",alignItems:"baseline",gap:3}},h("span",{style:{fontSize:34,fontWeight:900,color:total===100?C.gold:"#ef4444"}},total),h("span",{style:{color:C.muted,fontSize:13}},"/100 pts"))),h("div",{style:{textAlign:"right"}},h("div",{style:{fontSize:11,color:total===100?"#4a9e6e":"#ef4444",fontWeight:700}},total===100?"✅ Allocated":total<100?"⚠ "+(100-total)+" left":"⚠ "+(total-100)+" over"),lockedCount>0&&h("div",{style:{fontSize:10,color:C.muted}},"🔒 "+lockedCount+" locked"))),h("div",{style:{height:8,background:"#f1f5f9",borderRadius:6,overflow:"hidden",display:"flex"}},ALL_FACTORS.map(f=>h("div",{key:f.id,style:{width:weights[f.id]+"%",height:"100%",background:FC[f.id]}})))),h("button",{onClick:lockAll,style:{width:"100%",marginBottom:14,padding:"12px",background:allLocked?"linear-gradient(135deg,"+C.navy+","+C.navy2+")":"#f8fafc",border:allLocked?"none":"1.5px solid "+C.border,borderRadius:12,color:allLocked?C.gold:"#64748b",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",null,allLocked?"🔓":"🔒"),allLocked?"Unlock All Angles":"Lock All Angles"),FACTOR_GROUPS.map(group=>h("div",{key:group.id,style:{marginBottom:12}},h("div",{onClick:()=>setOpenGroups(g=>({...g,[group.id]:!g[group.id]})),style:{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:openGroups[group.id]?"rgba(26,37,53,0.04)":"#fff",border:"1px solid "+C.border,borderRadius:12,cursor:"pointer",marginBottom:openGroups[group.id]?8:0}},h("span",{style:{fontSize:16}},group.icon),h("span",{style:{fontWeight:700,fontSize:14,color:C.text,flex:1}},group.label),h("span",{style:{fontSize:11,color:C.muted}},group.factors.reduce((s,f)=>s+weights[f.id],0)+"pts"),h("span",{style:{color:C.muted,fontSize:11}},openGroups[group.id]?"▲":"▼")),openGroups[group.id]&&group.factors.map(f=>{const locked=!!locks[f.id],pct=weights[f.id];return h("div",{key:f.id,style:{background:locked?FC[f.id]+"08":"#fff",border:locked?"1.5px solid "+FC[f.id]+"55":"1px solid "+C.border,borderRadius:12,padding:"11px 13px",marginBottom:8}},h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:8}},h("div",{style:{width:34,height:34,background:FC[f.id]+"18",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}},f.icon),h("div",{style:{flex:1}},h("div",{style:{color:C.text,fontSize:13,fontWeight:700}},f.label),h("div",{style:{color:C.muted,fontSize:10}},f.tip)),h("div",{style:{background:pct>=15?FC[f.id]:FC[f.id]+"22",color:pct>=15?"#fff":FC[f.id],borderRadius:20,padding:"3px 10px",fontSize:13,fontWeight:800,minWidth:46,textAlign:"center"}},pct,h("span",{style:{fontSize:8,opacity:.7}},"pts")),h("button",{onClick:()=>toggleLock(f.id),style:{background:locked?FC[f.id]+"22":"#f8fafc",border:locked?"1.5px solid "+FC[f.id]+"66":"1.5px solid "+C.border,borderRadius:10,width:32,height:32,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}},locked?"🔒":"🔓")),h("div",{style:{position:"relative"}},h("div",{style:{position:"absolute",top:"50%",left:0,right:0,height:6,marginTop:-3,borderRadius:3,background:"linear-gradient(90deg,"+FC[f.id]+"99 "+pct+"%,#e2e8f0 "+pct+"%)",pointerEvents:"none"}}),h("input",{type:"range",min:0,max:100,value:pct,disabled:locked,onChange:e=>change(f.id,Number(e.target.value)),style:{position:"relative",zIndex:1,width:"100%"}})));})))  ,h("div",{style:{display:"flex",gap:10,marginTop:8}},h("button",{onClick:()=>{if(angleMode==='custom'){loadSlotFor(activeRace);}else{setLocks({});setWeights({...PRESETS[activeRace]});}},style:{flex:1,padding:"13px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:12,color:"#64748b",fontSize:13,fontWeight:700,cursor:"pointer"}},angleMode==='custom'?"↩ Discard Changes":"🔄 Reset"),h("button",{onClick:()=>setActiveTab("rankings"),style:{flex:2,padding:"13px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"See Rankings →")));}
-function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched}){
+function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}){
   const [nowStr,setNowStr]=useState("");
   useEffect(()=>{
     const fmt=()=>setNowStr(new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}));
@@ -545,15 +545,6 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
   }
   const scratchCount=scratchedHorses.length;
   const [rankMode,setRankMode]=useState('giddyup');
-  const [myOrder,setMyOrder]=useState([]);
-  useEffect(()=>{
-    const nums=scores.map(s=>s.number);
-    setMyOrder(prev=>{
-      const prevSet=new Set(prev);
-      const same=prev.length===nums.length&&nums.every(n=>prevSet.has(n));
-      return same?prev:nums;
-    });
-  },[scores]);
   function moveItem(from,to){
     setMyOrder(prev=>{
       const arr=[...prev];
@@ -611,7 +602,7 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
     h("div",{style:{display:"flex",gap:10,marginTop:12}},
       h("button",{onClick:()=>shareContent("GiddyUp Picks",buildShareText()),style:{padding:"10px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:13,fontWeight:700,cursor:"pointer"}},"📤 Share"),
       h("button",{onClick:()=>setActiveTab("giddyup"),style:{flex:2,padding:"14px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"🐴 GiddyUp Suggestions →")));}
-function GiddyUpTab({scores,setActiveTab}){if(!scores.length)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));const bets=buildBets(scores);if(!bets)return h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses.");const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);function SL(text){return h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"20px 0 10px",borderBottom:"1px solid "+C.border,paddingBottom:6}},text);}function BC(icon,title,horses,note,highlight){
+function GiddyUpTab({scores,setActiveTab,myOrder}){if(!scores.length)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));const bets=buildBets(scores);if(!bets)return h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses.");const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);function SL(text){return h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"20px 0 10px",borderBottom:"1px solid "+C.border,paddingBottom:6}},text);}function BC(icon,title,horses,note,highlight){
   const list=Array.isArray(horses)?horses:[horses];
   return h("div",{style:{background:highlight?"#fffbf0":"#fff",border:"1px solid "+(highlight?"#e8d48a":C.border),borderRadius:12,padding:"14px 16px",marginBottom:8}},
     h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
@@ -632,8 +623,8 @@ function GiddyUpTab({scores,setActiveTab}){if(!scores.length)return h("div",{sty
     "Smart Money highlights value horses at long odds worth considering.",
     "The Bomb is a longshot with a real angle — small wager only.",
     "Always verify current odds at the window before betting.",
-  ]}),h("div",{style:{background:"#fff",border:"2px solid #e8d48a",borderRadius:14,padding:"14px 16px",marginBottom:10}},h("div",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"🐴 GiddyUp Silks Choice"),h("div",{style:{fontSize:22,fontWeight:900,color:C.navy,marginBottom:2}},"#"+top.number+" "+top.name),h("div",{style:{fontSize:12,color:C.muted,marginBottom:10}},top.odds+" · Score: "+top.totalScore+" · "+top.jockey),h("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:4}},h("span",{style:{fontSize:10,color:C.muted}},"Confidence:"),h("div",{style:{display:"flex",gap:2}},[...Array(10)].map((_,i)=>h("div",{key:i,style:{width:8,height:8,borderRadius:2,background:i<conf.bars?conf.color:"#e2e8f0"}}))),h("span",{style:{fontSize:10,color:conf.color,fontWeight:700}},conf.label))),SL("Win Bets"),BC("🥇","Best Bet — Win",top,"Scored "+top.totalScore+" — best in a field of "+scores.length+". "+(gap>=50?"Clear top choice, leads by "+gap+" points.":gap>=25?"Solid edge, "+gap+" points clear of #"+second.number+".":"Tight race — only "+gap+" points separate 1st and 2nd."),true),smartWin&&smartWin.number!==top.number&&BC("💎","Smart Money",smartWin,"#"+smartWin.number+" is "+smartWin.odds+" but scored "+smartWin.totalScore+" — only "+(smartWin.totalScore-top.totalScore)+" points off our top pick. Real value here."),SL("Exacta"),BC("📦","Box "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap<20?"Tight field — boxing gives you 6 combinations and covers all likely orders.":"Top 3 boxed. These three stand clear of the field."),SL("Trifecta"),BC("🎲","Straight "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap>=40?"High confidence — straight trifecta is the play.":"Competitive field — consider boxing rather than straight."),bets.superfecta&&scores.length>=4&&h(Fragment,null,SL("Superfecta"),BC("💎","Top 4 Box",bets.superfecta,"Top 4 in any order. Small bet, big potential payout.")),bomb&&h(Fragment,null,SL("The Bomb"),h("div",{style:{background:"#fff8f0",border:"2px solid #f59e42",borderRadius:14,padding:"14px 16px"}},h("div",{style:{fontSize:10,fontWeight:700,color:"#c2410c",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"💥 Longshot Alert"),h("div",{style:{fontSize:20,fontWeight:900,color:"#92400e",marginBottom:3}},"#"+bomb.number+" "+bomb.name),h("div",{style:{fontSize:12,color:"#a16207",marginBottom:4}},bomb.odds+" · Score: "+bomb.totalScore),h("div",{style:{fontSize:12,color:"#78350f",lineHeight:1.6}},"Within "+(bomb.totalScore-top.totalScore)+" points of our top pick. Algorithm found a real angle. Small wager only."))),h(TicketBuilder,{scores}),h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px",marginTop:12,fontSize:11,color:C.muted,textAlign:"center"}},"Always check current odds. Bet responsibly."));}
-function TicketBuilder({scores}){
+  ]}),h("div",{style:{background:"#fff",border:"2px solid #e8d48a",borderRadius:14,padding:"14px 16px",marginBottom:10}},h("div",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"🐴 GiddyUp Silks Choice"),h("div",{style:{fontSize:22,fontWeight:900,color:C.navy,marginBottom:2}},"#"+top.number+" "+top.name),h("div",{style:{fontSize:12,color:C.muted,marginBottom:10}},top.odds+" · Score: "+top.totalScore+" · "+top.jockey),h("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:4}},h("span",{style:{fontSize:10,color:C.muted}},"Confidence:"),h("div",{style:{display:"flex",gap:2}},[...Array(10)].map((_,i)=>h("div",{key:i,style:{width:8,height:8,borderRadius:2,background:i<conf.bars?conf.color:"#e2e8f0"}}))),h("span",{style:{fontSize:10,color:conf.color,fontWeight:700}},conf.label))),SL("Win Bets"),BC("🥇","Best Bet — Win",top,"Scored "+top.totalScore+" — best in a field of "+scores.length+". "+(gap>=50?"Clear top choice, leads by "+gap+" points.":gap>=25?"Solid edge, "+gap+" points clear of #"+second.number+".":"Tight race — only "+gap+" points separate 1st and 2nd."),true),smartWin&&smartWin.number!==top.number&&BC("💎","Smart Money",smartWin,"#"+smartWin.number+" is "+smartWin.odds+" but scored "+smartWin.totalScore+" — only "+(smartWin.totalScore-top.totalScore)+" points off our top pick. Real value here."),SL("Exacta"),BC("📦","Box "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap<20?"Tight field — boxing gives you 6 combinations and covers all likely orders.":"Top 3 boxed. These three stand clear of the field."),SL("Trifecta"),BC("🎲","Straight "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap>=40?"High confidence — straight trifecta is the play.":"Competitive field — consider boxing rather than straight."),bets.superfecta&&scores.length>=4&&h(Fragment,null,SL("Superfecta"),BC("💎","Top 4 Box",bets.superfecta,"Top 4 in any order. Small bet, big potential payout.")),bomb&&h(Fragment,null,SL("The Bomb"),h("div",{style:{background:"#fff8f0",border:"2px solid #f59e42",borderRadius:14,padding:"14px 16px"}},h("div",{style:{fontSize:10,fontWeight:700,color:"#c2410c",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"💥 Longshot Alert"),h("div",{style:{fontSize:20,fontWeight:900,color:"#92400e",marginBottom:3}},"#"+bomb.number+" "+bomb.name),h("div",{style:{fontSize:12,color:"#a16207",marginBottom:4}},bomb.odds+" · Score: "+bomb.totalScore),h("div",{style:{fontSize:12,color:"#78350f",lineHeight:1.6}},"Within "+(bomb.totalScore-top.totalScore)+" points of our top pick. Algorithm found a real angle. Small wager only."))),h(TicketBuilder,{scores,myOrder}),h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px",marginTop:12,fontSize:11,color:C.muted,textAlign:"center"}},"Always check current odds. Bet responsibly."));}
+function TicketBuilder({scores,myOrder}){
   const [sel,setSel]=React.useState({1:[],2:[],3:[],4:[]});
   const [expanded,setExpanded]=React.useState(false);
   if(!scores||scores.length<2) return null;
@@ -672,6 +663,10 @@ function TicketBuilder({scores}){
           const top=horses.slice(0,4);
           setSel({1:top[0]?[top[0].number]:[],2:top[1]?[top[1].number]:[],3:top[2]?[top[2].number]:[],4:top[3]?[top[3].number]:[]});
         },style:{flex:1,padding:'10px',background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',border:'none',borderRadius:10,color:C.gold,fontSize:12,fontWeight:700,cursor:'pointer'}},'🏆 Load GiddyUp Top 4'),
+        (myOrder&&myOrder.length>0)&&h('button',{onClick:()=>{
+          const mine=myOrder.map(num=>horses.find(hh=>hh.number===num)).filter(Boolean).slice(0,4);
+          setSel({1:mine[0]?[mine[0].number]:[],2:mine[1]?[mine[1].number]:[],3:mine[2]?[mine[2].number]:[],4:mine[3]?[mine[3].number]:[]});
+        },style:{flex:1,padding:'10px',background:'linear-gradient(135deg,#c9a84c,#f0d080)',border:'none',borderRadius:10,color:C.navy,fontSize:12,fontWeight:700,cursor:'pointer'}},'⭐ Load My Rankings'),
         h('button',{onClick:clearAll,style:{padding:'10px 14px',background:'#f8fafc',border:'1.5px solid '+C.border,borderRadius:10,color:'#ef4444',fontSize:12,fontWeight:700,cursor:'pointer'}},'Clear')
       ),
       [1,2,3,4].map(pos=>
@@ -720,26 +715,36 @@ function TicketBuilder({scores}){
   );
 }
 
-function PlayTab({scores,raceName}){
+function PlayTab({scores,raceName,myOrder}){
   var PLAY_URL='https://giddyupsilks.app/play.html';
   var [raceNum,setRaceNum]=useState('');
   var [sent,setSent]=useState(false);
   var [raceWarn,setRaceWarn]=useState(false);
   var top4=scores&&scores.length>=4?scores.slice(0,4):null;
+  var myTop4=(myOrder&&myOrder.length>=4&&scores&&scores.length>=4)
+    ?myOrder.map(function(n){return scores.find(function(s){return s.number===n;});}).filter(Boolean).slice(0,4)
+    :null;
+  if(myTop4&&myTop4.length<4) myTop4=null;
   function sendToPlay(){
-    if(top4&&!raceNum){setRaceWarn(true);return;}
+    if((top4||myTop4)&&!raceNum){setRaceWarn(true);return;}
     setRaceWarn(false);
     try{
       var incoming={from:'silks',date:new Date().toISOString().split('T')[0],
-        picks:{},sentAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+        picks:{},rankPicks:{},sentAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
       if(top4){
         incoming.picks[raceNum]=top4.map(function(hh){return hh.number;});
       }
+      if(myTop4){
+        incoming.rankPicks[raceNum]=myTop4.map(function(hh){return hh.number;});
+      }
       try{
         var existing=JSON.parse(localStorage.getItem('giddyup_play_incoming')||'null');
-        if(existing&&existing.date===incoming.date&&existing.picks){
-          Object.keys(existing.picks).forEach(function(k){
+        if(existing&&existing.date===incoming.date){
+          if(existing.picks) Object.keys(existing.picks).forEach(function(k){
             if(!incoming.picks[k]) incoming.picks[k]=existing.picks[k];
+          });
+          if(existing.rankPicks) Object.keys(existing.rankPicks).forEach(function(k){
+            if(!incoming.rankPicks[k]) incoming.rankPicks[k]=existing.rankPicks[k];
           });
         }
       }catch(ex){}
@@ -764,17 +769,32 @@ function PlayTab({scores,raceName}){
       h('div',{style:{fontSize:48,marginBottom:8}},'\ud83c\udfc7'),
       h('div',{style:{fontFamily:'Georgia,serif',fontSize:18,fontWeight:900,color:C.text,marginBottom:6}},'Are you playing today?'),
       h('div',{style:{fontSize:13,color:C.muted,lineHeight:1.6,marginBottom:16}},'Pick horses. Track your score. No betting required.'),
-      top4
-        ? h('div',{style:{background:'#f0fdf4',border:'1px solid #86efac',borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
-            h('div',{style:{fontSize:11,fontWeight:700,color:'#15803d',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\ud83d\udd2c Your GiddyUp Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')),
-            h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10}},
-              top4.map(function(hh,i){
-                var lbl=['\u2605 Win','Place','Show','4th'][i];
-                return h('div',{key:i,style:{textAlign:'center'}},
-                  h('div',{style:{fontSize:9,color:'#15803d',textTransform:'uppercase',marginBottom:3}},lbl),
-                  h('div',{style:{fontSize:18,fontWeight:900,color:C.navy,background:'#fff',borderRadius:8,padding:'6px 0',border:'1px solid #86efac'}},'#'+hh.number)
-                );
-              })
+      (top4||myTop4)
+        ? h(Fragment,null,
+            top4&&h('div',{style:{background:'#f0fdf4',border:'1px solid #86efac',borderRadius:12,padding:'14px',marginBottom:10,textAlign:'left'}},
+              h('div',{style:{fontSize:11,fontWeight:700,color:'#15803d',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\ud83d\udd2c Your GiddyUp Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')+' \ud83d\udd12'),
+              h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
+                top4.map(function(hh,i){
+                  var lbl=['\u2605 Win','Place','Show','4th'][i];
+                  return h('div',{key:i,style:{textAlign:'center'}},
+                    h('div',{style:{fontSize:9,color:'#15803d',textTransform:'uppercase',marginBottom:3}},lbl),
+                    h('div',{style:{fontSize:18,fontWeight:900,color:C.navy,background:'#fff',borderRadius:8,padding:'6px 0',border:'1px solid #86efac'}},'#'+hh.number)
+                  );
+                })
+              )
+            ),
+            myTop4&&h('div',{style:{background:'#fffbf0',border:'1px solid '+C.gold,borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
+              h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\u2b50 Your Ranking Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')+' \u270f\ufe0f'),
+              h('div',{style:{fontSize:10,color:'#a07830',marginBottom:8}},'From your adjusted My Rankings order \u2014 stays editable once loaded in Play.'),
+              h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
+                myTop4.map(function(hh,i){
+                  var lbl=['\u2605 Win','Place','Show','4th'][i];
+                  return h('div',{key:i,style:{textAlign:'center'}},
+                    h('div',{style:{fontSize:9,color:'#92620a',textTransform:'uppercase',marginBottom:3}},lbl),
+                    h('div',{style:{fontSize:18,fontWeight:900,color:C.navy,background:'#fff',borderRadius:8,padding:'6px 0',border:'1px solid '+C.gold}},'#'+hh.number)
+                  );
+                })
+              )
             ),
             h('div',{style:{background:raceWarn?'#fff5f5':'#fff',border:'2px solid '+(raceWarn?'#ef4444':'#1a6b3c'),borderRadius:10,padding:'10px 12px',marginBottom:4}},
               h('div',{style:{fontSize:11,color:raceWarn?'#ef4444':'#15803d',fontWeight:700,textTransform:'uppercase',letterSpacing:1,marginBottom:6}},
@@ -791,9 +811,9 @@ function PlayTab({scores,raceName}){
             '\ud83d\udcc8 Handicap a race first (Upload \u2192 Rankings) to send your GiddyUp Picks to Play. You can still open Play and enter picks manually.'
           ),
       h('button',{onClick:sendToPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,#1a6b3c,#2d9155)',border:'none',borderRadius:12,color:'#c9a84c',fontSize:15,fontWeight:700,cursor:'pointer',marginBottom:10}},
-        top4?(raceNum?'Send Race '+raceNum+' Picks \u2192 Open GiddyUp Play':'Send Picks \u2192 Open GiddyUp Play'):'Open GiddyUp Play \u2192'
+        (top4||myTop4)?(raceNum?'Send Race '+raceNum+' Picks \u2192 Open GiddyUp Play':'Send Picks \u2192 Open GiddyUp Play'):'Open GiddyUp Play \u2192'
       ),
-      sent&&h('div',{style:{fontSize:11,color:'#15803d',background:'#f0fdf4',borderRadius:6,padding:'6px 10px'}},'\u2713 Sent! Look for the gold banner in GiddyUp Play to load these picks.'),
+      sent&&h('div',{style:{fontSize:11,color:'#15803d',background:'#f0fdf4',borderRadius:6,padding:'6px 10px'}},'\u2713 Sent! Look for the gold banner in GiddyUp Play to load both pick sets.'),
       h('div',{style:{fontSize:11,color:C.muted,marginTop:6}},'Repeat for each race you handicap \u2014 picks accumulate until loaded in Play')
     ),
     h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border}},
@@ -934,6 +954,15 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks){
   }
 
   const scores=computeScores(horses,weights,activeRace,scratched);
+  const [myOrder,setMyOrder]=useState([]);
+  useEffect(()=>{
+    const nums=scores.map(s=>s.number);
+    setMyOrder(prev=>{
+      const prevSet=new Set(prev);
+      const same=prev.length===nums.length&&nums.every(n=>prevSet.has(n));
+      return same?prev:nums;
+    });
+  },[scores.map(s=>s.number).join(',')]);
   const activeRaceData=RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0];
   const activeRaceObj=races.find(r=>r.active)||races[0]||null;
   const raceName=activeRaceObj?activeRaceObj.label:"";
@@ -988,9 +1017,9 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
           h("div",{style:{fontSize:16,marginBottom:2}},tab.label),h("div",null,tab.full)))),
       activeTab==="upload"&&h(UploadTab,{races,setRaces,setActiveTab,setHorses:hs=>{setHorses(hs);setScratched({});},setActiveRace,setWeights,setLocks,angleMode,silksUser}),
       activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles}),
-      activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched}),
-      activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab}),
-      activeTab==="play"&&h(PlayTab,{scores,raceName}),
+      activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
+      activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
+      activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder}),
       activeTab==="diary"&&h(DiaryTab,null)));}
 ReactDOM.render(h(GiddyUp,null),document.getElementById("root"));
 </script>
