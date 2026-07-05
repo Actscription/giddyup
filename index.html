@@ -588,9 +588,9 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
         (dateLabel||(raceMeta&&raceMeta.post))?h("div",{style:{color:"#f2e5bd",fontSize:13.5,fontWeight:700}},[dateLabel,(raceMeta&&raceMeta.post?"Approx Post "+raceMeta.post:"")].filter(Boolean).join("  ·  ")):null,
         nowStr?h("div",{style:{color:"rgba(242,229,189,0.8)",fontSize:12.5,fontWeight:600}},"Now "+nowStr):null);
     })(),
-    raceMeta&&(raceMeta.distance||raceMeta.conditions)&&h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"8px 12px",marginBottom:12,textAlign:"center"}},
-      raceMeta.distance&&h("div",{style:{fontSize:12,fontWeight:800,color:C.text,marginBottom:raceMeta.conditions?2:0}},"📏 "+raceMeta.distance),
-      raceMeta.conditions&&h("div",{style:{fontSize:11,color:C.muted,lineHeight:1.4}},raceMeta.conditions)),
+    raceMeta&&(raceMeta.distance||raceMeta.conditions)&&h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px 14px",marginBottom:12,textAlign:"center"}},
+      raceMeta.distance&&h("div",{style:{fontSize:13,fontWeight:800,color:C.text,marginBottom:raceMeta.conditions?4:0}},"📏 "+raceMeta.distance),
+      raceMeta.conditions&&h("div",{style:{fontSize:12.5,color:"#475569",lineHeight:1.5}},raceMeta.conditions)),
     scratchCount>0&&h("div",{style:{background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:10,padding:"8px 12px",marginBottom:10,fontSize:11,color:"#dc2626",display:"flex",alignItems:"center",gap:8}},h("span",null,"🚫"),h("span",null,scratchCount+" horse"+(scratchCount>1?"s":"")+" scratched — rankings updated")),
 
     scores.length>0&&h("div",{style:{display:"flex",gap:8,marginBottom:10}},
