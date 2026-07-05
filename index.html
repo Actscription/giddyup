@@ -539,7 +539,9 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
     const metaLine=[dateLabel,(raceMeta&&raceMeta.post?"Post "+raceMeta.post:"")].filter(Boolean).join(" · ");
     const medals=["🥇","🥈","🥉","4️⃣"];
     const picksText=scores.slice(0,4).map((hh,i)=>medals[i]+" #"+hh.number+" "+hh.name+" ("+hh.totalScore+")").join("\n");
-    return [headerLine,metaLine,"",picksText].filter(Boolean).join("\n");
+    const now=new Date();
+    const sentLine="Sent "+now.toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+" · "+now.toISOString();
+    return [headerLine,metaLine,"",picksText,"",sentLine].filter(Boolean).join("\n");
   }
   const scratchCount=scratchedHorses.length;
   const [rankMode,setRankMode]=useState('giddyup');
