@@ -532,6 +532,15 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
     setActionHorse(null);
   }
   const scratchedHorses=horses.filter(hr=>scratched[hr.number]);
+  function buildShareText(){
+    var dateLabel="";
+    if(raceMeta&&raceMeta.date){try{var p=raceMeta.date.split("-");var d=new Date(+p[0],+p[1]-1,+p[2]);dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}catch(err){dateLabel=raceMeta.date;}}
+    const headerLine="🐴 GiddyUp Picks — "+((raceMeta&&raceMeta.track?raceMeta.track+" · ":"")+(raceName||""));
+    const metaLine=[dateLabel,(raceMeta&&raceMeta.post?"Post "+raceMeta.post:"")].filter(Boolean).join(" · ");
+    const medals=["🥇","🥈","🥉","4️⃣"];
+    const picksText=scores.slice(0,4).map((hh,i)=>medals[i]+" #"+hh.number+" "+hh.name+" ("+hh.totalScore+")").join("\n");
+    return [headerLine,metaLine,"",picksText].filter(Boolean).join("\n");
+  }
   const scratchCount=scratchedHorses.length;
   const [rankMode,setRankMode]=useState('giddyup');
   const [myOrder,setMyOrder]=useState([]);
@@ -595,7 +604,7 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
       h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"16px 0 8px",display:"flex",alignItems:"center",gap:6}},h("span",null,"🚫 Scratches"),h("span",null,"("+scratchCount+")")),
       ...scratchedHorses.map(hs=>h(ScratchedCard,{key:hs.number,horse:hs,onTap:hr=>setActionHorse(hr)}))),
     h("div",{style:{display:"flex",gap:10,marginTop:12}},
-      h("button",{onClick:()=>shareContent("GiddyUp Picks",scores.slice(0,3).map((hh,i)=>["🥇","🥈","🥉"][i]+" #"+hh.number+" "+hh.name+" ("+hh.totalScore+")").join("\n")),style:{padding:"10px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:13,fontWeight:700,cursor:"pointer"}},"📤 Share"),
+      h("button",{onClick:()=>shareContent("GiddyUp Picks",buildShareText()),style:{padding:"10px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:13,fontWeight:700,cursor:"pointer"}},"📤 Share"),
       h("button",{onClick:()=>setActiveTab("giddyup"),style:{flex:2,padding:"14px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"🐴 GiddyUp Suggestions →")));}
 function GiddyUpTab({scores,setActiveTab}){if(!scores.length)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));const bets=buildBets(scores);if(!bets)return h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses.");const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);function SL(text){return h("div",{style:{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"20px 0 10px",borderBottom:"1px solid "+C.border,paddingBottom:6}},text);}function BC(icon,title,horses,note,highlight){
   const list=Array.isArray(horses)?horses:[horses];
