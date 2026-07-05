@@ -555,7 +555,10 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
   function onCardDragStart(e,idx){
     if(!e.target.closest(".giddyup-drag-handle")){e.preventDefault();return;}
     setDragIdx(idx);
-    if(e.dataTransfer)e.dataTransfer.effectAllowed="move";
+    if(e.dataTransfer){
+      e.dataTransfer.effectAllowed="move";
+      e.dataTransfer.setData("text/plain",String(idx));
+    }
   }
   function onCardDragEnter(e,idx){
     e.preventDefault();
@@ -563,22 +566,35 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
     moveItem(dragIdx,idx);
     setDragIdx(idx);
   }
+  useEffect(()=>{
+    if(dragIdx===null)return;
+    function onMove(e){
+      e.preventDefault();
+      const t=e.touches&&e.touches[0];
+      if(!t)return;
+      const el=document.elementFromPoint(t.clientX,t.clientY);
+      const cardEl=el&&el.closest("[data-rank-idx]");
+      if(cardEl){
+        const overIdx=Number(cardEl.getAttribute("data-rank-idx"));
+        if(!isNaN(overIdx)&&overIdx!==dragIdx){moveItem(dragIdx,overIdx);setDragIdx(overIdx);}
+      }
+    }
+    function onEnd(){setDragIdx(null);}
+    document.addEventListener("touchmove",onMove,{passive:false});
+    document.addEventListener("touchend",onEnd);
+    document.addEventListener("touchcancel",onEnd);
+    return()=>{
+      document.removeEventListener("touchmove",onMove);
+      document.removeEventListener("touchend",onEnd);
+      document.removeEventListener("touchcancel",onEnd);
+    };
+  },[dragIdx]);
   function onHandleTouchStart(e,idx){
     e.stopPropagation();
     setDragIdx(idx);
   }
-  function onHandleTouchMove(e,idx){
-    e.preventDefault();
-    const t=e.touches[0];
-    const el=document.elementFromPoint(t.clientX,t.clientY);
-    const cardEl=el&&el.closest("[data-rank-idx]");
-    if(cardEl){
-      const overIdx=Number(cardEl.getAttribute("data-rank-idx"));
-      if(!isNaN(overIdx)&&overIdx!==dragIdx){moveItem(dragIdx,overIdx);setDragIdx(overIdx);}
-    }
-  }
   function renderDragHandle(idx){
-    return h("div",{key:"handle",className:"giddyup-drag-handle",onTouchStart:e=>onHandleTouchStart(e,idx),onTouchMove:e=>onHandleTouchMove(e,idx),onTouchEnd:()=>setDragIdx(null),style:{cursor:"grab",fontSize:17,color:C.muted,padding:"2px 4px 2px 0",touchAction:"none",flexShrink:0}},"☰");
+    return h("div",{key:"handle",className:"giddyup-drag-handle",onTouchStart:e=>onHandleTouchStart(e,idx),style:{cursor:"grab",fontSize:17,color:C.muted,padding:"2px 4px 2px 0",touchAction:"none",userSelect:"none",WebkitUserSelect:"none",flexShrink:0}},"☰");
   }
   const orderedScores=rankMode==='mine'?myOrder.map(n=>scores.find(s=>s.number===n)).filter(Boolean):scores;
   if(!scores.length&&!scratchCount)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"📷"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));
@@ -612,7 +628,7 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
         h("div",{style:{color:C.muted,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}},"Top Pick · "+activeRaceData.icon+" "+activeRaceData.label),
         h("div",{style:{fontSize:21,fontWeight:900,color:C.gold}},scores[0].name),
         h("div",{style:{color:"#64748b",fontSize:12,marginTop:2}},"Score "+scores[0].totalScore+" · "+scores[0].odds+" · "+scores[0].jockey))),
-    ...orderedScores.map((horse,i)=>h("div",{key:horse.number,"data-rank-idx":i,draggable:rankMode==='mine',onDragStart:e=>onCardDragStart(e,i),onDragEnter:e=>onCardDragEnter(e,i),onDragOver:e=>e.preventDefault(),onDragEnd:()=>setDragIdx(null),style:{opacity:dragIdx===i?0.4:1,transition:"opacity 0.15s"}},h(HorseCard,{horse,rank:i,weights,allScores:scores,activeRace,onTap:hs=>setActionHorse(hs),dragHandle:rankMode==='mine'?renderDragHandle(i):null}))),
+    ...orderedScores.map((horse,i)=>h("div",{key:horse.number,"data-rank-idx":i,draggable:rankMode==='mine',onDragStart:e=>onCardDragStart(e,i),onDragEnter:e=>onCardDragEnter(e,i),onDragOver:e=>e.preventDefault(),onDrop:e=>e.preventDefault(),onDragEnd:()=>setDragIdx(null),style:{opacity:dragIdx===i?0.4:1,transition:"opacity 0.15s"}},h(HorseCard,{horse,rank:i,weights,allScores:scores,activeRace,onTap:hs=>setActionHorse(hs),dragHandle:rankMode==='mine'?renderDragHandle(i):null}))),
     scratchCount>0&&h("div",null,
       h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"16px 0 8px",display:"flex",alignItems:"center",gap:6}},h("span",null,"🚫 Scratches"),h("span",null,"("+scratchCount+")")),
       ...scratchedHorses.map(hs=>h(ScratchedCard,{key:hs.number,horse:hs,onTap:hr=>setActionHorse(hr)}))),
