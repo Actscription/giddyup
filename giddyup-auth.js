@@ -138,6 +138,25 @@ const GiddyUpAuth = {
       .maybeSingle();
     if (error || !data) return null;
     return data.card;
+  },
+
+  // ── LIVE TRAINER/JOCKEY COMBO DATA ──────────────────────────────
+  // Looks up real win-rate history for a trainer/jockey pairing at
+  // a specific track, from the performance_log brain trust.
+  // Returns null if there's no meaningful sample (< minStarts),
+  // so callers can safely fall back to the AI-estimated combo stat.
+
+  async getComboStats(trainer, jockey, track, minStarts = 5) {
+    if (!trainer || !jockey || !track) return null;
+    const { data, error } = await giddyupSupabase
+      .from("jockey_trainer_combo_stats")
+      .select("*")
+      .ilike("trainer", trainer)
+      .ilike("jockey", jockey)
+      .ilike("track", track)
+      .maybeSingle();
+    if (error || !data || data.starts < minStarts) return null;
+    return data;
   }
 
 };
