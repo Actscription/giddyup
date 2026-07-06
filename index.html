@@ -274,13 +274,16 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       }));
       if(!allHorses.length)throw new Error("No horses found.");
       setProgress("Found "+allHorses.length+" horses!");
-      setProgress("Checking trainer/jockey history…");
+      setProgress("Checking jockey/trainer history…");
       await Promise.all(allHorses.map(async hh=>{
-        const combo=await GiddyUpAuth.getComboStats(hh.trainer,hh.jockey);
-        if(combo){
-          hh.stats.combo=Math.min(100,Math.round(50+combo.win_pct));
-          hh.liveCombo=combo;
-        }
+        const [combo,jockeyStats,trainerStats]=await Promise.all([
+          GiddyUpAuth.getComboStats(hh.trainer,hh.jockey),
+          GiddyUpAuth.getJockeyStats(hh.jockey),
+          GiddyUpAuth.getTrainerStats(hh.trainer)
+        ]);
+        if(combo){hh.stats.combo=Math.min(100,Math.round(50+combo.win_pct));hh.liveCombo=combo;}
+        if(jockeyStats){hh.stats.jockey=Math.min(100,Math.round(50+jockeyStats.win_pct));hh.liveJockey=jockeyStats;}
+        if(trainerStats){hh.stats.trainer=Math.min(100,Math.round(50+trainerStats.win_pct));hh.liveTrainer=trainerStats;}
       }));
      setHorses(allHorses);
       setActiveRace(detectedRaceType);
