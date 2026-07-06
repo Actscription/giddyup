@@ -265,17 +265,14 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       }));
       if(!allHorses.length)throw new Error("No horses found.");
       setProgress("Found "+allHorses.length+" horses!");
-      const raceTrack=parsed.track||"";
-      if(raceTrack){
-        setProgress("Checking trainer/jockey history…");
-        await Promise.all(allHorses.map(async hh=>{
-          const combo=await GiddyUpAuth.getComboStats(hh.trainer,hh.jockey,raceTrack);
-          if(combo){
-            hh.stats.combo=Math.min(100,Math.round(50+combo.win_pct));
-            hh.liveCombo=combo;
-          }
-        }));
-      }
+      setProgress("Checking trainer/jockey history…");
+      await Promise.all(allHorses.map(async hh=>{
+        const combo=await GiddyUpAuth.getComboStats(hh.trainer,hh.jockey);
+        if(combo){
+          hh.stats.combo=Math.min(100,Math.round(50+combo.win_pct));
+          hh.liveCombo=combo;
+        }
+      }));
      setHorses(allHorses);
       setActiveRace(detectedRaceType);
       if(angleMode!=='custom'){
