@@ -144,16 +144,23 @@ const GiddyUpAuth = {
   // Looks up real win-rate history for a trainer/jockey pairing,
   // circuit-wide (not limited to one track) — Alberta racing is a
   // small circuit and the same people move between tracks all season.
+  // Names are fuzzy-matched (periods/spacing tolerant) since PP sheets
+  // and stored results don't always format names identically
+  // (e.g. "Lyle W Magnuson" vs "Lyle W. Magnuson").
   // Returns null if there's no meaningful sample (< minStarts),
   // so callers can safely fall back to the AI-estimated combo stat.
+
+  fuzzyName(s) {
+    return "%" + s.trim().replace(/\./g, "").split(/\s+/).join("%") + "%";
+  },
 
   async getComboStats(trainer, jockey, minStarts = 5) {
     if (!trainer || !jockey) return null;
     const { data, error } = await giddyupSupabase
       .from("jockey_trainer_combo_stats")
       .select("*")
-      .ilike("trainer", trainer)
-      .ilike("jockey", jockey)
+      .ilike("trainer", this.fuzzyName(trainer))
+      .ilike("jockey", this.fuzzyName(jockey))
       .maybeSingle();
     if (error || !data || data.starts < minStarts) return null;
     return data;
