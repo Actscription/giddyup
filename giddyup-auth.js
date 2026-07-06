@@ -164,6 +164,33 @@ const GiddyUpAuth = {
       .maybeSingle();
     if (error || !data || data.starts < minStarts) return null;
     return data;
+  },
+
+  // ── LIVE STANDALONE JOCKEY / TRAINER DATA ───────────────────────
+  // Same circuit-wide, fuzzy-matched approach as getComboStats, but
+  // for the standalone Jockey and Trainer factors (rider/trainer
+  // general win rate, independent of who they're paired with).
+
+  async getJockeyStats(jockey, minStarts = 5) {
+    if (!jockey) return null;
+    const { data, error } = await giddyupSupabase
+      .from("jockey_stats")
+      .select("*")
+      .ilike("jockey", this.fuzzyName(jockey))
+      .maybeSingle();
+    if (error || !data || data.starts < minStarts) return null;
+    return data;
+  },
+
+  async getTrainerStats(trainer, minStarts = 5) {
+    if (!trainer) return null;
+    const { data, error } = await giddyupSupabase
+      .from("trainer_stats")
+      .select("*")
+      .ilike("trainer", this.fuzzyName(trainer))
+      .maybeSingle();
+    if (error || !data || data.starts < minStarts) return null;
+    return data;
   }
 
 };
