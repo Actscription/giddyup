@@ -65,6 +65,15 @@ const PRESETS={
 };
 Object.keys(PRESETS).forEach(k=>{const s=Object.values(PRESETS[k]).reduce((a,b)=>a+b,0);if(s!==100)PRESETS[k].speed+=(100-s);});
 const EARNINGS_WEIGHT={custom:2,stakes:5,allowance:3,claiming:1,maiden:1};
+// Specialist Angles: single-factor presets for people who bet purely on one thing
+// (jockey stats, trainer stats, combo history, or earnings) rather than a blend.
+function zeroedWeights(factorId){const w=Object.fromEntries(ALL_FACTORS.map(f=>[f.id,0]));w[factorId]=100;return w;}
+const SPECIALIST_PRESETS=[
+  {id:"jockey",label:"Jockey Only",icon:"🏇",weights:zeroedWeights("jockey")},
+  {id:"trainer",label:"Trainer Only",icon:"🎯",weights:zeroedWeights("trainer")},
+  {id:"combo",label:"Combo Only",icon:"🤝",weights:zeroedWeights("combo")},
+  {id:"earnings",label:"Earnings Only",icon:"💰",weights:zeroedWeights("earnings")},
+];
 const RACE_TYPES=[
   {id:"custom",label:"Custom",icon:"⚙",color:"#6b7280"},
   {id:"stakes",label:"Stakes",icon:"🏆",color:"#c9a84c"},
@@ -495,8 +504,10 @@ function TabHelp({title,steps}){
 
 function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles}){const [openGroups,setOpenGroups]=useState({core:true,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount===ALL_FACTORS.length;
 function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...PRESETS[raceTypeId]});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
-function selectRace(id){setActiveRace(id);if(angleMode==='custom'){loadSlotFor(id);}else{setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...PRESETS[id]});}}
-function change(id,v){const ls=ALL_FACTORS.filter(f=>f.id!==id&&locks[f.id]).reduce((s,f)=>s+weights[f.id],0);setWeights(w=>redistribute(w,locks,id,Math.max(0,Math.min(v,100-ls))));}function toggleLock(id){setLocks(l=>({...l,[id]:!l[id]}));}function lockAll(){if(allLocked)setLocks({});else setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
+function selectRace(id){setActiveSpecialist(null);setActiveRace(id);if(angleMode==='custom'){loadSlotFor(id);}else{setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...PRESETS[id]});}}
+function change(id,v){setActiveSpecialist(null);const ls=ALL_FACTORS.filter(f=>f.id!==id&&locks[f.id]).reduce((s,f)=>s+weights[f.id],0);setWeights(w=>redistribute(w,locks,id,Math.max(0,Math.min(v,100-ls))));}function toggleLock(id){setLocks(l=>({...l,[id]:!l[id]}));}function lockAll(){if(allLocked)setLocks({});else setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
+const [activeSpecialist,setActiveSpecialist]=useState(null);
+function selectSpecialist(preset){setActiveSpecialist(preset.id);setWeights({...preset.weights});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
 const [justSaved,setJustSaved]=useState(false);
 const uName=silksUser&&silksUser.username?silksUser.username:"My";
 const raceLabel=(RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0]).label;
@@ -512,6 +523,12 @@ return h("div",{style:{paddingTop:14}},
     "In Custom mode, tap Save to keep your angles for this race type.",
     "Tap See Rankings when done.",
   ]}),
+  h("div",{style:{marginBottom:14}},
+    h("div",{style:{fontSize:10,color:C.muted,letterSpacing:1,textTransform:"uppercase",marginBottom:8}},"Specialist Angles"),
+    h("div",{style:{display:"flex",gap:6}},
+      SPECIALIST_PRESETS.map(p=>h("button",{key:p.id,onClick:()=>selectSpecialist(p),style:{flex:1,padding:"10px 4px",borderRadius:12,border:activeSpecialist===p.id?"2px solid "+C.gold:"1.5px solid "+C.border,background:activeSpecialist===p.id?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",textAlign:"center"}},
+        h("div",{style:{fontSize:16,marginBottom:2}},p.icon),
+        h("div",{style:{fontSize:9,fontWeight:700,color:activeSpecialist===p.id?C.gold:"#64748b"}},p.label))))),
   h("div",{style:{border:"1px solid rgba(201,168,76,0.35)",borderRadius:14,padding:16,marginBottom:14,background:"rgba(201,168,76,0.04)"}},
     h("div",{style:{textAlign:"center",marginBottom:4}},
       h("div",{style:{fontSize:17,fontWeight:800,color:C.navy,lineHeight:1.35}},"Set your angles."),
