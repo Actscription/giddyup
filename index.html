@@ -757,7 +757,7 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
 
     scores.length>0&&h("div",{style:{display:"flex",gap:8,marginBottom:10}},
       h("button",{onClick:()=>setRankMode('giddyup'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='giddyup'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='giddyup'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='giddyup'?C.gold:C.muted}},"🐴 GiddyUp Rankings"),
-      h("button",{onClick:()=>setRankMode('mine'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='mine'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='mine'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='mine'?C.gold:C.muted}},"⭐ My Rankings")),
+      h("button",{onClick:()=>setRankMode('mine'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='mine'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='mine'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='mine'?C.gold:C.muted}},"⭐ My Custom Rankings")),
     rankMode==='mine'&&scores.length>0&&h("div",{style:{fontSize:11,color:"#a07830",marginBottom:10,display:"flex",alignItems:"center",gap:6}},h("span",null,"↕"),h("span",null,"Use the arrows to set your own order")),
 
     scores.length>0&&h("div",{style:{background:"linear-gradient(135deg,#fffbf0,#fff8e6)",border:"2px solid "+C.gold,borderRadius:16,padding:"16px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14}},
@@ -837,7 +837,7 @@ function TicketBuilder({scores,myOrder}){
         (myOrder&&myOrder.length>0)&&h('button',{onClick:()=>{
           const mine=myOrder.map(num=>horses.find(hh=>hh.number===num)).filter(Boolean).slice(0,4);
           setSel({1:mine[0]?[mine[0].number]:[],2:mine[1]?[mine[1].number]:[],3:mine[2]?[mine[2].number]:[],4:mine[3]?[mine[3].number]:[]});
-        },style:{flex:1,padding:'10px',background:'linear-gradient(135deg,#c9a84c,#f0d080)',border:'none',borderRadius:10,color:C.navy,fontSize:12,fontWeight:700,cursor:'pointer'}},'⭐ Load My Rankings'),
+        },style:{flex:1,padding:'10px',background:'linear-gradient(135deg,#c9a84c,#f0d080)',border:'none',borderRadius:10,color:C.navy,fontSize:12,fontWeight:700,cursor:'pointer'}},'⭐ Load My Custom Rankings'),
         h('button',{onClick:clearAll,style:{padding:'10px 14px',background:'#f8fafc',border:'1.5px solid '+C.border,borderRadius:10,color:'#ef4444',fontSize:12,fontWeight:700,cursor:'pointer'}},'Clear')
       ),
       [1,2,3,4].map(pos=>
@@ -955,8 +955,8 @@ function PlayTab({scores,raceName,myOrder}){
               )
             ),
             myTop4&&h('div',{style:{background:'#fffbf0',border:'1px solid '+C.gold,borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
-              h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\u2b50 Your Ranking Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')+' \u270f\ufe0f'),
-              h('div',{style:{fontSize:10,color:'#a07830',marginBottom:8}},'From your adjusted My Rankings order \u2014 stays editable once loaded in Play.'),
+              h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\u2b50 Your Customized Ranking Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')+' \u270f\ufe0f'),
+              h('div',{style:{fontSize:10,color:'#5c3d0a',fontWeight:600,marginBottom:8}},'From your adjusted My Custom Rankings order \u2014 stays editable once loaded in Play.'),
               h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
                 myTop4.map(function(hh,i){
                   var lbl=['\u2605 Win','Place','Show','4th'][i];
