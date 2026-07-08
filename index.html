@@ -643,6 +643,8 @@ const raceLabel=(RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0]).label;
 const savedSlot=silksUser&&silksUser.customAngles&&silksUser.customAngles[activeRace];
 const hasSaved=!!savedSlot;
 const isDirty=!hasSaved||JSON.stringify(weights)!==JSON.stringify(savedSlot.weights)||JSON.stringify(locks)!==JSON.stringify(savedSlot.locks);
+const specialistMatch=SPECIALIST_PRESETS.find(p=>p.id===activeSpecialist);
+const currentSourceLabel=activeSpecialist==='giddyup'?"🐴 GiddyUp set to "+raceLabel+" preset":specialistMatch?specialistMatch.icon+" GiddyUp set to "+specialistMatch.label+" preset":angleMode==='custom'?"⭐ GiddyUp set to "+uName+"'s "+raceLabel+" DNA"+(hasSaved&&!isDirty?"":" (unsaved)"):"🐴 GiddyUp set to "+raceLabel+" preset (edited)";
 return h("div",{style:{paddingTop:14}},
   h(TabHelp,{title:"How to Use — Angles",steps:[
     "First select your race type — Stakes, Allowance, Claiming, Maiden, or Custom. This is which race your angles apply to.",
@@ -654,6 +656,8 @@ return h("div",{style:{paddingTop:14}},
     "Tap Save to keep these angles for this race type — each race type keeps its own saved angles.",
     "Tap See Rankings when done.",
   ]}),
+  h("div",{style:{background:"rgba(201,168,76,0.12)",border:"1.5px solid "+C.gold,borderRadius:12,padding:"10px 14px",marginBottom:12,textAlign:"center"}},
+    h("span",{style:{fontSize:12.5,fontWeight:800,color:C.navy}},currentSourceLabel)),
   !horses||!horses.length?h("div",{onClick:()=>setActiveTab("upload"),style:{background:"rgba(201,168,76,0.08)",border:"1.5px dashed "+C.gold,borderRadius:14,padding:"12px 16px",marginBottom:16,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},h("div",{style:{fontSize:26}},"📷"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:13,color:C.gold}},"Upload a Race Program First")),h("div",{style:{color:C.gold,fontSize:16}},"→")):h("div",{style:{background:"rgba(201,168,76,0.08)",border:"2px solid rgba(201,168,76,0.4)",borderRadius:14,padding:"12px 16px",marginBottom:14}},h("div",{style:{display:"flex",alignItems:"center",gap:10}},h("div",{style:{fontSize:22}},"🤖"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:800,fontSize:15,color:C.gold}},activeRace==="custom"?"Custom Race Type":activeRace.charAt(0).toUpperCase()+activeRace.slice(1)+" Race Detected"),h("div",{style:{fontSize:11,color:"#a07830",marginTop:2}},activeRace==="custom"?"Your own angle mix — set it up below":"Angles preset — adjust below if needed"))),h("div",{style:{fontSize:11,color:"#a07830",paddingTop:8,borderTop:"1px solid rgba(201,168,76,0.2)",marginTop:8}},"✅ "+(horses?horses.length:0)+" horses loaded")),
   h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:10}},"Select Race Type"),
