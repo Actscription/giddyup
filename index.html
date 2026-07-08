@@ -95,8 +95,51 @@ const SILK_COLORS={
 const C={gold:"#c9a84c",navy:"#1a2535",navy2:"#2d3f55",border:"#e2e8f0",muted:"#94a3b8",text:"#1a2535"};
 const GROUP_COLORS={core:C.gold,race:"#0f766e",deep:"#6d28d9"};
 function golfRank(horses,factorId){const sorted=[...horses].sort((a,b)=>(b.stats[factorId]||0)-(a.stats[factorId]||0));const ranks={};let i=0;while(i<sorted.length){const val=sorted[i].stats[factorId]||0;let j=i;while(j<sorted.length&&(sorted[j].stats[factorId]||0)===val)j++;for(let k=i;k<j;k++)ranks[sorted[k].number]=i+1;i=j;}return ranks;}
-function computeEarningsRanks(horses){const eps=horses.map(hr=>{const e=hr.earnings||{};return{number:hr.number,eps_cy:e.cy_starts>0?e.cy_earnings/e.cy_starts:null,eps_ly:e.ly_starts>0?e.ly_earnings/e.ly_starts:null,eps_car:e.car_starts>0?e.car_earnings/e.car_starts:null,cy_starts:e.cy_starts||0,ly_starts:e.ly_starts||0};});const ra=(arr,key)=>{const n=arr.length,s=[...arr].filter(x=>x[key]!==null).sort((a,b)=>b[key]-a[key]),m={};s.forEach((x,i)=>m[x.number]=i+1);arr.filter(x=>x[key]===null).forEach(x=>m[x.number]=n+1);return m;};const rc=ra(eps,"eps_cy"),rl=ra(eps,"eps_ly"),rca=ra(eps,"eps_car");return eps.map(hr=>{const rel=Math.min(1,hr.cy_starts/3);let wc=0.6*rel,lost=0.6-wc,wl=0.3+(lost*0.75),wca=0.1+(lost*0.25);if(hr.ly_starts===0){wca+=wl;wl=0;}return{number:hr.number,earningsScore:wc*rc[hr.number]+wl*rl[hr.number]+wca*rca[hr.number]};});}
-function computeScores(horses,weights,raceType,scratched){raceType=raceType||"custom";const active_horses=horses.filter(hr=>!scratched[hr.number]);if(!active_horses.length)return[];const ed=computeEarningsRanks(active_horses),se=[...ed].sort((a,b)=>a.earningsScore-b.earningsScore),er={};se.forEach((e,i)=>{er[e.number]=i+1;});const active=ALL_FACTORS.filter(f=>weights[f.id]>0),maps={};active.forEach(f=>{maps[f.id]=f.id==="earnings"?er:golfRank(active_horses,f.id);});const totalWeight=active.reduce((s,f)=>s+weights[f.id],0);return active_horses.map(horse=>{let total=0;const bd={};active.forEach(f=>{const rank=maps[f.id][horse.number]||1,prop=weights[f.id]/totalWeight,pts=rank*prop;bd[f.id]={rank,rawStat:f.id==="earnings"?(horse.earnings&&horse.earnings.cy_earnings!=null?horse.earnings.cy_earnings:"-"):(horse.stats[f.id]!=null?horse.stats[f.id]:"-"),pts:Math.round(pts*100)/100};total+=pts;});return{...horse,totalScore:Math.round(total*10),breakdown:bd};}).sort((a,b)=>a.totalScore-b.totalScore);}
+// Confidence thresholds: starts needed to be "fully trusted" per tier.
+// CY/LY reach full confidence quickly (3 starts); Lifetime needs more (8) but
+// is floored so it never gets fully ignored -- it's the fallback data source.
+const EARNINGS_CONF_THRESH={cy:3,ly:3,car:8};
+const EARNINGS_PRIORS={cy:0.5,ly:0.3,car:0.2};
+const EARNINGS_CAR_FLOOR=0.3;
+function computeEarningsRanks(horses){
+  const eps=horses.map(hr=>{
+    const e=hr.earnings||{};
+    const starts_cy=e.cy_starts||0,starts_ly=e.ly_starts||0,starts_car=e.car_starts||0;
+    return{
+      number:hr.number,
+      eps_cy:starts_cy>0?e.cy_earnings/starts_cy:null,
+      eps_ly:starts_ly>0?e.ly_earnings/starts_ly:null,
+      eps_car:starts_car>0?e.car_earnings/starts_car:null,
+      starts_cy,starts_ly,starts_car
+    };
+  });
+  const hasAnyData=eps.some(x=>x.eps_cy!==null||x.eps_ly!==null||x.eps_car!==null);
+  const results=eps.map(hr=>{
+    const conf_cy=Math.min(1,hr.starts_cy/EARNINGS_CONF_THRESH.cy);
+    const conf_ly=Math.min(1,hr.starts_ly/EARNINGS_CONF_THRESH.ly);
+    const conf_car=Math.min(1,hr.starts_car/EARNINGS_CONF_THRESH.car);
+    // Zero out any tier with no actual data so it can't contribute (even at the floor).
+    const rw_cy=hr.eps_cy!==null?EARNINGS_PRIORS.cy*conf_cy:0;
+    const rw_ly=hr.eps_ly!==null?EARNINGS_PRIORS.ly*conf_ly:0;
+    const rw_car=hr.eps_car!==null?EARNINGS_PRIORS.car*Math.max(conf_car,EARNINGS_CAR_FLOOR):0;
+    const totalW=rw_cy+rw_ly+rw_car;
+    let compositeEps=null,w_cy=0,w_ly=0,w_car=0;
+    if(totalW>0){
+      w_cy=rw_cy/totalW;w_ly=rw_ly/totalW;w_car=rw_car/totalW;
+      compositeEps=w_cy*(hr.eps_cy||0)+w_ly*(hr.eps_ly||0)+w_car*(hr.eps_car||0);
+    }
+    return{number:hr.number,compositeEps,eps_cy:hr.eps_cy,eps_ly:hr.eps_ly,eps_car:hr.eps_car,
+      starts_cy:hr.starts_cy,starts_ly:hr.starts_ly,starts_car:hr.starts_car,
+      w_cy,w_ly,w_car};
+  });
+  // Horses with zero data anywhere get the field median composite instead of
+  // an automatic last place -- no data means "unknown," not "worst."
+  const known=results.filter(r=>r.compositeEps!==null).map(r=>r.compositeEps).sort((a,b)=>a-b);
+  const median=known.length?(known.length%2?known[(known.length-1)/2]:(known[known.length/2-1]+known[known.length/2])/2):0;
+  results.forEach(r=>{if(r.compositeEps===null)r.compositeEps=hasAnyData?median:0;});
+  return results;
+}
+function computeScores(horses,weights,raceType,scratched){raceType=raceType||"custom";const active_horses=horses.filter(hr=>!scratched[hr.number]);if(!active_horses.length)return[];const ed=computeEarningsRanks(active_horses),se=[...ed].sort((a,b)=>b.compositeEps-a.compositeEps),er={},edByNum={};se.forEach((e,i)=>{er[e.number]=i+1;});ed.forEach(e=>{edByNum[e.number]=e;});const active=ALL_FACTORS.filter(f=>weights[f.id]>0),maps={};active.forEach(f=>{maps[f.id]=f.id==="earnings"?er:golfRank(active_horses,f.id);});const totalWeight=active.reduce((s,f)=>s+weights[f.id],0);return active_horses.map(horse=>{let total=0;const bd={};active.forEach(f=>{const rank=maps[f.id][horse.number]||1,prop=weights[f.id]/totalWeight,pts=rank*prop;const rawStat=f.id==="earnings"?edByNum[horse.number]:(horse.stats[f.id]!=null?horse.stats[f.id]:"-");bd[f.id]={rank,rawStat,pts:Math.round(pts*100)/100};total+=pts;});return{...horse,totalScore:Math.round(total*10),breakdown:bd};}).sort((a,b)=>a.totalScore-b.totalScore);}
 function redistribute(weights,locks,scopeIds,changedId,newVal){const unlocked=scopeIds.filter(id=>id!==changedId&&!locks[id]);if(!unlocked.length)return weights;const uTotal=unlocked.reduce((s,id)=>s+weights[id],0),next={...weights,[changedId]:newVal},delta=newVal-weights[changedId];if(uTotal===0){const each=Math.floor(-delta/unlocked.length);unlocked.forEach(id=>{next[id]=Math.max(0,weights[id]+each);});}else{unlocked.forEach(id=>{next[id]=Math.max(0,Math.round(weights[id]+(weights[id]/uTotal)*(-delta)));});}const scopeTarget=scopeIds.reduce((s,id)=>s+weights[id],0),scopeNow=scopeIds.reduce((s,id)=>s+next[id],0),diff=scopeTarget-scopeNow;if(diff!==0){const t=unlocked.find(id=>next[id]+diff>=0)||unlocked[0];if(t)next[t]=Math.max(0,next[t]+diff);}return next;}
 function scaleGroupToBudget(weights,locks,factorIds,targetTotal){const current=factorIds.reduce((s,id)=>s+weights[id],0);if(current===targetTotal)return weights;const next={...weights};const unlocked=factorIds.filter(id=>!locks[id]);const lockedSum=factorIds.filter(id=>locks[id]).reduce((s,id)=>s+weights[id],0);const availableForUnlocked=Math.max(0,targetTotal-lockedSum);if(!unlocked.length)return weights;const unlockedCurrentSum=unlocked.reduce((s,id)=>s+weights[id],0);let used=0;if(unlockedCurrentSum===0){const each=Math.floor(availableForUnlocked/unlocked.length);unlocked.forEach((id,i)=>{const v=i===unlocked.length-1?availableForUnlocked-used:each;next[id]=v;used+=v;});}else{unlocked.forEach((id,i)=>{if(i===unlocked.length-1){next[id]=Math.max(0,availableForUnlocked-used);}else{const v=Math.max(0,Math.round(weights[id]/unlockedCurrentSum*availableForUnlocked));next[id]=v;used+=v;}});}return next;}
 function fillMissingFactors(savedWeights,savedLocks){const w={...savedWeights},l={...savedLocks};ALL_FACTORS.forEach(f=>{if(typeof w[f.id]!=="number")w[f.id]=0;if(typeof l[f.id]!=="boolean")l[f.id]=false;});return{weights:w,locks:l};}
@@ -169,7 +212,24 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
       h("button",{onClick:e=>{e.stopPropagation();onTap&&onTap(horse);},style:{background:"rgba(201,168,76,0.18)",border:"1.5px solid rgba(201,168,76,0.55)",borderRadius:10,width:32,height:32,cursor:"pointer",fontSize:18,fontWeight:900,color:C.navy,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},"⋯")),
     exp&&h("div",{style:{marginTop:12,paddingTop:12,borderTop:"1px solid "+C.border}},
       h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}},
-      ...active.map(f=>{const bd=horse.breakdown[f.id];if(!bd)return null;const rawDisplay=f.id==="earnings"?"$"+(Number(bd.rawStat)||0).toLocaleString():bd.rawStat;return h("div",{key:f.id,style:{background:FC[f.id]+"10",borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:FC[f.id],fontSize:11,fontWeight:800}},"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},(f.id==="earnings"?"CY: ":"Stat: ")+rawDisplay),h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},Math.round(bd.pts*100))));}))));}
+      ...active.map(f=>{
+        const bd=horse.breakdown[f.id];if(!bd)return null;
+        if(f.id==="earnings"){
+          const ed=bd.rawStat||{};
+          const fmtTier=(eps,starts)=>eps==null?"–":"$"+Math.round(eps).toLocaleString()+"/st("+starts+")";
+          const compDisplay="$"+Math.round(ed.compositeEps||0).toLocaleString()+"/st avg";
+          return h("div",{key:f.id,style:{background:FC[f.id]+"10",borderRadius:10,padding:"8px 10px"}},
+            h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},
+              h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},f.label),
+              h("span",{style:{color:FC[f.id],fontSize:11,fontWeight:800}},"#"+bd.rank)),
+            h("div",{style:{display:"flex",justifyContent:"space-between"}},
+              h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},compDisplay),
+              h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},Math.round(bd.pts*100))),
+            h("div",{style:{color:"#64748b",fontSize:9,marginTop:2}},
+              "CY "+fmtTier(ed.eps_cy,ed.starts_cy)+" · LY "+fmtTier(ed.eps_ly,ed.starts_ly)+" · Life "+fmtTier(ed.eps_car,ed.starts_car)));
+        }
+        return h("div",{key:f.id,style:{background:FC[f.id]+"10",borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:FC[f.id],fontSize:11,fontWeight:800}},"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},"Stat: "+bd.rawStat),h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},Math.round(bd.pts*100))));
+      }))));}
 function ScratchedCard({horse,onTap}){
   return h("div",{style:{background:"#f8fafc",border:"1px dashed #cbd5e1",borderRadius:14,padding:"12px 16px",marginBottom:8,opacity:0.65,cursor:"pointer"},onClick:()=>onTap(horse)},
     h("div",{style:{display:"flex",alignItems:"center",gap:12}},
