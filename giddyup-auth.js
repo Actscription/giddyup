@@ -140,6 +140,19 @@ const GiddyUpAuth = {
     return data.card;
   },
 
+  // Returns an array of race_date strings (YYYY-MM-DD) that have a
+  // published card within [startDate, endDate] inclusive. Used to
+  // highlight race days on the custom calendar picker.
+  async getPublishedDates(startDate, endDate) {
+    const { data, error } = await giddyupSupabase
+      .from("race_cards")
+      .select("race_date")
+      .gte("race_date", startDate)
+      .lte("race_date", endDate);
+    if (error || !data) return [];
+    return data.map(r => r.race_date);
+  },
+
   // ── LIVE TRAINER/JOCKEY COMBO DATA ──────────────────────────────
   // Looks up real win-rate history for a trainer/jockey pairing,
   // circuit-wide (not limited to one track) — Alberta racing is a
