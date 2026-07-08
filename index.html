@@ -525,9 +525,9 @@ return h("div",{style:{paddingTop:14}},
         let dateLabel="";
         if(r0.raceDate){try{const p=r0.raceDate.split("-");const d=new Date(+p[0],+p[1]-1,+p[2]);dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}catch(err){dateLabel=r0.raceDate;}}
         const nowLabel=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
-        return h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:12,padding:"12px 16px",marginBottom:10}},
-          h("div",{style:{fontSize:15,fontWeight:900,color:C.gold}},[r0.track,dateLabel].filter(Boolean).join(" · ")),
-          h("div",{style:{fontSize:12,fontWeight:600,color:"#f2e5bd",marginTop:2}},[r0.postTime?"Approx Post "+r0.postTime:"",("Now "+nowLabel)].filter(Boolean).join("   ·   ")));
+        return h("div",{style:{background:"#c3e6a8",borderRadius:12,padding:"12px 16px",marginBottom:10,textAlign:"center"}},
+          h("div",{style:{fontSize:15,fontWeight:900,color:"#14210a"}},[r0.track,dateLabel].filter(Boolean).join(" · ")),
+          h("div",{style:{fontSize:12,fontWeight:700,color:"#1f3610",marginTop:2}},[r0.postTime?"Approx Post "+r0.postTime:"",("Now "+nowLabel)].filter(Boolean).join("   ·   ")));
       })(),
       h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         h("div",{style:{fontSize:11,color:C.muted}},races.length+" race"+(races.length!==1?"s":"")+" loaded"),
@@ -763,10 +763,10 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
     raceName&&(function(){
       var dateLabel="";
       if(raceMeta&&raceMeta.date){try{var p=raceMeta.date.split("-");var d=new Date(+p[0],+p[1]-1,+p[2]);dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}catch(err){dateLabel=raceMeta.date;}}
-      return h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"1.5px solid "+C.gold,borderRadius:12,padding:"12px 14px",marginBottom:12,display:"flex",flexDirection:"column",alignItems:"center",gap:3,textAlign:"center"}},
-        h("div",{style:{color:C.gold,fontWeight:900,fontSize:16,letterSpacing:0.3}},(raceMeta&&raceMeta.track?raceMeta.track+" · ":"")+raceName),
-        (dateLabel||(raceMeta&&raceMeta.post))?h("div",{style:{color:"#f2e5bd",fontSize:13.5,fontWeight:700}},[dateLabel,(raceMeta&&raceMeta.post?"Approx Post "+raceMeta.post:"")].filter(Boolean).join("  ·  ")):null,
-        nowStr?h("div",{style:{color:"rgba(242,229,189,0.8)",fontSize:12.5,fontWeight:600}},"Now "+nowStr):null);
+      return h("div",{style:{background:"#c3e6a8",borderRadius:12,padding:"12px 14px",marginBottom:12,display:"flex",flexDirection:"column",alignItems:"center",gap:3,textAlign:"center"}},
+        h("div",{style:{color:"#14210a",fontWeight:900,fontSize:16,letterSpacing:0.3}},(raceMeta&&raceMeta.track?raceMeta.track+" · ":"")+raceName),
+        (dateLabel||(raceMeta&&raceMeta.post))?h("div",{style:{color:"#1f3610",fontSize:13.5,fontWeight:700}},[dateLabel,(raceMeta&&raceMeta.post?"Approx Post "+raceMeta.post:"")].filter(Boolean).join("  ·  ")):null,
+        nowStr?h("div",{style:{color:"#2c4a1a",fontSize:12.5,fontWeight:600}},"Now "+nowStr):null);
     })(),
     raceMeta&&(raceMeta.distance||raceMeta.conditions)&&h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px 14px",marginBottom:12,textAlign:"center"}},
       raceMeta.distance&&h("div",{style:{fontSize:13,fontWeight:800,color:C.text,marginBottom:raceMeta.conditions?4:0}},"📏 "+raceMeta.distance),
