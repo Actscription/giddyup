@@ -308,6 +308,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
   const [progress,setProgress]=useState("");
   const [analyzingId,setAnalyzingId]=useState(null);
   const fileRef=useRef(),cameraRef=useRef();
+  const racesHeaderRef=useRef(null);
   // per-race "add page" refs stored as a map by race id
   const pageRefs=useRef({});
 
@@ -471,6 +472,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
     setRaces(card.races.map((rc,i)=>({id:Date.now()+i,label:rc.raceNumber?("Race "+rc.raceNumber):(rc.label||("Race "+(i+1))),pages:[],status:"analyzed",horseCount:(rc.horses||[]).length,horses:rc.horses||[],raceType:rc.raceType||"custom",raceNumber:rc.raceNumber||null,postTime:rc.postTime||"",raceDistance:rc.raceDistance||"",raceConditions:rc.raceConditions||"",track:card.track||"Evergreen Park",raceDate:target,active:false})));
     setPubStatus("✅ Loaded "+card.races.length+" races"+(isToday?"":" for "+target)+" — tap View on any race.");
     setStatus("idle");
+    setTimeout(()=>{racesHeaderRef.current&&racesHeaderRef.current.scrollIntoView({behavior:"smooth",block:"start"});},150);
   }
 
 return h("div",{style:{paddingTop:14}},
@@ -516,7 +518,17 @@ return h("div",{style:{paddingTop:14}},
         h("span",{style:{fontSize:13,fontWeight:800,color:"#a07830"}},"Publish Card (Admin)"))),
     pubStatus&&h("div",{style:{background:pubStatus.indexOf("✅")===0?"rgba(74,158,110,0.08)":pubStatus.indexOf("❌")===0?"rgba(220,60,60,0.07)":"#fff",border:"1.5px solid "+(pubStatus.indexOf("✅")===0?"rgba(74,158,110,0.45)":pubStatus.indexOf("❌")===0?"rgba(220,60,60,0.4)":C.border),borderRadius:10,padding:"10px 12px",marginBottom:10,fontSize:13.5,fontWeight:700,color:pubStatus.indexOf("✅")===0?"#2e7d4f":pubStatus.indexOf("❌")===0?"#a03030":C.text}},pubStatus),
 
-    races.length>0&&h("div",{style:{marginBottom:12}},
+    races.length>0&&h("div",{ref:racesHeaderRef,style:{marginBottom:12}},
+      (function(){
+        const r0=races[0];
+        if(!r0||!r0.track&&!r0.raceDate&&!r0.postTime)return null;
+        let dateLabel="";
+        if(r0.raceDate){try{const p=r0.raceDate.split("-");const d=new Date(+p[0],+p[1]-1,+p[2]);dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}catch(err){dateLabel=r0.raceDate;}}
+        const nowLabel=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+        return h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:12,padding:"12px 16px",marginBottom:10}},
+          h("div",{style:{fontSize:15,fontWeight:900,color:C.gold}},[r0.track,dateLabel].filter(Boolean).join(" · ")),
+          h("div",{style:{fontSize:12,fontWeight:600,color:"#f2e5bd",marginTop:2}},[r0.postTime?"Approx Post "+r0.postTime:"",("Now "+nowLabel)].filter(Boolean).join("   ·   ")));
+      })(),
       h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
         h("div",{style:{fontSize:11,color:C.muted}},races.length+" race"+(races.length!==1?"s":"")+" loaded"),
         h("button",{onClick:clearAll,style:{background:"transparent",border:"none",color:"#ef4444",fontSize:11,cursor:"pointer",fontWeight:700}},"Clear all")),
