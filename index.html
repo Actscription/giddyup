@@ -225,7 +225,7 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
             h("div",{style:{display:"flex",justifyContent:"space-between"}},
               h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},compDisplay),
               h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},Math.round(bd.pts*100))),
-            h("div",{style:{color:"#64748b",fontSize:9,marginTop:2}},
+            h("div",{style:{color:"#000000",fontSize:9,marginTop:2}},
               "CY "+fmtTier(ed.eps_cy,ed.starts_cy)+" · LY "+fmtTier(ed.eps_ly,ed.starts_ly)+" · Life "+fmtTier(ed.eps_car,ed.starts_car)));
         }
         return h("div",{key:f.id,style:{background:FC[f.id]+"10",borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:FC[f.id],fontSize:11,fontWeight:800}},"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},"Stat: "+bd.rawStat),h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},Math.round(bd.pts*100))));
