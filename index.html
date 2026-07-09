@@ -921,8 +921,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
   },[raceNumber]);
   var [sent,setSent]=useState(false);
   var [raceWarn,setRaceWarn]=useState(false);
-  var [buddyName,setBuddyName]=useState('');
-  var buddyLabel=buddyName.trim()||'Barn Mate';
+  var buddyLabel='Barn Mate';
   var [house,setHouse]=useState(['','','','']);
   var [buddy,setBuddy]=useState(['','','','']);
   function setHouseField(i,val){setHouse(function(h){var n=h.slice();n[i]=val;return n;});}
@@ -941,7 +940,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
     setRaceWarn(false);
     try{
       var incoming={from:'silks',date:new Date().toISOString().split('T')[0],
-        picks:{},rankPicks:{},housePicks:{},buddyPicks:{},buddyName:buddyLabel,
+        picks:{},rankPicks:{},housePicks:{},buddyPicks:{},
         sentAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
       if(top4){
         incoming.picks[raceNum]=top4.map(function(hh){return hh.number;});
@@ -970,9 +969,6 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
           if(existing.buddyPicks) Object.keys(existing.buddyPicks).forEach(function(k){
             if(!incoming.buddyPicks[k]) incoming.buddyPicks[k]=existing.buddyPicks[k];
           });
-          if(existing.buddyName&&!buddyName.trim()){
-            incoming.buddyName=existing.buddyName;
-          }
         }
       }catch(ex){}
       localStorage.setItem('giddyup_play_incoming',JSON.stringify(incoming));
@@ -985,25 +981,18 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
       "Handicap a race using Upload → Angles → Rankings first.",
       "In Rankings, set your ⭐ My Custom Rankings order (not just the GiddyUp default) — that's the order that gets sent here as your personal picks.",
       "Track Selections (the picks printed in the race program) are always available to enter, race by race — no setup needed.",
-      "Got a buddy playing along? Optionally name them — leave it blank and they'll just show as 'Barn Mate' on the leaderboard, no real name needed. This one name applies to your whole card for the day, not per race.",
-      "⚠️ Set your Barn Mate's name BEFORE you send your first race of the day, and don't change it partway through — whatever name is in that field when you tap Send Picks becomes the label for the entire day's leaderboard in Play, so switching it mid-card will mislabel earlier races and confuse the scoreboard.",
-      "Optionally enter Track Selections' and "+buddyLabel+"'s 4 picks for this race, to compete head-to-head.",
+      "Got a buddy playing along? Barn Mate Picks is a 4th, always-available entry — no name to set, no per-day setup. Just enter their 4 picks per race, same as Track Selections.",
+      "Optionally enter Track Selections' and Barn Mate's 4 picks for this race, to compete head-to-head.",
       "Confirm which race these picks are for — it's filled in automatically from the race you just handicapped, but you can change it.",
-      "Tap Send Picks to transfer your GiddyUp Picks, Custom Ranking Picks, Track Selections, "+buddyLabel+"'s picks, and your buddy's name to GiddyUp Play — all at once. You'll land right on the Picks tab.",
+      "Tap Send Picks to transfer your GiddyUp Picks, Custom Ranking Picks, Track Selections, and Barn Mate's picks to GiddyUp Play — all at once. You'll land right on the Picks tab.",
       "Repeat for each race — everything accumulates in Play until you load it.",
-      "In GiddyUp Play, confirm your picks, enter results, and see the leaderboard: You vs GiddyUp vs Track Selections vs "+buddyLabel+".",
+      "In GiddyUp Play, confirm your picks, enter results, and see the leaderboard: You vs GiddyUp vs Track Selections vs Barn Mate.",
     ]}),
     h('div',{style:{background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',borderRadius:16,padding:'16px 18px',marginBottom:16}},
       h('div',{style:{fontSize:10,color:'#c9a84c88',letterSpacing:3,textTransform:'uppercase',marginBottom:4}},'Free to Play'),
       h('div',{style:{fontSize:20,fontWeight:900,background:'linear-gradient(135deg,#c9a84c,#f0d080)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}},'GiddyUp Play')
     ),
-    h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border,marginBottom:14}},
-      h('div',{style:{fontSize:11,fontWeight:700,color:C.text,textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'🐴 Playing With a Barn Mate?'),
-      h('input',{type:'text',value:buddyName,maxLength:30,placeholder:'Barn Mate (optional)',
-        onChange:function(e){setBuddyName(e.target.value);},
-        style:{width:'100%',padding:'12px',borderRadius:8,border:'1.5px solid '+C.border,fontSize:14,fontWeight:600,color:C.text,background:'#fff'}}),
-      h('div',{style:{fontSize:11,color:'#334155',marginTop:6}},'Optional \u2014 leave blank if you\u2019re not playing against a buddy today. In a private game you don\u2019t need to enter their real name, since you already know who they are. Applies to your whole card today.')
-    ),
+
     h('div',{style:{background:'#fff',borderRadius:14,padding:'18px',border:'1px solid '+C.border,marginBottom:14,textAlign:'center'}},
       h('div',{style:{fontSize:48,marginBottom:8}},'\ud83c\udfc7'),
       h('div',{style:{fontFamily:'Georgia,serif',fontSize:18,fontWeight:900,color:C.text,marginBottom:6}},'Are you playing today?'),
