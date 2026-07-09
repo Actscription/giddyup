@@ -265,7 +265,7 @@ input[type=file]{display:none;}
     <div id="help-home" class="help-panel-body">
     <div class="help-step"><div class="help-num">1</div><div>Set how many races are on today's card using the number buttons.</div></div>
     <div class="help-step"><div class="help-num">2</div><div><strong>Track Selections</strong> (the track's own picks) are always available to enter — no setup needed.</div></div>
-    <div class="help-step"><div class="help-num">3</div><div>Playing with a buddy? Their name is set in GiddyUp Silks' Play tab — leave it blank there for <strong>Barn Mate</strong>, or type their name. ⚠️ Set it <strong>before sending your first race of the day</strong> and leave it as-is — it applies to your whole card, so changing it partway through will mislabel earlier races on the leaderboard.</div></div>
+    <div class="help-step"><div class="help-num">3</div><div>Playing with a buddy? <strong>Barn Mate Picks</strong> is a 4th, always-available leaderboard entry in Silks' Play tab — no name to set, just enter their 4 picks per race.</div></div>
     <div class="help-step"><div class="help-num">4</div><div>Tap the <strong>Picks</strong> tab to start entering your horses before the races run.</div></div>
     <div class="help-step"><div class="help-num">5</div><div>After each race, go to <strong>Results</strong> to enter the official finish and score your picks.</div></div>
     </div>
@@ -273,13 +273,6 @@ input[type=file]{display:none;}
   <div class="page-pad">
     <div class="section-title">Today's Card</div>
     <div id="h-today-card"></div>
-    <div style="margin-top:12px;">
-      <div class="section-title" style="margin-bottom:6px;">Playing With a Barn Mate?</div>
-      <div id="h-buddy-display"
-        style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--bg);">Barn Mate</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Set this in GiddyUp Silks → Play tab — it comes over automatically when you send picks. Leave it blank there if you're not playing against a buddy today.</div>
-    </div>
-
   </div>
 </div>
 
@@ -365,7 +358,7 @@ input[type=file]{display:none;}
         <div id="ml-empty-state" style="font-size:12px;color:var(--gold-dark);padding:6px 0;">Not entered for this race — add Track Selections picks in GiddyUp Silks' Play tab, then Send Picks.</div>
       </div>
       <div class="ml-section" style="background:var(--purple-light);border-color:var(--purple);">
-        <div class="ml-title" style="color:var(--purple);">🐴 <span id="bm-partner-label">Barn Mate</span> Picks (optional)</div>
+        <div class="ml-title" style="color:var(--purple);">🐴 Barn Mate Picks (optional)</div>
         <div id="bm-loaded-state" style="display:none;">
           <div style="font-size:12px;color:var(--purple);margin-bottom:10px;">Loaded from GiddyUp Silks.</div>
           <div class="pick-grid">
@@ -375,7 +368,7 @@ input[type=file]{display:none;}
             <div class="pick-slot fourth"><label>4th</label><input type="number" id="bm4" class="pi" placeholder="#" min="1" disabled=""></div>
           </div>
         </div>
-        <div id="bm-empty-state" style="font-size:12px;color:var(--purple);padding:6px 0;">Not entered for this race — add <span id="bm-empty-label">Barn Mate</span> picks in GiddyUp Silks' Play tab, then Send Picks.</div>
+        <div id="bm-empty-state" style="font-size:12px;color:var(--purple);padding:6px 0;">Not entered for this race — add Barn Mate picks in GiddyUp Silks' Play tab, then Send Picks.</div>
       </div>
       <div style="margin-top:14px;display:flex;gap:8px;">
         <button class="btn btn-green btn-sm" id="p-save-btn" onclick="savePicks()">Save Picks</button>
@@ -611,7 +604,7 @@ const MAX_RACES = 20;
 const TODAY = new Date().toISOString().split('T')[0];
 
 function emptyDayCard(){
-  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},buddyPicks:{},buddyName:'Barn Mate'};
+  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},buddyPicks:{}};
 }
 
 let CU = null;
@@ -758,17 +751,9 @@ function loadHome(){
     </div>`;
   const navPicks=document.getElementById('nav-picks-home');
   if(navPicks){navPicks.classList.toggle('pulse',!picked);}
-  const buddyDisplay=document.getElementById('h-buddy-display');
-  if(buddyDisplay){buddyDisplay.textContent=getBuddyName();}
-}
-function saveBuddyName(name){
-  const card=getTodayCard();
-  card.buddyName=name.trim()||'Barn Mate';
-  saveUser();
 }
 function getBuddyName(){
-  const card=getTodayCard();
-  return card.buddyName||'Barn Mate';
+  return 'Barn Mate';
 }
 function setNumRaces(n){
   const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
@@ -781,10 +766,6 @@ function promptCustomRaces(){
 function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
   document.getElementById('p-date').textContent=formatDate(TODAY);
-  const bmLabel=document.getElementById('bm-partner-label');
-  if(bmLabel) bmLabel.textContent=getBuddyName();
-  const bmEmptyLabel=document.getElementById('bm-empty-label');
-  if(bmEmptyLabel) bmEmptyLabel.textContent=getBuddyName();
   checkSilksBridge();
   showGrid();
   renderRaceGrid();
@@ -801,8 +782,7 @@ function checkSilksBridge(){
     const rankCount=Object.keys(data.rankPicks||{}).length;
     const houseCount=Object.keys(data.housePicks||{}).length;
     const buddyCount=Object.keys(data.buddyPicks||{}).length;
-    const hasBuddyName=!!(data.buddyName&&data.buddyName.trim()&&data.buddyName.trim()!=='Barn Mate');
-    if(!guCount&&!rankCount&&!houseCount&&!buddyCount&&!hasBuddyName) return;
+    if(!guCount&&!rankCount&&!houseCount&&!buddyCount) return;
     const banner=document.createElement('div');
     banner.id='silks-bridge-banner';
     banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
@@ -810,8 +790,7 @@ function checkSilksBridge(){
     if(guCount) parts.push(`GiddyUp Picks (${guCount})`);
     if(rankCount) parts.push(`Your Ranking Picks (${rankCount})`);
     if(houseCount) parts.push(`Track Selections (${houseCount})`);
-    if(buddyCount) parts.push(`${data.buddyName||'Barn Mate'}'s picks (${buddyCount})`);
-    else if(hasBuddyName) parts.push(`buddy "${data.buddyName}"`);
+    if(buddyCount) parts.push(`Barn Mate Picks (${buddyCount})`);
     const label=parts.join(' + ');
     banner.innerHTML=`<div>🔬 <strong>${label}</strong> ready from ${data.sentAt||'earlier today'}. Load them in?</div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
@@ -827,7 +806,7 @@ function loadSilksPicks(){
     const data=JSON.parse(localStorage.getItem('giddyup_play_incoming'));
     if(!data) return;
     const card=getTodayCard();
-    let guCount=0,rankCount=0,rankSkipped=0,houseCount=0,buddyCount=0,buddyNameSet=false;
+    let guCount=0,rankCount=0,rankSkipped=0,houseCount=0,buddyCount=0;
     if(data.picks){
       if(!card.guPicks) card.guPicks={};
       Object.keys(data.picks).forEach(raceNum=>{
@@ -869,26 +848,15 @@ function loadSilksPicks(){
         }
       });
     }
-    if(data.buddyName&&data.buddyName.trim()){
-      card.buddyName=data.buddyName.trim();
-      buddyNameSet=true;
-    }
     saveUser();
     localStorage.removeItem('giddyup_play_incoming');
     dismissSilksBridge();
     renderRaceGrid();
-    const buddyDisplay=document.getElementById('h-buddy-display');
-    if(buddyDisplay) buddyDisplay.textContent=getBuddyName();
-    const bmLabel=document.getElementById('bm-partner-label');
-    if(bmLabel) bmLabel.textContent=getBuddyName();
-    const bmEmptyLabel=document.getElementById('bm-empty-label');
-    if(bmEmptyLabel) bmEmptyLabel.textContent=getBuddyName();
     let msg='';
     if(guCount) msg+='GiddyUp Picks loaded for '+guCount+' race'+(guCount!==1?'s':'')+' (locked). ';
     if(rankCount) msg+='Your Ranking Picks loaded for '+rankCount+' race'+(rankCount!==1?'s':'')+' as My Picks \u2014 still editable. ';
     if(houseCount) msg+='Track Selections loaded for '+houseCount+' race'+(houseCount!==1?'s':'')+'. ';
-    if(buddyCount) msg+=getBuddyName()+'\u2019s picks loaded for '+buddyCount+' race'+(buddyCount!==1?'s':'')+'. ';
-    if(buddyNameSet) msg+='Barn Mate set to "'+getBuddyName()+'". ';
+    if(buddyCount) msg+='Barn Mate Picks loaded for '+buddyCount+' race'+(buddyCount!==1?'s':'')+'. ';
     if(rankSkipped) msg+=rankSkipped+' race'+(rankSkipped!==1?'s':'')+' already had saved picks and '+(rankSkipped!==1?'were':'was')+' left untouched.';
     if(!msg) msg='Nothing new to load.';
     alert(msg.trim());
