@@ -921,23 +921,27 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
   },[raceNumber]);
   var [sent,setSent]=useState(false);
   var [raceWarn,setRaceWarn]=useState(false);
-  var [opponentName,setOpponentName]=useState('');
-  var opponentLabel=opponentName.trim()||'House Selections';
+  var [buddyName,setBuddyName]=useState('');
+  var buddyLabel=buddyName.trim()||'Barn Mate';
   var [house,setHouse]=useState(['','','','']);
+  var [buddy,setBuddy]=useState(['','','','']);
   function setHouseField(i,val){setHouse(function(h){var n=h.slice();n[i]=val;return n;});}
   function clearHouse(){setHouse(['','','','']);}
+  function setBuddyField(i,val){setBuddy(function(b){var n=b.slice();n[i]=val;return n;});}
+  function clearBuddy(){setBuddy(['','','','']);}
   var top4=scores&&scores.length>=4?scores.slice(0,4):null;
   var myTop4=(myOrder&&myOrder.length>=4&&scores&&scores.length>=4)
     ?myOrder.map(function(n){return scores.find(function(s){return s.number===n;});}).filter(Boolean).slice(0,4)
     :null;
   if(myTop4&&myTop4.length<4) myTop4=null;
   var houseFilled=house.every(function(v){return v!==''&&v!=null;});
+  var buddyFilled=buddy.every(function(v){return v!==''&&v!=null;});
   function sendToPlay(){
     if((top4||myTop4)&&!raceNum){setRaceWarn(true);return;}
     setRaceWarn(false);
     try{
       var incoming={from:'silks',date:new Date().toISOString().split('T')[0],
-        picks:{},rankPicks:{},housePicks:{},partnerName:opponentLabel,
+        picks:{},rankPicks:{},housePicks:{},buddyPicks:{},buddyName:buddyLabel,
         sentAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
       if(top4){
         incoming.picks[raceNum]=top4.map(function(hh){return hh.number;});
@@ -947,6 +951,9 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
       }
       if(houseFilled&&raceNum){
         incoming.housePicks[raceNum]=house.map(function(v){return parseInt(v,10);});
+      }
+      if(buddyFilled&&raceNum){
+        incoming.buddyPicks[raceNum]=buddy.map(function(v){return parseInt(v,10);});
       }
       try{
         var existing=JSON.parse(localStorage.getItem('giddyup_play_incoming')||'null');
@@ -960,8 +967,11 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
           if(existing.housePicks) Object.keys(existing.housePicks).forEach(function(k){
             if(!incoming.housePicks[k]) incoming.housePicks[k]=existing.housePicks[k];
           });
-          if(existing.partnerName&&!opponentName.trim()){
-            incoming.partnerName=existing.partnerName;
+          if(existing.buddyPicks) Object.keys(existing.buddyPicks).forEach(function(k){
+            if(!incoming.buddyPicks[k]) incoming.buddyPicks[k]=existing.buddyPicks[k];
+          });
+          if(existing.buddyName&&!buddyName.trim()){
+            incoming.buddyName=existing.buddyName;
           }
         }
       }catch(ex){}
@@ -974,24 +984,25 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
     h(TabHelp,{title:"How to Use — Play",steps:[
       "Handicap a race using Upload → Angles → Rankings first.",
       "In Rankings, set your ⭐ My Custom Rankings order (not just the GiddyUp default) — that's the order that gets sent here as your personal picks.",
-      "Set who you're playing against today — leave it blank for House Selections, or enter a friend's name. This one name applies to your whole card for the day, not per race.",
-      "⚠️ Playing a friend instead of House Selections? Set their name BEFORE you send your first race of the day, and don't change it partway through — whatever name is in that field when you tap Send Picks becomes the label for the entire day's leaderboard in Play, so switching it mid-card will mislabel earlier races and confuse the scoreboard.",
-      "Optionally enter "+opponentLabel+"'s 4 picks for this race, to compete head-to-head.",
+      "Track Selections (the picks printed in the race program) are always available to enter, race by race — no setup needed.",
+      "Got a buddy playing along? Optionally name them — leave it blank and they'll just show as 'Barn Mate' on the leaderboard, no real name needed. This one name applies to your whole card for the day, not per race.",
+      "⚠️ Set your Barn Mate's name BEFORE you send your first race of the day, and don't change it partway through — whatever name is in that field when you tap Send Picks becomes the label for the entire day's leaderboard in Play, so switching it mid-card will mislabel earlier races and confuse the scoreboard.",
+      "Optionally enter Track Selections' and "+buddyLabel+"'s 4 picks for this race, to compete head-to-head.",
       "Confirm which race these picks are for — it's filled in automatically from the race you just handicapped, but you can change it.",
-      "Tap Send Picks to transfer your GiddyUp Picks, Custom Ranking Picks, "+opponentLabel+"'s picks, and your opponent's name to GiddyUp Play — all at once. You'll land right on the Picks tab.",
+      "Tap Send Picks to transfer your GiddyUp Picks, Custom Ranking Picks, Track Selections, "+buddyLabel+"'s picks, and your buddy's name to GiddyUp Play — all at once. You'll land right on the Picks tab.",
       "Repeat for each race — everything accumulates in Play until you load it.",
-      "In GiddyUp Play, confirm your picks, enter results, and see the leaderboard: You vs GiddyUp vs "+opponentLabel+" vs anyone else playing.",
+      "In GiddyUp Play, confirm your picks, enter results, and see the leaderboard: You vs GiddyUp vs Track Selections vs "+buddyLabel+".",
     ]}),
     h('div',{style:{background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',borderRadius:16,padding:'16px 18px',marginBottom:16}},
       h('div',{style:{fontSize:10,color:'#c9a84c88',letterSpacing:3,textTransform:'uppercase',marginBottom:4}},'Free to Play'),
       h('div',{style:{fontSize:20,fontWeight:900,background:'linear-gradient(135deg,#c9a84c,#f0d080)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}},'GiddyUp Play')
     ),
     h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border,marginBottom:14}},
-      h('div',{style:{fontSize:11,fontWeight:700,color:C.text,textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'🤝 Who Are You Playing Against Today?'),
-      h('input',{type:'text',value:opponentName,maxLength:30,placeholder:'House Selections',
-        onChange:function(e){setOpponentName(e.target.value);},
+      h('div',{style:{fontSize:11,fontWeight:700,color:C.text,textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'🐴 Playing With a Barn Mate?'),
+      h('input',{type:'text',value:buddyName,maxLength:30,placeholder:'Barn Mate (optional)',
+        onChange:function(e){setBuddyName(e.target.value);},
         style:{width:'100%',padding:'12px',borderRadius:8,border:'1.5px solid '+C.border,fontSize:14,fontWeight:600,color:C.text,background:'#fff'}}),
-      h('div',{style:{fontSize:11,color:'#334155',marginTop:6}},'Leave blank to play against House Selections, or enter a friend\u2019s name. Applies to your whole card today.')
+      h('div',{style:{fontSize:11,color:'#334155',marginTop:6}},'Optional \u2014 leave blank if you\u2019re not playing against a buddy today. In a private game you don\u2019t need to enter their real name, since you already know who they are. Applies to your whole card today.')
     ),
     h('div',{style:{background:'#fff',borderRadius:14,padding:'18px',border:'1px solid '+C.border,marginBottom:14,textAlign:'center'}},
       h('div',{style:{fontSize:48,marginBottom:8}},'\ud83c\udfc7'),
@@ -1012,8 +1023,8 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
               )
             ),
             myTop4&&h('div',{style:{background:'#fffbf0',border:'1px solid '+C.gold,borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
-              h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\u2b50 Your Customized Ranking Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')+' \u270f\ufe0f'),
-              h('div',{style:{fontSize:10,color:'#5c3d0a',fontWeight:600,marginBottom:8}},'From your adjusted My Custom Rankings order \u2014 stays editable once loaded in Play.'),
+              h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\u2b50 Your Customized Ranking Picks'+(raceNum?' \u2014 Race '+raceNum:'')+(raceName?' ('+raceName+')':'')),
+              h('div',{style:{fontSize:10,color:'#5c3d0a',fontWeight:600,marginBottom:8}},'From your adjusted My Custom Rankings order.'),
               h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
                 myTop4.map(function(hh,i){
                   var lbl=['\u2605 Win','Place','Show','4th'][i];
@@ -1026,13 +1037,11 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
             ),
             h('div',{style:{background:'#fff8f0',border:'1px solid #f0d080',borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
               h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}},
-                h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1}},'\ud83d\udcf0 '+opponentLabel+' Picks'+(raceNum?' \u2014 Race '+raceNum:'')+' (optional)'),
+                h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1}},'\ud83d\udcf0 Track Selections'+(raceNum?' \u2014 Race '+raceNum:'')+' (optional)'),
                 house.some(function(v){return v!=='';})&&h('button',{onClick:clearHouse,style:{fontSize:10,fontWeight:700,color:'#ef4444',background:'none',border:'none',cursor:'pointer'}},'Clear')
               ),
               h('div',{style:{fontSize:11,color:'#1e293b',marginBottom:10}},
-                opponentName.trim()
-                  ?'Enter '+opponentLabel+'\u2019s 4 picks to compete head-to-head.'
-                  :'Enter the 4 selections printed in the race program to compete head-to-head against the track picks.'
+                'Enter the 4 selections printed in the race program to compete head-to-head against the track picks.'
               ),
               h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
                 ['\u2605 Win','Place','Show','4th'].map(function(lbl,i){
@@ -1041,6 +1050,25 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
                     h('input',{type:'number',min:'1',placeholder:'#',value:house[i],
                       onChange:function(e){setHouseField(i,e.target.value);},
                       style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:'#fff',border:'1px solid #f0d080',borderRadius:8}})
+                  );
+                })
+              )
+            ),
+            h('div',{style:{background:'#f5f3ff',border:'1px solid #c4b5fd',borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
+              h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}},
+                h('div',{style:{fontSize:11,fontWeight:700,color:'#5b21b6',textTransform:'uppercase',letterSpacing:1}},'\ud83d\udc0e '+buddyLabel+' Picks'+(raceNum?' \u2014 Race '+raceNum:'')+' (optional)'),
+                buddy.some(function(v){return v!=='';})&&h('button',{onClick:clearBuddy,style:{fontSize:10,fontWeight:700,color:'#ef4444',background:'none',border:'none',cursor:'pointer'}},'Clear')
+              ),
+              h('div',{style:{fontSize:11,color:'#1e293b',marginBottom:10}},
+                'Enter '+buddyLabel+'\u2019s 4 picks to compete head-to-head. This is separate from Track Selections \u2014 your buddy picks their own horses.'
+              ),
+              h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
+                ['\u2605 Win','Place','Show','4th'].map(function(lbl,i){
+                  return h('div',{key:i,style:{textAlign:'center'}},
+                    h('div',{style:{fontSize:9,color:'#5b21b6',textTransform:'uppercase',marginBottom:3}},lbl),
+                    h('input',{type:'number',min:'1',placeholder:'#',value:buddy[i],
+                      onChange:function(e){setBuddyField(i,e.target.value);},
+                      style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:'#fff',border:'1px solid #c4b5fd',borderRadius:8}})
                   );
                 })
               )
@@ -1062,18 +1090,18 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
       h('button',{onClick:sendToPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,#1a6b3c,#2d9155)',border:'none',borderRadius:12,color:'#c9a84c',fontSize:15,fontWeight:700,cursor:'pointer',marginBottom:10}},
         (top4||myTop4)?(raceNum?'Send Race '+raceNum+' Picks \u2192 Open GiddyUp Play':'Send Picks \u2192 Open GiddyUp Play'):'Open GiddyUp Play \u2192'
       ),
-      sent&&h('div',{style:{fontSize:11,color:'#15803d',background:'#f0fdf4',borderRadius:6,padding:'6px 10px'}},'\u2713 Sent! You\u2019ll land on the Picks tab in GiddyUp Play \u2014 look for the gold banner to load your picks, '+opponentLabel+'\u2019s picks, and your opponent.'),
+      sent&&h('div',{style:{fontSize:11,color:'#15803d',background:'#f0fdf4',borderRadius:6,padding:'6px 10px'}},'\u2713 Sent! You\u2019ll land on the Picks tab in GiddyUp Play \u2014 look for the gold banner to load your picks, Track Selections, and '+buddyLabel+'\u2019s picks.'),
       h('div',{style:{fontSize:11,color:'#334155',marginTop:6}},'Repeat for each race you handicap \u2014 picks accumulate until loaded in Play')
     ),
     h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border}},
       h('div',{style:{fontSize:11,fontWeight:700,color:C.text,textTransform:'uppercase',letterSpacing:2,marginBottom:12}},'How it works'),
       [
         ['\ud83d\udcf7','Handicap in GiddyUp Silks','Upload the race program, set your angles, get rankings'],
-        ['\ud83e\udd1d','Set your opponent and their picks','Right here in Play \u2014 once per day for who you\u2019re playing against, per race for their 4 picks'],
+        ['\ud83e\udd1d','Set your buddy (optional) and everyone\u2019s picks','Right here in Play \u2014 once per day for your buddy\u2019s name, per race for Track Selections and their 4 picks'],
         ['\ud83c\udfab','Send picks to Play','Pick the race number, tap Send \u2014 you\u2019ll land on the Picks tab. Repeat for each race'],
-        ['\u270f\ufe0f','Confirm your picks in Play','GiddyUp Picks, Custom Picks, '+opponentLabel+'\u2019s picks, and your opponent are all pre-loaded'],
+        ['\u270f\ufe0f','Confirm your picks in Play','GiddyUp Picks, Custom Picks, Track Selections, and '+buddyLabel+'\u2019s picks are all pre-loaded'],
         ['\ud83d\udccb','Enter results after the race','Type in the official finish and score automatically'],
-        ['\ud83c\udfc6','Check the leaderboard',opponentLabel+' vs GiddyUp vs You \u2014 who wins the day?'],
+        ['\ud83c\udfc6','Check the leaderboard','You vs GiddyUp vs Track Selections vs '+buddyLabel+' \u2014 who wins the day?'],
         ['\ud83d\udcd3','Keep a diary','Notes and photos including winning tickets'],
       ].map(function(item,i){
         return h('div',{key:i,style:{display:'flex',gap:12,marginBottom:i<6?12:0,paddingBottom:i<6?12:0,borderBottom:i<6?'1px solid '+C.border:'none'}},
