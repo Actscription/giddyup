@@ -1189,7 +1189,15 @@ function loadScorecard(){
   const card=getTodayCard();
   const rns=Object.keys(card.scores).map(Number).sort((a,b)=>a-b);
   const noData=document.getElementById('sc-no-data'),scCard=document.getElementById('sc-card');
-  if(!rns.length){noData.style.display='block';scCard.style.display='none';document.getElementById('sc-summary').innerHTML='';return;}
+  if(!rns.length){
+    noData.style.display='block';scCard.style.display='none';
+    document.getElementById('sc-summary').innerHTML='';
+    const mlEl0=document.getElementById('sc-ml-compare');
+    if(mlEl0){mlEl0.style.display='none';mlEl0.innerHTML='';}
+    const h2hEl0=document.getElementById('sc-h2h');
+    if(h2hEl0) h2hEl0.innerHTML='';
+    return;
+  }
   noData.style.display='none';scCard.style.display='block';
   let tF=0,tW=0,tE=0,tS=0,tSt=0,tR=0,tEx=0,tTri=0,tSf=0,consAlive=true;
   let dots='';
