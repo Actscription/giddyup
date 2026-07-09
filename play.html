@@ -157,6 +157,10 @@ input.pi:disabled{opacity:0.45;cursor:not-allowed;}
 .sc-table td:first-child{text-align:left;}
 .sc-foot-row td{background:var(--green-light);font-weight:600;font-size:13px;border-top:2px solid var(--green)!important;}
 .sc-grand-row td{background:var(--green);color:var(--white);font-weight:600;font-size:14px;}
+.sc-tabbar{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px;}
+.sc-tab-btn{flex:0 0 auto;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);color:var(--muted);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;}
+.sc-tab-btn.active{background:var(--green);border-color:var(--green);color:var(--white);}
+.sc-panel-empty{font-size:12px;color:var(--muted);padding:14px 4px;text-align:center;}
 .compare-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
 .compare-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px;text-align:center;}
 .compare-card.winner{border-color:var(--gold);background:var(--gold-light);}
@@ -471,24 +475,41 @@ input[type=file]{display:none;}
   </div>
   <div class="page-pad">
     <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter your picks and results to get started.</div>
-    <div id="sc-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;"></div>
-    <div id="sc-ml-compare" style="display:none;margin-bottom:16px;"></div>
-    <div class="card" id="sc-card" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div class="section-title" style="margin-bottom:0;">Daily Card</div>
-        <div id="sc-cons-status" style="font-size:13px;"></div>
+    <div id="sc-tabs-wrap" style="display:none;">
+      <div class="sc-tabbar">
+        <button class="sc-tab-btn active" id="sc-tabbtn-leaderboard" onclick="scShowTab('leaderboard')">🏆 Leaderboard</button>
+        <button class="sc-tab-btn" id="sc-tabbtn-h2h" onclick="scShowTab('h2h')">⚔️ Head-to-Head</button>
+        <button class="sc-tab-btn" id="sc-tabbtn-exotic" onclick="scShowTab('exotic')">🎯 Exotic Bets</button>
+        <button class="sc-tab-btn" id="sc-tabbtn-daily" onclick="scShowTab('daily')">📅 Daily Card</button>
       </div>
-      <div class="streak-row" id="sc-streak-dots"></div>
-      <div class="divider"></div>
-      <div style="overflow-x:auto;">
-        <table class="sc-table">
-          <thead><tr><th>Race</th><th>W</th><th>F</th><th>E</th><th>T</th><th>S</th><th>SW</th><th>ST</th><th>Total</th></tr></thead>
-          <tbody id="sc-body"></tbody>
-          <tfoot id="sc-foot"></tfoot>
-        </table>
+      <div class="sc-panel" id="sc-panel-leaderboard">
+        <div id="sc-ml-compare"></div>
+      </div>
+      <div class="sc-panel" id="sc-panel-h2h" style="display:none;">
+        <div id="sc-h2h"></div>
+      </div>
+      <div class="sc-panel" id="sc-panel-exotic" style="display:none;">
+        <div id="sc-exotic"></div>
+      </div>
+      <div class="sc-panel" id="sc-panel-daily" style="display:none;">
+        <div id="sc-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;"></div>
+        <div class="card" id="sc-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div class="section-title" style="margin-bottom:0;">Daily Card</div>
+            <div id="sc-cons-status" style="font-size:13px;"></div>
+          </div>
+          <div class="streak-row" id="sc-streak-dots"></div>
+          <div class="divider"></div>
+          <div style="overflow-x:auto;">
+            <table class="sc-table">
+              <thead><tr><th>Race</th><th>W</th><th>F</th><th>E</th><th>T</th><th>S</th><th>SW</th><th>ST</th><th>Total</th></tr></thead>
+              <tbody id="sc-body"></tbody>
+              <tfoot id="sc-foot"></tfoot>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
-    <div id="sc-h2h"></div>
   </div>
 </div>
 
@@ -658,6 +679,16 @@ function nav(tab){
   if(tab==='scorecard') loadScorecard();
   if(tab==='diary') loadDiaryScreen();
   go(map[tab]);
+}
+let scActiveTab='leaderboard';
+function scShowTab(tabName){
+  scActiveTab=tabName;
+  ['leaderboard','h2h','exotic','daily'].forEach(t=>{
+    const panel=document.getElementById('sc-panel-'+t);
+    const btn=document.getElementById('sc-tabbtn-'+t);
+    if(panel) panel.style.display=(t===tabName)?'block':'none';
+    if(btn) btn.classList.toggle('active',t===tabName);
+  });
 }
 function toggleHelp(id){
   const panel=document.getElementById(id);
@@ -1188,17 +1219,16 @@ function loadScorecard(){
   document.getElementById('sc-date').textContent=formatDate(TODAY);
   const card=getTodayCard();
   const rns=Object.keys(card.scores).map(Number).sort((a,b)=>a-b);
-  const noData=document.getElementById('sc-no-data'),scCard=document.getElementById('sc-card');
+  const noData=document.getElementById('sc-no-data'),tabsWrap=document.getElementById('sc-tabs-wrap');
   if(!rns.length){
-    noData.style.display='block';scCard.style.display='none';
+    noData.style.display='block';tabsWrap.style.display='none';
     document.getElementById('sc-summary').innerHTML='';
-    const mlEl0=document.getElementById('sc-ml-compare');
-    if(mlEl0){mlEl0.style.display='none';mlEl0.innerHTML='';}
-    const h2hEl0=document.getElementById('sc-h2h');
-    if(h2hEl0) h2hEl0.innerHTML='';
+    document.getElementById('sc-ml-compare').innerHTML='';
+    document.getElementById('sc-h2h').innerHTML='';
+    document.getElementById('sc-exotic').innerHTML='';
     return;
   }
-  noData.style.display='none';scCard.style.display='block';
+  noData.style.display='none';tabsWrap.style.display='block';
   let tF=0,tW=0,tE=0,tS=0,tSt=0,tR=0,tEx=0,tTri=0,tSf=0,consAlive=true;
   let dots='';
   for(let i=1;i<=card.numRaces;i++){
@@ -1266,23 +1296,30 @@ function loadScorecard(){
         </div>`;
       }).join('')}
     </div>`;
-  } else mlEl.style.display='none';
+  } else mlEl.innerHTML='<div class="sc-panel-empty">No Track Selections, GiddyUp, or Barn Mate picks recorded today \u2014 you\'re playing solo. Add one of them in GiddyUp Silks\' Play tab to see a leaderboard here.</div>';
   document.getElementById('sc-body').innerHTML=rows;
   document.getElementById('sc-foot').innerHTML=`
     <tr class="sc-foot-row"><td><strong>Totals</strong></td><td>${tW?'+'+tW:'—'}</td><td>${tF}</td><td>${tEx?'+'+tEx:'—'}</td><td>${tTri?'+'+tTri:'—'}</td><td>${tSf?'+'+tSf:'—'}</td><td>${tS?'+'+tS:'—'}</td><td>${tSt?'+'+tSt:'—'}</td><td><strong>${tR+tSt}</strong></td></tr>
     ${consBonus?`<tr style="background:var(--gold-light);"><td colspan="8" style="text-align:right;color:var(--gold-dark);font-size:12px;">🏆 Consistency (${card.numRaces}×5)</td><td style="font-weight:600;color:var(--gold-dark);">+${consBonus}</td></tr>`:''}
     <tr class="sc-grand-row"><td colspan="8"><strong>Grand Total</strong></td><td><strong>${grand}</strong></td></tr>`;
   renderHeadToHead(card,rns);
+  scShowTab(scActiveTab);
 }
 function renderHeadToHead(card,rns){
   const el=document.getElementById('sc-h2h');
+  const exoticEl=document.getElementById('sc-exotic');
   const mlScores=card.mlScores||{};
   const guScores=card.guScores||{};
   const buddyScores=card.buddyScores||{};
   const hasML=Object.keys(mlScores).length>0;
   const hasGU=Object.keys(guScores).length>0;
   const hasBuddy=Object.keys(buddyScores).length>0;
-  if(!hasML&&!hasGU&&!hasBuddy){el.innerHTML='';return;}
+  if(!hasML&&!hasGU&&!hasBuddy){
+    const emptyMsg='<div class="sc-panel-empty">No Track Selections, GiddyUp, or Barn Mate picks recorded today \u2014 you\'re playing solo. Add one of them in GiddyUp Silks\' Play tab to see a comparison here.</div>';
+    el.innerHTML=emptyMsg;
+    exoticEl.innerHTML=emptyMsg;
+    return;
+  }
   const competitors=[];
   competitors.push({key:'me',icon:'🏇',name:CU?displayName(CU):'You',color:'var(--green)',scores:card.scores,isMe:true});
   if(hasML) competitors.push({key:'ml',icon:'📰',name:'Track Selections',color:'var(--blue)',scores:mlScores});
@@ -1351,14 +1388,15 @@ function renderHeadToHead(card,rns){
     </tr>`;
   });
   el.innerHTML=`
-    <div class="section-title" style="margin-top:16px;">Head-to-Head — Race by Race</div>
+    <div class="section-title">Head-to-Head — Race by Race</div>
     <div style="padding:0;">
       <table class="sc-table">
         <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>W</th><th>Fld</th><th>Exot</th><th>Swp</th><th>Stk</th><th>Total</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-    </div>
-    <div class="section-title" style="margin-top:16px;">Exotic Bets Breakdown</div>
+    </div>`;
+  exoticEl.innerHTML=`
+    <div class="section-title">Exotic Bets Breakdown</div>
     <div style="padding:0;">
       <table class="sc-table">
         <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Ex</th><th>Tri</th><th>Sfcta</th><th>Total</th></tr></thead>
