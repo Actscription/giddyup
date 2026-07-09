@@ -744,15 +744,22 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
   function moveUp(idx){if(idx>0)moveItem(idx,idx-1);}
   function moveDown(idx,total){if(idx<total-1)moveItem(idx,idx+1);}
   function renderRankArrows(idx,total){
+    function onKey(e){
+      if(e.key==="ArrowUp"){e.preventDefault();e.stopPropagation();moveUp(idx);}
+      else if(e.key==="ArrowDown"){e.preventDefault();e.stopPropagation();moveDown(idx,total);}
+    }
     return h("div",{key:"arrows",style:{display:"flex",flexDirection:"column",gap:3,flexShrink:0}},
-      h("button",{onClick:e=>{e.stopPropagation();moveUp(idx);},disabled:idx===0,"aria-label":"Move up",style:{width:26,height:22,padding:0,background:idx===0?"#f8fafc":"#fff",border:"1px solid "+C.border,borderRadius:6,color:idx===0?"#cbd5e1":C.muted,fontSize:11,cursor:idx===0?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center"}},"▲"),
-      h("button",{onClick:e=>{e.stopPropagation();moveDown(idx,total);},disabled:idx===total-1,"aria-label":"Move down",style:{width:26,height:22,padding:0,background:idx===total-1?"#f8fafc":"#fff",border:"1px solid "+C.border,borderRadius:6,color:idx===total-1?"#cbd5e1":C.muted,fontSize:11,cursor:idx===total-1?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center"}},"▼"));
+      h("button",{onClick:e=>{e.stopPropagation();moveUp(idx);},onKeyDown:onKey,disabled:idx===0,"aria-label":"Move up (or press the Up arrow key)",title:"Move up — you can also press ↑",style:{width:26,height:22,padding:0,background:idx===0?"#f8fafc":"#fff",border:"1px solid "+C.border,borderRadius:6,color:idx===0?"#cbd5e1":C.muted,fontSize:11,cursor:idx===0?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center"}},"▲"),
+      h("button",{onClick:e=>{e.stopPropagation();moveDown(idx,total);},onKeyDown:onKey,disabled:idx===total-1,"aria-label":"Move down (or press the Down arrow key)",title:"Move down — you can also press ↓",style:{width:26,height:22,padding:0,background:idx===total-1?"#f8fafc":"#fff",border:"1px solid "+C.border,borderRadius:6,color:idx===total-1?"#cbd5e1":C.muted,fontSize:11,cursor:idx===total-1?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center"}},"▼"));
   }
   const orderedScores=rankMode==='mine'?myOrder.map(n=>scores.find(s=>s.number===n)).filter(Boolean):scores;
   if(!scores.length&&!scratchCount)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"📷"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));
   return h("div",{style:{paddingTop:14}},
     h(TabHelp,{title:"How to Use — Rankings",steps:[
       "Lower GiddyUp score = better horse. It's golf scoring — 1 is best.",
+      "🐴 GiddyUp Rankings is the AI's order — same for every user, built from your Angles.",
+      "⭐ My Custom Rankings is your own order. Tap it, then use the ▲▼ buttons — or the ↑↓ arrow keys on your keyboard — to drag horses into the order you actually believe in.",
+      "Your My Custom Rankings order is what travels with you to GiddyUp Play, so it's worth setting even if you agree with GiddyUp — it's how you compare against other players, the GiddyUp AI picks, and the track's own selections.",
       "Tap a horse's silk color badge to see the full factor-by-factor breakdown.",
       "Tap ⋯ to edit a horse's info or mark them as scratched.",
       "Scratched horses are removed and rankings recalculate automatically.",
@@ -945,10 +952,11 @@ function PlayTab({scores,raceName,myOrder}){
   return h('div',{style:{paddingTop:14}},
     h(TabHelp,{title:"How to Use — Play",steps:[
       "Handicap a race using Upload → Angles → Rankings first.",
+      "In Rankings, set your ⭐ My Custom Rankings order (not just the GiddyUp default) — that's the order that gets sent here as your personal picks.",
       "Select the race number your picks belong to.",
-      "Tap Send Picks to transfer your top 4 to GiddyUp Play.",
+      "Tap Send Picks to transfer both your GiddyUp Picks and your Custom Ranking Picks to GiddyUp Play.",
       "Repeat for each race — picks accumulate in Play until you load them.",
-      "Open GiddyUp Play to enter your own picks and track your score against GiddyUp.",
+      "Open GiddyUp Play to confirm your picks, enter results, and see the leaderboard: You vs GiddyUp vs the track's Selections vs anyone else playing.",
     ]}),
     h('div',{style:{background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',borderRadius:16,padding:'16px 18px',marginBottom:16}},
       h('div',{style:{fontSize:10,color:'#c9a84c88',letterSpacing:3,textTransform:'uppercase',marginBottom:4}},'Free to Play'),
