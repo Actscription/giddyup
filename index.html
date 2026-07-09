@@ -518,7 +518,7 @@ return h("div",{style:{paddingTop:14}},
         h("span",{style:{fontSize:13,fontWeight:800,color:"#a07830"}},"Publish Card (Admin)"))),
     pubStatus&&h("div",{style:{background:pubStatus.indexOf("✅")===0?"rgba(74,158,110,0.08)":pubStatus.indexOf("❌")===0?"rgba(220,60,60,0.07)":"#fff",border:"1.5px solid "+(pubStatus.indexOf("✅")===0?"rgba(74,158,110,0.45)":pubStatus.indexOf("❌")===0?"rgba(220,60,60,0.4)":C.border),borderRadius:10,padding:"10px 12px",marginBottom:10,fontSize:13.5,fontWeight:700,color:pubStatus.indexOf("✅")===0?"#2e7d4f":pubStatus.indexOf("❌")===0?"#a03030":C.text}},pubStatus),
 
-    races.length>0&&h("div",{ref:racesHeaderRef,style:{marginBottom:12}},
+    races.length>0&&h("div",{ref:racesHeaderRef,style:{marginBottom:12,scrollMarginTop:90}},
       (function(){
         const r0=races[0];
         if(!r0||!r0.track&&!r0.raceDate&&!r0.postTime)return null;
@@ -1097,6 +1097,7 @@ const [weights,setWeights]=useState({...PRESETS.custom});
   const [activeRace,setActiveRace]=useState("custom");
   const [angleMode,setAngleMode]=useState('giddyup');
   const [activeTab,setActiveTab]=useState("upload");
+  useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[activeTab]);
   const [races,setRaces]=useState([]);
   const [horses,setHorses]=useState([]);
   const [scratched,setScratched]=useState({});
