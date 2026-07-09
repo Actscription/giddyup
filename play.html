@@ -655,7 +655,7 @@ function toggleHelp(id){
   if(caret) caret.textContent=panel.classList.contains('open')?'Hide ▲':'Show ▼';
 }
 function openSilks(){
-  window.open('https://giddyupsilks.app?tab=upload','_blank');
+  window.open('https://giddyupsilks.app','_blank');
 }
 function togglePW(id,eye){
   const el=document.getElementById(id);
@@ -1608,6 +1608,7 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
 
 (async function init(){
   initTBTSButtons();
+  initSwipeToSilks();
   const session=await GiddyUpAuth.getSession();
   if(session&&session.user){
     const profile=await GiddyUpAuth.getProfile(session.user.id);
@@ -1623,5 +1624,30 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
   }
   go('screen-splash');
 })();
+function initSwipeToSilks(){
+  let sx=0,sy=0,st=0,armed=false;
+  function isInteractive(el){
+    while(el&&el!==document.body){
+      const tag=el.tagName;
+      if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA'||tag==='BUTTON'||el.isContentEditable) return true;
+      el=el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1){armed=false;return;}
+    if(isInteractive(e.target)){armed=false;return;}
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();armed=true;
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(!armed) return;
+    armed=false;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-st;
+    if(dt<600&&dx>70&&Math.abs(dx)>Math.abs(dy)*1.5){
+      window.location.href='https://giddyupsilks.app';
+    }
+  },{passive:true});
+}
 </script>
 </body></html>
