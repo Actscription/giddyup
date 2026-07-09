@@ -815,7 +815,7 @@ function loadSilksPicks(){
       Object.keys(data.picks).forEach(raceNum=>{
         const p=data.picks[raceNum];
         if(p&&p.length>=4){
-          card.guPicks[raceNum]=[p[0],p[1],p[2],p[3]];
+          card.guPicks[raceNum]=[parseInt(p[0],10),parseInt(p[1],10),parseInt(p[2],10),parseInt(p[3],10)];
           guCount++;
         }
       });
@@ -826,7 +826,8 @@ function loadSilksPicks(){
         if(!p||p.length<4) return;
         if(card.picks[raceNum]){ rankSkipped++; return; } // don't clobber picks the user already saved/edited
         if(card.results[raceNum]) return; // race already locked
-        card.picks[raceNum]={win:p[0],field:[p[0],p[1],p[2],p[3]],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),source:'myRankings'};
+        const p0=parseInt(p[0],10),p1=parseInt(p[1],10),p2=parseInt(p[2],10),p3=parseInt(p[3],10);
+        card.picks[raceNum]={win:p0,field:[p0,p1,p2,p3],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),source:'myRankings'};
         rankCount++;
       });
     }
@@ -835,7 +836,7 @@ function loadSilksPicks(){
       Object.keys(data.housePicks).forEach(raceNum=>{
         const p=data.housePicks[raceNum];
         if(p&&p.length>=4){
-          card.mlPicks[raceNum]=[p[0],p[1],p[2],p[3]];
+          card.mlPicks[raceNum]=[parseInt(p[0],10),parseInt(p[1],10),parseInt(p[2],10),parseInt(p[3],10)];
           houseCount++;
         }
       });
