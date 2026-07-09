@@ -263,7 +263,7 @@ input[type=file]{display:none;}
     </div>
     <div id="help-home" class="help-panel-body">
     <div class="help-step"><div class="help-num">1</div><div>Set how many races are on today's card using the number buttons.</div></div>
-    <div class="help-step"><div class="help-num">2</div><div>Enter your opponent's name — or leave as <strong>House Selections</strong> to compete against the race program picks.</div></div>
+    <div class="help-step"><div class="help-num">2</div><div>Your opponent for today — a friend's name, or <strong>House Selections</strong> — is set in GiddyUp Silks' Play tab and shows here once sent.</div></div>
     <div class="help-step"><div class="help-num">3</div><div>Tap the <strong>Picks</strong> tab to start entering your horses before the races run.</div></div>
     <div class="help-step"><div class="help-num">4</div><div>After each race, go to <strong>Results</strong> to enter the official finish and score your picks.</div></div>
     </div>
@@ -273,10 +273,9 @@ input[type=file]{display:none;}
     <div id="h-today-card"></div>
     <div style="margin-top:12px;">
       <div class="section-title" style="margin-bottom:6px;">Who Are You Playing Against Today?</div>
-      <input type="text" id="partner-name-input" placeholder="House Selections" maxlength="30"
-        style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--white);"
-        oninput="savePartnerName(this.value)">
-      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Enter a friend's name or leave as "House Selections"</div>
+      <div id="h-partner-display"
+        style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--bg);">House Selections</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Set this in GiddyUp Silks → Play tab — it comes over automatically when you send picks.</div>
     </div>
 
   </div>
@@ -310,7 +309,7 @@ input[type=file]{display:none;}
     <div class="help-step"><div class="help-num">2</div><div>Enter horse numbers for <strong>Win, Place, Show</strong> and <strong>4th</strong>.</div></div>
     <div class="help-step"><div class="help-num">3</div><div>Your <strong>★ Win Pick</strong> earns +20 bonus points if that horse finishes 1st.</div></div>
     <div class="help-step"><div class="help-num">4</div><div>Tap <strong>Save Picks</strong> — picks lock once results are entered for that race.</div></div>
-    <div class="help-step"><div class="help-num">5</div><div>Optionally enter <strong>House Selections</strong> picks below yours to compete head-to-head.</div></div>
+    <div class="help-step"><div class="help-num">5</div><div><strong>House Selections</strong> picks are entered in GiddyUp Silks' Play tab and show up here once sent.</div></div>
     </div>
   </div>
   <div class="page-pad">
@@ -352,13 +351,16 @@ input[type=file]{display:none;}
       </div>
       <div class="ml-section">
         <div class="ml-title">📰 <span id="ml-partner-label">House Selections</span> Picks (optional)</div>
-        <div style="font-size:12px;color:var(--gold-dark);margin-bottom:10px;">Enter the 4 selections printed in the race program — your handicapper opponent.</div>
-        <div class="pick-grid">
-          <div class="pick-slot win"><label>★ Win</label><input type="number" id="ml1" class="pi pi-win" placeholder="#" min="1"></div>
-          <div class="pick-slot place"><label>Place</label><input type="number" id="ml2" class="pi pi-place" placeholder="#" min="1"></div>
-          <div class="pick-slot show"><label>Show</label><input type="number" id="ml3" class="pi pi-show" placeholder="#" min="1"></div>
-          <div class="pick-slot fourth"><label>4th</label><input type="number" id="ml4" class="pi" placeholder="#" min="1"></div>
+        <div id="ml-loaded-state" style="display:none;">
+          <div style="font-size:12px;color:var(--gold-dark);margin-bottom:10px;">Loaded from GiddyUp Silks.</div>
+          <div class="pick-grid">
+            <div class="pick-slot win"><label>★ Win</label><input type="number" id="ml1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
+            <div class="pick-slot place"><label>Place</label><input type="number" id="ml2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
+            <div class="pick-slot show"><label>Show</label><input type="number" id="ml3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
+            <div class="pick-slot fourth"><label>4th</label><input type="number" id="ml4" class="pi" placeholder="#" min="1" disabled=""></div>
+          </div>
         </div>
+        <div id="ml-empty-state" style="font-size:12px;color:var(--gold-dark);padding:6px 0;">Not entered for this race — add House Selections picks in GiddyUp Silks' Play tab, then Send Picks.</div>
       </div>
       <div style="margin-top:14px;display:flex;gap:8px;">
         <button class="btn btn-green btn-sm" id="p-save-btn" onclick="savePicks()">Save Picks</button>
@@ -741,8 +743,8 @@ function loadHome(){
     </div>`;
   const navPicks=document.getElementById('nav-picks-home');
   if(navPicks){navPicks.classList.toggle('pulse',!picked);}
-  const partnerInput=document.getElementById('partner-name-input');
-  if(partnerInput){partnerInput.value=getPartnerName()==='House Selections'?'':getPartnerName();partnerInput.placeholder='House Selections';}
+  const partnerDisplay=document.getElementById('h-partner-display');
+  if(partnerDisplay){partnerDisplay.textContent=getPartnerName();}
 }
 function savePartnerName(name){
   const card=getTodayCard();
@@ -780,18 +782,18 @@ function checkSilksBridge(){
     if(existing) return;
     const guCount=Object.keys(data.picks||{}).length;
     const rankCount=Object.keys(data.rankPicks||{}).length;
-    if(!guCount&&!rankCount) return;
+    const houseCount=Object.keys(data.housePicks||{}).length;
+    const hasPartner=!!(data.partnerName&&data.partnerName.trim());
+    if(!guCount&&!rankCount&&!houseCount&&!hasPartner) return;
     const banner=document.createElement('div');
     banner.id='silks-bridge-banner';
     banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
-    let label;
-    if(guCount&&rankCount){
-      label=`GiddyUp Picks + Your Ranking Picks for ${Math.max(guCount,rankCount)} race${Math.max(guCount,rankCount)!==1?'s':''}`;
-    } else if(guCount){
-      label=`GiddyUp Picks for ${guCount} race${guCount!==1?'s':''}`;
-    } else {
-      label=`Your Ranking Picks for ${rankCount} race${rankCount!==1?'s':''}`;
-    }
+    const parts=[];
+    if(guCount) parts.push(`GiddyUp Picks (${guCount})`);
+    if(rankCount) parts.push(`Your Ranking Picks (${rankCount})`);
+    if(houseCount) parts.push(`House Selections (${houseCount})`);
+    if(hasPartner) parts.push(`opponent "${data.partnerName}"`);
+    const label=parts.join(' + ');
     banner.innerHTML=`<div>🔬 <strong>${label}</strong> ready from ${data.sentAt||'earlier today'}. Load them in?</div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
         <button class="btn btn-gold btn-sm" onclick="loadSilksPicks()">Load</button>
@@ -806,7 +808,7 @@ function loadSilksPicks(){
     const data=JSON.parse(localStorage.getItem('giddyup_play_incoming'));
     if(!data) return;
     const card=getTodayCard();
-    let guCount=0,rankCount=0,rankSkipped=0;
+    let guCount=0,rankCount=0,rankSkipped=0,houseCount=0,partnerSet=false;
     if(data.picks){
       if(!card.guPicks) card.guPicks={};
       Object.keys(data.picks).forEach(raceNum=>{
@@ -827,13 +829,33 @@ function loadSilksPicks(){
         rankCount++;
       });
     }
+    if(data.housePicks){
+      if(!card.mlPicks) card.mlPicks={};
+      Object.keys(data.housePicks).forEach(raceNum=>{
+        const p=data.housePicks[raceNum];
+        if(p&&p.length>=4){
+          card.mlPicks[raceNum]=[p[0],p[1],p[2],p[3]];
+          houseCount++;
+        }
+      });
+    }
+    if(data.partnerName&&data.partnerName.trim()){
+      card.partnerName=data.partnerName.trim();
+      partnerSet=true;
+    }
     saveUser();
     localStorage.removeItem('giddyup_play_incoming');
     dismissSilksBridge();
     renderRaceGrid();
+    const partnerDisplay=document.getElementById('h-partner-display');
+    if(partnerDisplay) partnerDisplay.textContent=getPartnerName();
+    const mlLabel=document.getElementById('ml-partner-label');
+    if(mlLabel) mlLabel.textContent=getPartnerName();
     let msg='';
     if(guCount) msg+='GiddyUp Picks loaded for '+guCount+' race'+(guCount!==1?'s':'')+' (locked). ';
     if(rankCount) msg+='Your Ranking Picks loaded for '+rankCount+' race'+(rankCount!==1?'s':'')+' as My Picks \u2014 still editable. ';
+    if(houseCount) msg+='House Selections loaded for '+houseCount+' race'+(houseCount!==1?'s':'')+'. ';
+    if(partnerSet) msg+='Opponent set to "'+getPartnerName()+'". ';
     if(rankSkipped) msg+=rankSkipped+' race'+(rankSkipped!==1?'s':'')+' already had saved picks and '+(rankSkipped!==1?'were':'was')+' left untouched.';
     if(!msg) msg='Nothing new to load.';
     alert(msg.trim());
@@ -884,10 +906,6 @@ function loadPickRaceData(r){
   document.getElementById('pp3').value=pk?pk.field[2]:'';
   document.getElementById('pp4').value=pk?pk.field[3]:'';
   document.getElementById('pp-rank-badge').style.display=(pk&&pk.source==='myRankings')?'block':'none';
-  document.getElementById('ml1').value=ml?ml[0]:'';
-  document.getElementById('ml2').value=ml?ml[1]:'';
-  document.getElementById('ml3').value=ml?ml[2]:'';
-  document.getElementById('ml4').value=ml?ml[3]:'';
   const gu=card.guPicks?card.guPicks[r]:null;
   if(gu){
     document.getElementById('gu1').value=gu[0];
@@ -900,8 +918,23 @@ function loadPickRaceData(r){
     document.getElementById('gu-loaded-state').style.display='none';
     document.getElementById('gu-empty-state').style.display='block';
   }
+  if(ml){
+    document.getElementById('ml1').value=ml[0];
+    document.getElementById('ml2').value=ml[1];
+    document.getElementById('ml3').value=ml[2];
+    document.getElementById('ml4').value=ml[3];
+    document.getElementById('ml-loaded-state').style.display='block';
+    document.getElementById('ml-empty-state').style.display='none';
+  } else {
+    document.getElementById('ml1').value='';
+    document.getElementById('ml2').value='';
+    document.getElementById('ml3').value='';
+    document.getElementById('ml4').value='';
+    document.getElementById('ml-loaded-state').style.display='none';
+    document.getElementById('ml-empty-state').style.display='block';
+  }
   const locked=hasResults;
-  ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>{
+  ['pp1','pp2','pp3','pp4'].forEach(id=>{
     const el=document.getElementById(id);
     el.disabled=locked;el.style.opacity=locked?'0.5':'1';
   });
@@ -917,7 +950,7 @@ function loadPickRaceData(r){
   renderSavedPicksList();
 }
 function clearPickInputs(){
-  ['pp1','pp2','pp3','pp4','ml1','ml2','ml3','ml4'].forEach(id=>document.getElementById(id).value='');
+  ['pp1','pp2','pp3','pp4'].forEach(id=>document.getElementById(id).value='');
 }
 function savePicks(){
   const p1=gi('pp1'),p2=gi('pp2'),p3=gi('pp3'),p4=gi('pp4');
@@ -925,11 +958,6 @@ function savePicks(){
   const card=getTodayCard();
   if(card.results[curPickRace]){showErr('p-err','Results already entered for this race — picks locked.');return;}
   card.picks[curPickRace]={win:p1,field:[p1,p2,p3,p4],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
-  const ml1=gi('ml1'),ml2=gi('ml2'),ml3=gi('ml3'),ml4=gi('ml4');
-  if(ml1&&ml2&&ml3&&ml4){
-    if(!card.mlPicks) card.mlPicks={};
-    card.mlPicks[curPickRace]=[ml1,ml2,ml3,ml4];
-  }
   saveUser();
   document.getElementById('p-err').style.display='none';
   renderSavedPicksList();
