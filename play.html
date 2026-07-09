@@ -1611,7 +1611,12 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
     const profile=await GiddyUpAuth.getProfile(session.user.id);
     CU={id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',diary:loadDiary(session.user.id)};
     dayCard=await loadDayCard();
-    loadHome();go('screen-home');
+    const params=new URLSearchParams(location.search);
+    if(params.get('tab')==='picks'){
+      nav('picks');
+    } else {
+      loadHome();go('screen-home');
+    }
     return;
   }
   go('screen-splash');
