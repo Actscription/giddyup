@@ -49,8 +49,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .top-nav{background:#eef2ee;border-bottom:1px solid var(--border);display:flex;padding:5px 8px;gap:3px;flex-shrink:0;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--muted);transition:all 0.15s;border-radius:8px;padding:7px 4px;}
 .nav-item.active{color:var(--green);background:var(--white);box-shadow:0 1px 4px rgba(0,0,0,0.10);}
-@keyframes goldPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.4)}50%{box-shadow:0 0 0 6px rgba(201,168,76,0)}}
-.nav-item.pulse{animation:goldPulse 1.5s ease-in-out infinite;}
 .nav-item .ni{font-size:20px;line-height:1;}
 .nav-item .nl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
 /* ── HEADER ACTION BUTTONS ─────────────────────────────────────── */
@@ -243,45 +241,8 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<!-- ── HOME ───────────────────────────────────────────────────── -->
-<div id="screen-home" class="screen has-nav active">
-  <div class="top-bar">
-    <div class="top-bar-left"><div class="tb-ctx">GiddyUp Play</div><div class="tb-name" id="h-name">user1</div></div>
-    <div class="hdr-actions">
-      <div class="cpill cpill-gold" id="h-city" style="white-space:normal;text-align:center;line-height:1.2;flex:1;"></div>
-      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
-      <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
-    </div>
-  </div>
-  <div class="top-nav">
-    <div class="nav-item active" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
-    <div class="nav-item" id="nav-picks-home" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
-    <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
-    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
-    <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
-  </div>
-  <div class="help-panel-wrap">
-    <div class="help-toggle-bar" onclick="toggleHelp('help-home')">
-      <span style="font-size:15px;">ℹ️</span>
-      <span class="help-toggle-title">How to Use — Home</span>
-      <span class="help-toggle-caret" id="help-home-caret">Show ▼</span>
-    </div>
-    <div id="help-home" class="help-panel-body">
-    <div class="help-step"><div class="help-num">1</div><div>Set how many races are on today's card using the number buttons.</div></div>
-    <div class="help-step"><div class="help-num">2</div><div><strong>Track Selections</strong> (the track's own picks) are always available to enter — no setup needed.</div></div>
-    <div class="help-step"><div class="help-num">3</div><div>Playing with a buddy? <strong>Barn Mate Picks</strong> is a 4th, always-available leaderboard entry in Silks' Play tab — no name to set, just enter their 4 picks per race.</div></div>
-    <div class="help-step"><div class="help-num">4</div><div>Tap the <strong>Picks</strong> tab to start entering your horses before the races run.</div></div>
-    <div class="help-step"><div class="help-num">5</div><div>After each race, go to <strong>Results</strong> to enter the official finish and score your picks.</div></div>
-    </div>
-  </div>
-  <div class="page-pad">
-    <div class="section-title">Today's Card</div>
-    <div id="h-today-card"></div>
-  </div>
-</div>
-
 <!-- ── PICKS ──────────────────────────────────────────────────── -->
-<div id="screen-picks" class="screen has-nav">
+<div id="screen-picks" class="screen has-nav active">
   <div class="top-bar">
     <div class="top-bar-left"><div class="tb-ctx">My Picks</div><div class="tb-name" id="p-name">FastEddie</div></div>
     <div class="hdr-actions">
@@ -291,7 +252,6 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
-    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
     <div class="nav-item active" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
@@ -304,14 +264,16 @@ input[type=file]{display:none;}
       <span class="help-toggle-caret" id="help-picks-caret">Show ▼</span>
     </div>
     <div id="help-picks" class="help-panel-body">
-    <div class="help-step"><div class="help-num">1</div><div>Tap any race cell to open the pick entry form.</div></div>
-    <div class="help-step"><div class="help-num">2</div><div>Enter horse numbers for <strong>Win, Place, Show</strong> and <strong>4th</strong>.</div></div>
-    <div class="help-step"><div class="help-num">3</div><div>Your <strong>★ Win Pick</strong> earns +20 bonus points if that horse finishes 1st.</div></div>
-    <div class="help-step"><div class="help-num">4</div><div>Tap <strong>Save Picks</strong> — picks lock once results are entered for that race.</div></div>
-    <div class="help-step"><div class="help-num">5</div><div>Track Selections and your Barn Mate's 4 picks (if you're playing with one) are entered in GiddyUp Silks' Play tab and show up here once sent.</div></div>
+    <div class="help-step"><div class="help-num">1</div><div>Set how many races are on today's card using the number buttons up top — defaults to 9.</div></div>
+    <div class="help-step"><div class="help-num">2</div><div>Tap any race cell to open the pick entry form.</div></div>
+    <div class="help-step"><div class="help-num">3</div><div>Enter horse numbers for <strong>Win, Place, Show</strong> and <strong>4th</strong>.</div></div>
+    <div class="help-step"><div class="help-num">4</div><div>Your <strong>★ Win Pick</strong> earns +20 bonus points if that horse finishes 1st.</div></div>
+    <div class="help-step"><div class="help-num">5</div><div>Tap <strong>Save Picks</strong> — picks lock once results are entered for that race.</div></div>
+    <div class="help-step"><div class="help-num">6</div><div>Track Selections and your Barn Mate's 4 picks (if you're playing with one) are entered in GiddyUp Silks' Play tab and show up here once sent.</div></div>
     </div>
   </div>
   <div class="page-pad">
+    <div id="p-today-card" style="margin-bottom:16px;"></div>
     <div style="margin-bottom:14px;text-align:center;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--green);line-height:1;">🚦 They're at the Post</div>
       <div style="font-size:13px;color:var(--ink);margin-top:5px;font-weight:500;">Select a race to enter your picks</div>
@@ -394,7 +356,6 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
-    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item active" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
@@ -454,7 +415,6 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
-    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item active" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
@@ -516,7 +476,7 @@ input[type=file]{display:none;}
 <!-- ── HOW TO USE / TBTS ──────────────────────────────────────── -->
 <div id="screen-tbts" class="screen">
   <div class="auth-header" id="tbts-header" style="background:linear-gradient(135deg,#1a6b3c,#2d9155);">
-    <div class="back-btn" onclick="go(CU?'screen-home':'screen-splash')">← Back</div>
+    <div class="back-btn" onclick="go(CU?'screen-picks':'screen-splash')">← Back</div>
     <h1 id="tbts-title">How to Use</h1><p id="tbts-subtitle">GiddyUp Play</p>
   </div>
   <div class="form-body" style="max-width:600px;">
@@ -524,7 +484,7 @@ input[type=file]{display:none;}
     <div id="tbts-rules"></div>
     <div id="tbts-bottom"></div>
     <div style="height:20px;"></div>
-    <button class="btn btn-green" onclick="go(CU?'screen-home':'screen-splash')">Got it — Let's Go</button>
+    <button class="btn btn-green" onclick="go(CU?'screen-picks':'screen-splash')">Got it — Let's Go</button>
   </div>
 </div>
 
@@ -539,7 +499,6 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
-    <div class="nav-item" onclick="nav('home')"><div class="ni">🏠</div><div class="nl">Home</div></div>
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
@@ -594,7 +553,7 @@ input[type=file]{display:none;}
 <!-- ── SETTINGS ─────────────────────────────────────────────────── -->
 <div id="screen-settings" class="screen">
   <div class="auth-header">
-    <div class="back-btn" onclick="go('screen-home')">← Back</div>
+    <div class="back-btn" onclick="go('screen-picks')">← Back</div>
     <h1>Settings</h1><p id="s-subtitle">Your account</p>
   </div>
   <div class="form-body">
@@ -672,8 +631,7 @@ function go(id){
   window.scrollTo(0,0);
 }
 function nav(tab){
-  const map={home:'screen-home',picks:'screen-picks',results:'screen-results',scorecard:'screen-scorecard',diary:'screen-diary'};
-  if(tab==='home') loadHome();
+  const map={picks:'screen-picks',results:'screen-results',scorecard:'screen-scorecard',diary:'screen-diary'};
   if(tab==='picks') loadPicks();
   if(tab==='results') loadResultsScreen();
   if(tab==='scorecard') loadScorecard();
@@ -722,7 +680,7 @@ async function handleRegister(){
   const profile=await GiddyUpAuth.getProfile(result.user.id);
   CU={id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,diary:loadDiary(result.user.id)};
   dayCard=await loadDayCard();
-  loadHome();go('screen-home');
+  loadPicks();go('screen-picks');
 }
 async function handleLogin(){
   const e=v('login-e').toLowerCase(),p=v('login-p');
@@ -732,7 +690,7 @@ async function handleLogin(){
   const profile=await GiddyUpAuth.getProfile(result.user.id);
   CU={id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',diary:loadDiary(result.user.id)};
   dayCard=await loadDayCard();
-  loadHome();go('screen-home');
+  loadPicks();go('screen-picks');
 }
 async function handleLogout(){
   await GiddyUpAuth.logout();
@@ -753,13 +711,11 @@ function formatDate(d){
   return months[m-1]+' '+day+', '+y;
 }
 
-function loadHome(){
-  document.getElementById('h-name').textContent=displayName(CU);
-  document.getElementById('h-city').textContent=(CU.city||'').split(',')[0];
+function renderTodayCard(){
   const card=getTodayCard();
   const scored=Object.keys(card.scores).length;
   const picked=Object.keys(card.picks).length;
-  document.getElementById('h-today-card').innerHTML=`
+  document.getElementById('p-today-card').innerHTML=`
     <div class="card">
       <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">${formatDate(TODAY)}</div>
       <div style="display:flex;gap:8px;">
@@ -785,14 +741,12 @@ function loadHome(){
         <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
       </div>
     </div>`;
-  const navPicks=document.getElementById('nav-picks-home');
-  if(navPicks){navPicks.classList.toggle('pulse',!picked);}
 }
 function getBuddyName(){
   return 'Barn Mate';
 }
 function setNumRaces(n){
-  const card=getTodayCard();card.numRaces=n;saveUser();loadHome();
+  const card=getTodayCard();card.numRaces=n;saveUser();renderTodayCard();renderRaceGrid();
 }
 function promptCustomRaces(){
   const n=parseInt(prompt('How many races? (1-20)'));
@@ -802,6 +756,7 @@ function promptCustomRaces(){
 function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
   document.getElementById('p-date').textContent=formatDate(TODAY);
+  renderTodayCard();
   checkSilksBridge();
   showGrid();
   renderRaceGrid();
@@ -1421,9 +1376,9 @@ const TBTS_RULES=[
 ];
 const HOW_TO_USE = [
   {icon:"🎟️", title:"Step 1 — Set Your Race Card",
-   desc:"On the Home screen, tap how many races are on today's card. This sets up your pick grid for the day."},
+   desc:"At the top of the Picks tab, tap how many races are on today's card. This sets up your pick grid for the day."},
   {icon:"✏️", title:"Step 2 — Enter Your Picks Before the Races Start",
-   desc:"Tap the Picks tab. You'll see a grid of all today's races. Tap any race to enter your 4 picks — Win, Place, Show and 4th. Your Win Pick is your bonus horse — if it finishes 1st you get +20 bonus points on top of your regular score."},
+   desc:"Below that, you'll see a grid of all today's races. Tap any race to enter your 4 picks — Win, Place, Show and 4th. Your Win Pick is your bonus horse — if it finishes 1st you get +20 bonus points on top of your regular score."},
   {icon:"📰", title:"Step 3 — Optional: Enter Selections and Load GiddyUp Picks",
    desc:"Below your picks you'll see a Track Selections section — enter the 4 picks printed in the race program if you want to compare yourself against the house experts. If you're playing with a buddy, their picks go in a separate Barn Mate section. If you came from GiddyUp Silks, your AI-ranked picks are also loaded automatically as GiddyUp Picks. All of this is optional — the app works fine with just your own picks."},
   {icon:"🏆", title:"Four-Way Leaderboard",
@@ -1687,8 +1642,8 @@ async function resetTodayCard(){
   dayCard=emptyDayCard();
   await persistDayCard();
   localStorage.removeItem('giddyup_play_incoming');
-  loadHome();
-  go('screen-home');
+  loadPicks();
+  go('screen-picks');
   alert('Today\'s card has been reset.');
 }
 function displayName(user){
@@ -1709,12 +1664,7 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
     const profile=await GiddyUpAuth.getProfile(session.user.id);
     CU={id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',diary:loadDiary(session.user.id)};
     dayCard=await loadDayCard();
-    const params=new URLSearchParams(location.search);
-    if(params.get('tab')==='picks'){
-      nav('picks');
-    } else {
-      loadHome();go('screen-home');
-    }
+    nav('picks');
     return;
   }
   go('screen-splash');
