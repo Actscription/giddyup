@@ -946,7 +946,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
         incoming.rankPicks[raceNum]=myTop4.map(function(hh){return hh.number;});
       }
       if(houseFilled&&raceNum){
-        incoming.housePicks[raceNum]=house.map(function(v){return String(v);});
+        incoming.housePicks[raceNum]=house.map(function(v){return parseInt(v,10);});
       }
       try{
         var existing=JSON.parse(localStorage.getItem('giddyup_play_incoming')||'null');
