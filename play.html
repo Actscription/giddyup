@@ -592,6 +592,11 @@ input[type=file]{display:none;}
         <div style="font-size:14px;color:var(--muted);" id="s-city">—</div>
       </div>
     </div>
+    <div class="card" style="margin-top:8px;border-color:var(--red);">
+      <div class="section-title" style="margin-bottom:8px;">Today's Card</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Wipes today's picks, results, and scores — GiddyUp, Track Selections, and Barn Mate included. Cannot be undone. Yesterday's and future days are not affected.</div>
+      <button class="btn btn-red btn-sm" onclick="resetTodayCard()">Reset Today's Card</button>
+    </div>
     <div style="margin-top:8px;">
       <button class="btn btn-red" onclick="handleLogout()">Sign Out</button>
     </div>
@@ -1630,6 +1635,15 @@ function loadSettings(){
   document.getElementById('s-email').textContent=CU.email||'—';
   document.getElementById('s-city').textContent=CU.city||'—';
   document.getElementById('s-subtitle').textContent=displayName(CU);
+}
+async function resetTodayCard(){
+  if(!confirm('Reset today\'s card? This clears all picks, results, and scores for today — GiddyUp, Track Selections, and Barn Mate included. This cannot be undone.')) return;
+  dayCard=emptyDayCard();
+  await persistDayCard();
+  localStorage.removeItem('giddyup_play_incoming');
+  loadHome();
+  go('screen-home');
+  alert('Today\'s card has been reset.');
 }
 function displayName(user){
   if(!user) return '';
