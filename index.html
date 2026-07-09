@@ -1153,16 +1153,28 @@ function AuthScreen({mode,setMode,onAuthed}){
 }
 
 function GiddyUp(){
+  const SESSION_KEY='giddyup_silks_session';
+  const SESSION_MAX_AGE=20*60*60*1000; // ~20 hours — roughly one racing day
+  const [persisted]=useState(()=>{
+    try{
+      const raw=localStorage.getItem(SESSION_KEY);
+      if(!raw) return null;
+      const data=JSON.parse(raw);
+      if(!data||!data.ts||(Date.now()-data.ts)>SESSION_MAX_AGE) return null;
+      return data;
+    }catch(e){return null;}
+  });
+  const urlTab=new URLSearchParams(window.location.search).get('tab');
 const [weights,setWeights]=useState({...PRESETS.custom});
   const [locks,setLocks]=useState(()=>Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
-  const [activeRace,setActiveRace]=useState("custom");
+  const [activeRace,setActiveRace]=useState(()=>(persisted&&persisted.activeRace)||"custom");
   const [angleMode,setAngleMode]=useState('giddyup');
-  const [activeTab,setActiveTab]=useState("upload");
+  const [activeTab,setActiveTab]=useState(()=>urlTab||(persisted&&persisted.activeTab)||"upload");
   useEffect(()=>{window.scrollTo({top:0,left:0,behavior:"auto"});},[activeTab]);
-  const [races,setRaces]=useState([]);
-  const [horses,setHorses]=useState([]);
-  const [scratched,setScratched]=useState({});
-  const [showSplash,setShowSplash]=useState(!new URLSearchParams(window.location.search).get('tab'));
+  const [races,setRaces]=useState(()=>(persisted&&persisted.races)||[]);
+  const [horses,setHorses]=useState(()=>(persisted&&persisted.horses)||[]);
+  const [scratched,setScratched]=useState(()=>(persisted&&persisted.scratched)||{});
+  const [showSplash,setShowSplash]=useState(!urlTab&&!(persisted&&persisted.races&&persisted.races.length>0));
 
   // ── Auth state (Supabase) ──
   const [silksUser,setSilksUser]=useState(null);
@@ -1182,6 +1194,13 @@ useEffect(()=>{
     })();
   },[]);
 
+  // ── Persist races/rankings/session so returning from GiddyUp Play doesn't lose your loaded card ──
+  useEffect(()=>{
+    try{
+      localStorage.setItem(SESSION_KEY,JSON.stringify({races,horses,scratched,activeRace,activeTab,ts:Date.now()}));
+    }catch(e){}
+  },[races,horses,scratched,activeRace,activeTab]);
+
  async function handleSilksLogout(){
     await GiddyUpAuth.logout();
     setSilksUser(null);
@@ -1189,7 +1208,42 @@ useEffect(()=>{
     setHorses([]);
     setScratched({});
     setShowSplash(true);
+    try{localStorage.removeItem(SESSION_KEY);}catch(e){}
   }
+
+  // ── Swipe left → GiddyUp Play (ignores drags on inputs/sliders/buttons) ──
+  useEffect(()=>{
+    if(showSplash||!silksUser) return;
+    let sx=0,sy=0,st=0,armed=false;
+    function isInteractive(el){
+      while(el&&el!==document.body){
+        const tag=el.tagName;
+        if(tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA"||tag==="BUTTON"||el.isContentEditable) return true;
+        el=el.parentElement;
+      }
+      return false;
+    }
+    function onStart(e){
+      if(e.touches.length!==1){armed=false;return;}
+      if(isInteractive(e.target)){armed=false;return;}
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();armed=true;
+    }
+    function onEnd(e){
+      if(!armed)return;
+      armed=false;
+      const t=e.changedTouches[0];
+      const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-st;
+      if(dt<600&&dx<-70&&Math.abs(dx)>Math.abs(dy)*1.5){
+        window.location.href="https://giddyupsilks.app/play.html";
+      }
+    }
+    document.addEventListener("touchstart",onStart,{passive:true});
+    document.addEventListener("touchend",onEnd,{passive:true});
+    return ()=>{
+      document.removeEventListener("touchstart",onStart);
+      document.removeEventListener("touchend",onEnd);
+    };
+  },[showSplash,silksUser]);
 
 async function handleSaveAngles(raceType,currentWeights,currentLocks){
     if(!silksUser) return false;
@@ -1205,7 +1259,7 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks){
   }
 
   const scores=computeScores(horses,weights,activeRace,scratched);
-  const [myOrder,setMyOrder]=useState([]);
+  const [myOrder,setMyOrder]=useState(()=>(persisted&&persisted.myOrder)||[]);
   useEffect(()=>{
     const nums=scores.map(s=>s.number);
     setMyOrder(prev=>{
@@ -1214,6 +1268,13 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks){
       return same?prev:nums;
     });
   },[scores.map(s=>s.number).join(',')]);
+  useEffect(()=>{
+    try{
+      const raw=localStorage.getItem(SESSION_KEY);
+      const prevSession=raw?JSON.parse(raw):{};
+      localStorage.setItem(SESSION_KEY,JSON.stringify({...prevSession,myOrder,ts:Date.now()}));
+    }catch(e){}
+  },[myOrder]);
   const activeRaceData=RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0];
   const activeRaceObj=races.find(r=>r.active)||races[0]||null;
   const raceName=activeRaceObj?activeRaceObj.label:"";
