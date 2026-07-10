@@ -629,6 +629,30 @@ function HowToUse(){
           h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},m.body))))));
 }
 
+function ScoreExplainer(){
+  const [open,setOpen]=useState(false);
+  const lines=[
+    "Every horse in this field gets one number: the GiddyUp Score. It's not a hunch — it's every Angle you turned on, working together, boiled down into a single verdict you can trust at a glance.",
+    "Lower is better — same as golf. The closer a horse sits to the top of the board, the closer it is to unbeatable across the categories you actually chose to weigh.",
+    "A score near the very bottom of the field isn't just \"pretty good.\" It means that horse is holding its own — or dominating — across nearly everything you weighted. That's a horse with no holes in its game.",
+    "The scale moves with the field. A 6-horse race and a 12-horse race won't produce the same range of scores, so read horses against each other within this race — not against scores from a different card.",
+    "Watch the gap, not just the leader. Two horses just a few points apart is a real contest — your tickets should treat it that way. A wide gap between 1st and 2nd is genuine separation, and it's usually where the confidence rating in GiddyUp Suggestions comes from.",
+    "The math is ours. The read is yours."
+  ];
+  return h("div",{style:{marginBottom:14,background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:16,overflow:"hidden",boxShadow:"0 4px 14px rgba(26,37,53,0.25)"}},
+    h("div",{onClick:()=>setOpen(!open),style:{display:"flex",alignItems:"center",gap:12,padding:"16px 18px",cursor:"pointer"}},
+      h("div",{style:{fontSize:24,flexShrink:0}},"🏆"),
+      h("div",{style:{flex:1}},
+        h("div",{style:{fontWeight:900,fontSize:15,color:"#fff",lineHeight:1.35,letterSpacing:.2}},"We Do The Numbers."),
+        h("div",{style:{fontWeight:900,fontSize:15,color:C.gold,lineHeight:1.35,letterSpacing:.2}},"You Enjoy The Race.")),
+      h("div",{style:{color:"rgba(255,255,255,0.75)",fontSize:11,fontWeight:700,flexShrink:0,textAlign:"right"}},open?"Hide ▲":"Interpret ▼")),
+    open&&h("div",{style:{padding:"6px 18px 20px",background:"#fff"}},
+      h("div",{style:{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,textTransform:"uppercase",marginBottom:12}},"How To Read Your Score"),
+      lines.map((line,i)=>h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:i<lines.length-1?12:0}},
+        h("div",{style:{flexShrink:0,width:6,height:6,borderRadius:"50%",background:C.gold,marginTop:7}}),
+        h("div",{style:{fontSize:13,color:"#1e293b",lineHeight:1.6,fontWeight:i===lines.length-1?800:500}},line)))));
+}
+
 function TabHelp({title,steps}){
   const [open,setOpen]=useState(false);
   return h("div",{style:{marginBottom:14,background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden"}},
@@ -755,6 +779,7 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
   const orderedScores=rankMode==='mine'?myOrder.map(n=>scores.find(s=>s.number===n)).filter(Boolean):scores;
   if(!scores.length&&!scratchCount)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"📷"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));
   return h("div",{style:{paddingTop:14}},
+    h(ScoreExplainer,null),
     h(TabHelp,{title:"How to Use — Rankings",steps:[
       "Lower GiddyUp score = better horse. It's golf scoring — 1 is best.",
       "🐴 GiddyUp Rankings is the AI's order — same for every user, built from your Angles.",
