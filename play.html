@@ -273,11 +273,13 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="page-pad">
-    <div style="margin-bottom:10px;text-align:center;">
+    <div style="margin-bottom:8px;text-align:center;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--green);line-height:1;">🚦 They're at the Post</div>
-      <div style="font-size:13px;color:var(--ink);margin-top:5px;font-weight:500;">Select a race to enter your picks</div>
     </div>
-    <div id="p-today-card" style="margin-bottom:14px;"></div>
+    <div id="p-today-card" style="margin-bottom:10px;"></div>
+    <div style="margin-bottom:14px;text-align:center;">
+      <div style="font-size:14px;color:var(--ink);font-weight:500;">Select a race to enter your picks</div>
+    </div>
     <div id="p-race-grid" class="race-grid"></div>
     <div id="p-pick-panel" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -714,8 +716,10 @@ function formatDate(d){
 function renderTodayCard(){
   const card=getTodayCard();
   document.getElementById('p-today-card').innerHTML=`
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-      <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">How Many Races Today?</span>
+    <div style="text-align:center;margin-bottom:8px;">
+      <div style="font-size:14px;color:var(--ink);font-weight:600;">How Many Races Today?</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
       ${[6,7,8,9,10,11,12,13].map(n=>`<button class="btn btn-outline btn-sm" style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
       <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
     </div>`;
