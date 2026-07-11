@@ -1140,19 +1140,19 @@ function DiaryTab(){const [entries,setEntries]=useState([]),[note,setNote]=useSt
 
 // ── AUTH SCREEN (Supabase) ──────────────────────────────────────
 function AuthScreen({mode,setMode,onAuthed}){
-  const [u,setU]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
+  const [u,setU]=useState(''),[rn,setRn]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
   const [err,setErr]=useState(''),[busy,setBusy]=useState(false);
 
  async function handleRegister(){
     setErr('');
-    if(!u||!e||!c||!p){setErr('Please fill in all fields.');return;}
+    if(!u||!rn||!e||!c||!p){setErr('Please fill in all fields.');return;}
     if(p.length<8){setErr('Password must be at least 8 characters.');return;}
     setBusy(true);
-    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c);
+    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c,rn);
     setBusy(false);
     if(!result.success){setErr(result.error);return;}
     const profile=await GiddyUpAuth.getProfile(result.user.id);
-  onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
+  onAuthed({id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,realName:profile?profile.real_name:rn,customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
   }
 
   async function handleLogin(){
@@ -1176,8 +1176,12 @@ function AuthScreen({mode,setMode,onAuthed}){
         h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:6}},isRegister?"Create your account":"Sign in to continue")),
       h("div",{style:{padding:"24px 24px 28px"}},
         isRegister&&h("div",{style:{marginBottom:14}},
-          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Username"),
-          h("input",{value:u,onChange:ev=>setU(ev.target.value),placeholder:"e.g. FastEddie",maxLength:20,style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Racing Name"),
+          h("input",{value:u,onChange:ev=>setU(ev.target.value),placeholder:"e.g. SilkRider, AtThePost, ByANose",maxLength:20,style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}}),
+          h("div",{style:{fontSize:11,color:C.muted,marginTop:5}},"Your fun handicapping name — this is what other members see")),
+        isRegister&&h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Real Name"),
+          h("input",{value:rn,onChange:ev=>setRn(ev.target.value),placeholder:"e.g. Carmelo Esposito",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
         h("div",{style:{marginBottom:14}},
           h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Email"),
           h("input",{type:"email",value:e,onChange:ev=>setE(ev.target.value),placeholder:"your@email.com",style:{width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text}})),
