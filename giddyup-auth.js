@@ -10,13 +10,13 @@ const giddyupSupabase = supabase.createClient(GIDDYUP_SUPABASE_URL, GIDDYUP_SUPA
 
 const GiddyUpAuth = {
 
-  // Register a new user with email, password, username, city
-  async register(email, password, username, city) {
+  // Register a new user with email, password, username, city, real name
+  async register(email, password, username, city, realName) {
     const { data, error } = await giddyupSupabase.auth.signUp({
       email,
       password,
       options: {
-        data: { username, city }
+        data: { username, city, real_name: realName }
       }
     });
     if (error) return { success: false, error: error.message };
