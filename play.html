@@ -713,19 +713,11 @@ function formatDate(d){
 
 function renderTodayCard(){
   const card=getTodayCard();
-  const scored=Object.keys(card.scores).length;
-  const totalPts=Object.values(card.scores).reduce((a,s)=>a+s.raceTotal+s.streak,0);
   document.getElementById('p-today-card').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-        <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Races:</span>
-        ${[6,7,8,9,10,11,12,13].map(n=>`<button class="btn btn-outline btn-sm" style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
-        <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
-      </div>
-      ${scored?`<div style="background:var(--green-light);border-radius:8px;padding:5px 12px;text-align:center;white-space:nowrap;">
-        <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--green);">${totalPts}</span>
-        <span style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-left:4px;">Total Pts</span>
-      </div>`:''}
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">How Many Races Today?</span>
+      ${[6,7,8,9,10,11,12,13].map(n=>`<button class="btn btn-outline btn-sm" style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
+      <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
     </div>`;
 }
 function getBuddyName(){
