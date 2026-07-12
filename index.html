@@ -67,6 +67,7 @@ Object.keys(PRESETS).forEach(k=>{const s=Object.values(PRESETS[k]).reduce((a,b)=
 const EARNINGS_WEIGHT={custom:2,stakes:5,allowance:3,claiming:1,maiden:1};
 // Specialist Angles: single-factor presets for people who bet purely on one thing
 // (jockey stats, trainer stats, combo history, or earnings) rather than a blend.
+function localDateStr(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function zeroedWeights(factorId){const w=Object.fromEntries(ALL_FACTORS.map(f=>[f.id,0]));w[factorId]=100;return w;}
 const SPECIALIST_PRESETS=[
   {id:"jockey",label:"Jockey Only",icon:"🏇",weights:zeroedWeights("jockey")},
@@ -965,7 +966,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
     if((top4||myTop4)&&!raceNum){setRaceWarn(true);return;}
     setRaceWarn(false);
     try{
-      var incoming={from:'silks',date:new Date().toISOString().split('T')[0],
+      var incoming={from:'silks',date:localDateStr(),
         picks:{},rankPicks:{},housePicks:{},buddyPicks:{},
         sentAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
       if(top4){
