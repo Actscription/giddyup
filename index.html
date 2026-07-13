@@ -1032,39 +1032,6 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
     if((top4||myTop4)&&!raceNum){setRaceWarn(true);return;}
     setRaceWarn(false);
     try{
-      var incoming={from:'silks',date:localDateStr(),
-        picks:{},rankPicks:{},housePicks:{},buddyPicks:{},pickType:pickType,
-        sentAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
-      if(top4){
-        incoming.picks[raceNum]=top4.map(function(hh){return hh.number;});
-      }
-      if(myTop4){
-        incoming.rankPicks[raceNum]=myTop4.map(function(hh,i){return i<playDepth?hh.number:null;});
-      }
-      if(houseFilled&&raceNum){
-        incoming.housePicks[raceNum]=house.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
-      }
-      if(buddyFilled&&raceNum){
-        incoming.buddyPicks[raceNum]=buddy.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
-      }
-      try{
-        var existing=JSON.parse(localStorage.getItem('giddyup_play_incoming')||'null');
-        if(existing&&existing.date===incoming.date){
-          if(existing.picks) Object.keys(existing.picks).forEach(function(k){
-            if(!incoming.picks[k]) incoming.picks[k]=existing.picks[k];
-          });
-          if(existing.rankPicks) Object.keys(existing.rankPicks).forEach(function(k){
-            if(!incoming.rankPicks[k]) incoming.rankPicks[k]=existing.rankPicks[k];
-          });
-          if(existing.housePicks) Object.keys(existing.housePicks).forEach(function(k){
-            if(!incoming.housePicks[k]) incoming.housePicks[k]=existing.housePicks[k];
-          });
-          if(existing.buddyPicks) Object.keys(existing.buddyPicks).forEach(function(k){
-            if(!incoming.buddyPicks[k]) incoming.buddyPicks[k]=existing.buddyPicks[k];
-          });
-        }
-      }catch(ex){}
-      localStorage.setItem('giddyup_play_incoming',JSON.stringify(incoming));
       if(silksUser&&raceNum&&dayCardReady){
         var rn=parseInt(raceNum,10);
         var dc=normalizeDayCard(dayCard?JSON.parse(JSON.stringify(dayCard)):null);
