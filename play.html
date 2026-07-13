@@ -626,7 +626,7 @@ function localDateStr(d = new Date()) {
 const TODAY = localDateStr();
 
 function emptyDayCard(){
-  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},buddyPicks:{},pickType:'superfecta'};
+  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},buddyPicks:{},pickType:'superfecta',pickTypeLocked:false};
 }
 const PICK_DEPTHS={win:1,exacta:2,trifecta:3,superfecta:4};
 const PICK_DEPTH_LABELS={win:'Win',exacta:'Exacta',trifecta:'Trifecta',superfecta:'Superfecta'};
@@ -831,13 +831,15 @@ function loadSilksPicks(){
       });
     }
     if(data.rankPicks){
+      const incomingType=(data.pickType&&PICK_DEPTHS[data.pickType])?data.pickType:'superfecta';
       Object.keys(data.rankPicks).forEach(raceNum=>{
         const p=data.rankPicks[raceNum];
         if(!p||p.length<4) return;
         if(card.picks[raceNum]){ rankSkipped++; return; } // don't clobber picks the user already saved/edited
         if(card.results[raceNum]) return; // race already locked
-        const p0=parseInt(p[0],10),p1=parseInt(p[1],10),p2=parseInt(p[2],10),p3=parseInt(p[3],10);
-        card.picks[raceNum]={win:p0,field:[p0,p1,p2,p3],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),source:'myRankings'};
+        const field=p.map(v=>v!=null?parseInt(v,10):null);
+        if(!field[0]) return; // no win pick, nothing to import
+        card.picks[raceNum]={win:field[0],field,pickType:incomingType,savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),source:'myRankings'};
         rankCount++;
       });
     }
@@ -863,6 +865,7 @@ function loadSilksPicks(){
     }
     if(data.pickType&&PICK_DEPTHS[data.pickType]){
       card.pickType=data.pickType;
+      card.pickTypeLocked=true;
     }
     saveUser();
     localStorage.removeItem('giddyup_play_incoming');
@@ -918,11 +921,24 @@ function selectPickRace(r){
 function renderDepthSelector(){
   const card=getTodayCard();
   const type=getPickType(card);
+  const locked=!!card.pickTypeLocked;
   document.querySelectorAll('.depth-selector .depth-btn').forEach(btn=>{
     btn.classList.toggle('active',btn.dataset.depth===type);
+    btn.disabled=locked;
+    btn.style.opacity=locked&&btn.dataset.depth!==type?'0.5':'1';
+    btn.style.cursor=locked?'not-allowed':'pointer';
   });
   const note=document.getElementById('p-depth-badge-note');
-  if(note) note.textContent=PICK_DEPTH_LABELS[type]+' · '+getPickDepth(card)+' pick'+(getPickDepth(card)>1?'s':'')+' per race';
+  if(note){
+    note.innerHTML=PICK_DEPTH_LABELS[type]+' · '+getPickDepth(card)+' pick'+(getPickDepth(card)>1?'s':'')+' per race'
+      +(locked?' <span style="color:var(--green-dark);font-weight:600;">— set from GiddyUp Silks</span> <a href="#" onclick="unlockPickType();return false;" style="color:var(--muted);text-decoration:underline;margin-left:4px;">change</a>':'');
+  }
+}
+function unlockPickType(){
+  const card=getTodayCard();
+  card.pickTypeLocked=false;
+  saveUser();
+  renderDepthSelector();
 }
 function applyDepthToSlots(){
   const card=getTodayCard();
@@ -941,6 +957,7 @@ function applyDepthToSlots(){
 function setPickType(type){
   if(!PICK_DEPTHS[type]) return;
   const card=getTodayCard();
+  if(card.pickTypeLocked){showErr('p-err','Pick type was set from GiddyUp Silks. Tap "change" to override.');return;}
   const panelOpen=document.getElementById('p-pick-panel').style.display!=='none';
   if(panelOpen&&card.results[curPickRace]){showErr('p-err','Race already locked — can\'t change pick type now.');return;}
   card.pickType=type;
@@ -1094,16 +1111,25 @@ function applyResultDepthHints(){
   const note=document.getElementById('r-depth-note');
   if(note){
     note.textContent=depth<4
-      ?('You\'re playing '+PICK_DEPTH_LABELS[getPickType(card)]+' today — only 1st'+(depth>1?' through '+['','','2nd','3rd','4th'][depth]:'')+' is required. Enter more if you know it.')
+      ?('You\'re playing '+PICK_DEPTH_LABELS[getPickType(card)]+' today — only '+depth+' finisher'+(depth>1?'s':'')+' needed to score.')
       :'';
   }
-  [[3,'r-lbl-3','3rd'],[4,'r-lbl-4','4th']].forEach(([pos,id,txt])=>{
-    const lbl=document.getElementById(id);
-    if(!lbl) return;
-    const optional=pos>depth;
-    lbl.textContent=optional?txt+' (optional)':txt;
-    lbl.style.color=optional?'var(--muted)':'var(--muted)';
-    lbl.style.fontStyle=optional?'italic':'normal';
+  [[3,'rr3','r-lbl-3','3rd'],[4,'rr4','r-lbl-4','4th']].forEach(([pos,inputId,lblId,txt])=>{
+    const lbl=document.getElementById(lblId);
+    const input=document.getElementById(inputId);
+    const inactive=pos>depth;
+    if(lbl){
+      lbl.textContent=txt;
+      lbl.style.color='var(--muted)';
+      lbl.style.fontStyle='normal';
+    }
+    if(input){
+      const hasResults=!!card.results[curResultRace];
+      if(inactive) input.value='';
+      input.disabled=hasResults?true:inactive;
+      if(hasResults) input.style.opacity='0.5';
+      else input.style.opacity='';
+    }
   });
 }
 function selectResultRace(r){
@@ -1237,13 +1263,14 @@ function zeroScore(actual){
 }
 function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
   const field=picks.field,win=picks.win;
+  const depth=PICK_DEPTHS[picks.pickType||'superfecta']||4;
   let fieldPts=0,fieldHits=[];
-  field.forEach(h=>{if(actual.includes(h)){fieldPts+=5;fieldHits.push(h);}});
-  const sweep=fieldHits.length===4,sweepPts=sweep?10:0;
+  field.slice(0,depth).forEach(h=>{if(h!=null&&actual.includes(h)){fieldPts+=5;fieldHits.push(h);}});
+  const sweep=depth===4&&fieldHits.length===4,sweepPts=sweep?10:0;
   const winHit=actual[0]===win,winPts=winHit?20:0;
-  const exacta=field[0]===actual[0]&&field[1]===actual[1];
-  const trifecta=exacta&&field[2]===actual[2];
-  const superfecta=trifecta&&field[3]===actual[3];
+  const exacta=depth>=2&&field[0]===actual[0]&&field[1]===actual[1];
+  const trifecta=depth>=3&&exacta&&field[2]===actual[2];
+  const superfecta=depth>=4&&trifecta&&field[3]===actual[3];
   const exactaPts=exacta?30:0,trifectaPts=trifecta?50:0,superfectaPts=superfecta?70:0;
   const exoticPts=exactaPts+trifectaPts+superfectaPts;
   const raceTotal=fieldPts+sweepPts+winPts+exoticPts;
