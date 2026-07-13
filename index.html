@@ -987,10 +987,13 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
   function emptySilksDayCard(){
     return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},mlScores:{},guPicks:{},guScores:{},buddyPicks:{},buddyScores:{},pickType:'superfecta',pickTypeLocked:false};
   }
+  function normalizeDayCard(dc){
+    return Object.assign(emptySilksDayCard(), dc||{});
+  }
   useEffect(function(){
     if(!silksUser) return;
     GiddyUpAuth.getDayCard(silksUser.id,localDateStr()).then(function(dc){
-      setDayCard(dc||emptySilksDayCard());
+      setDayCard(normalizeDayCard(dc));
       setDayCardReady(true);
     });
   },[silksUser]);
@@ -1063,7 +1066,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
       localStorage.setItem('giddyup_play_incoming',JSON.stringify(incoming));
       if(silksUser&&raceNum&&dayCardReady){
         var rn=parseInt(raceNum,10);
-        var dc=dayCard?JSON.parse(JSON.stringify(dayCard)):emptySilksDayCard();
+        var dc=normalizeDayCard(dayCard?JSON.parse(JSON.stringify(dayCard)):null);
         dc.pickType=pickType;
         dc.pickTypeLocked=true;
         if(top4) dc.guPicks[rn]=top4.map(function(hh){return hh.number;});
@@ -1093,7 +1096,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
     }
     setScoring(true);
     var actual=raw.map(function(v){return v||null;});
-    var dc=dayCard?JSON.parse(JSON.stringify(dayCard)):emptySilksDayCard();
+    var dc=normalizeDayCard(dayCard?JSON.parse(JSON.stringify(dayCard)):null);
     dc.results[rn]=actual;
     var myPick=dc.picks[rn];
     dc.scores[rn]=myPick?silksScoreRace(myPick,actual,rn,dc,'scores'):silksZeroScore(actual);
@@ -1230,7 +1233,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
       sent&&h('div',{style:{fontSize:12,color:'#15803d',background:'#f0fdf4',border:'1px solid #86efac',borderRadius:8,padding:'10px 12px',marginBottom:4,fontWeight:600}},'\u2713 Race '+raceNum+' picks saved \u2014 GiddyUp Play will show these automatically.'),
       (function(){
         var rnCheck=raceNum?parseInt(raceNum,10):null;
-        var raceHasSavedPicks=!!(dayCard&&rnCheck&&(dayCard.picks[rnCheck]||dayCard.guPicks[rnCheck]||dayCard.mlPicks[rnCheck]||dayCard.buddyPicks[rnCheck]));
+        var raceHasSavedPicks=!!(dayCard&&rnCheck&&((dayCard.picks||{})[rnCheck]||(dayCard.guPicks||{})[rnCheck]||(dayCard.mlPicks||{})[rnCheck]||(dayCard.buddyPicks||{})[rnCheck]));
         return (sent||raceHasSavedPicks)&&raceNum&&h('div',{style:{background:'#fffbeb',border:'1px solid '+C.gold,borderRadius:12,padding:'14px',marginTop:10,textAlign:'left'}},
         h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\ud83c\udfc6 Race '+raceNum+' Results'),
         (dayCard&&dayCard.scores&&dayCard.scores[parseInt(raceNum,10)])
