@@ -774,9 +774,10 @@ function promptCustomRaces(){
   if(n&&n>=1&&n<=20) setNumRaces(n);
 }
 
-function loadPicks(){
+async function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
   document.getElementById('p-date').textContent=formatDate(TODAY);
+  dayCard=await loadDayCard();
   renderTodayCard();
   renderDepthSelector();
   checkSilksBridge();
@@ -812,16 +813,14 @@ function checkSilksBridge(){
       ...Object.keys(data.housePicks||{}),...Object.keys(data.buddyPicks||{})
     ])).map(Number).sort((a,b)=>a-b);
     const allLoaded=raceNums.length>0&&raceNums.every(rn=>(card.picks&&card.picks[rn])||(card.guPicks&&card.guPicks[rn])||(card.mlPicks&&card.mlPicks[rn])||(card.buddyPicks&&card.buddyPicks[rn]));
-    const raceLabel=raceNums.length===1?('Race '+raceNums[0]):('Races '+raceNums.join(', '));
     const banner=document.createElement('div');
     banner.id='silks-bridge-banner';
     banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
     if(allLoaded){
-      banner.innerHTML=`<div>✓ <strong>${raceLabel} picks</strong> have been loaded from GiddyUp Silks.</div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
-          <button class="btn btn-outline btn-sm" onclick="dismissSilksBridge()">OK</button>
-        </div>`;
-    } else {
+      localStorage.removeItem('giddyup_play_incoming');
+      return;
+    }
+    {
       const parts=[];
       if(guCount) parts.push(`GiddyUp Picks (${guCount})`);
       if(rankCount) parts.push(`Your Ranking Picks (${rankCount})`);
@@ -1099,9 +1098,10 @@ function renderSavedPicksList(){
   }).join('')}</tbody></table></div>`;
 }
 
-function loadResultsScreen(){
+async function loadResultsScreen(){
   document.getElementById('r-name').textContent=displayName(CU);
   document.getElementById('r-date').textContent=formatDate(TODAY);
+  dayCard=await loadDayCard();
   showResultGrid();
   renderResultGrid();
   applyResultDepthHints();
@@ -1311,9 +1311,10 @@ function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
   return{fieldPts,fieldHits,sweepPts,winHit,winPts,exacta,trifecta,superfecta,exactaPts,trifectaPts,superfectaPts,exoticPts,raceTotal,streak,actual,picks};
 }
 
-function loadScorecard(){
+async function loadScorecard(){
   document.getElementById('sc-name').textContent=displayName(CU);
   document.getElementById('sc-date').textContent=formatDate(TODAY);
+  dayCard=await loadDayCard();
   const card=getTodayCard();
   const badge=document.getElementById('sc-pick-type-badge');
   if(badge){
