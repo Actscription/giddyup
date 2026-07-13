@@ -806,20 +806,34 @@ function checkSilksBridge(){
     const houseCount=Object.keys(data.housePicks||{}).length;
     const buddyCount=Object.keys(data.buddyPicks||{}).length;
     if(!guCount&&!rankCount&&!houseCount&&!buddyCount) return;
+    const card=getTodayCard();
+    const raceNums=Array.from(new Set([
+      ...Object.keys(data.picks||{}),...Object.keys(data.rankPicks||{}),
+      ...Object.keys(data.housePicks||{}),...Object.keys(data.buddyPicks||{})
+    ])).map(Number).sort((a,b)=>a-b);
+    const allLoaded=raceNums.length>0&&raceNums.every(rn=>(card.picks&&card.picks[rn])||(card.guPicks&&card.guPicks[rn])||(card.mlPicks&&card.mlPicks[rn])||(card.buddyPicks&&card.buddyPicks[rn]));
+    const raceLabel=raceNums.length===1?('Race '+raceNums[0]):('Races '+raceNums.join(', '));
     const banner=document.createElement('div');
     banner.id='silks-bridge-banner';
     banner.style.cssText='background:var(--gold-light);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--gold-dark);display:flex;justify-content:space-between;align-items:center;gap:10px;';
-    const parts=[];
-    if(guCount) parts.push(`GiddyUp Picks (${guCount})`);
-    if(rankCount) parts.push(`Your Ranking Picks (${rankCount})`);
-    if(houseCount) parts.push(`Track Selections (${houseCount})`);
-    if(buddyCount) parts.push(`Barn Mate Picks (${buddyCount})`);
-    const label=parts.join(' + ');
-    banner.innerHTML=`<div>🔬 <strong>${label}</strong> ready from ${data.sentAt||'earlier today'}. Load them in?</div>
-      <div style="display:flex;gap:6px;flex-shrink:0;">
-        <button class="btn btn-gold btn-sm" onclick="loadSilksPicks()">Load</button>
-        <button class="btn btn-outline btn-sm" onclick="dismissSilksBridge()">Dismiss</button>
-      </div>`;
+    if(allLoaded){
+      banner.innerHTML=`<div>✓ <strong>${raceLabel} picks</strong> have been loaded from GiddyUp Silks.</div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="btn btn-outline btn-sm" onclick="dismissSilksBridge()">OK</button>
+        </div>`;
+    } else {
+      const parts=[];
+      if(guCount) parts.push(`GiddyUp Picks (${guCount})`);
+      if(rankCount) parts.push(`Your Ranking Picks (${rankCount})`);
+      if(houseCount) parts.push(`Track Selections (${houseCount})`);
+      if(buddyCount) parts.push(`Barn Mate Picks (${buddyCount})`);
+      const label=parts.join(' + ');
+      banner.innerHTML=`<div>🔬 <strong>${label}</strong> ready from ${data.sentAt||'earlier today'}. Load them in?</div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="btn btn-gold btn-sm" onclick="loadSilksPicks()">Load</button>
+          <button class="btn btn-outline btn-sm" onclick="dismissSilksBridge()">Dismiss</button>
+        </div>`;
+    }
     const grid=document.getElementById('p-race-grid');
     grid.parentNode.insertBefore(banner,grid);
   }catch(e){}
