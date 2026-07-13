@@ -985,7 +985,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
         incoming.picks[raceNum]=top4.map(function(hh){return hh.number;});
       }
       if(myTop4){
-        incoming.rankPicks[raceNum]=myTop4.map(function(hh){return hh.number;});
+        incoming.rankPicks[raceNum]=myTop4.map(function(hh,i){return i<playDepth?hh.number:null;});
       }
       if(houseFilled&&raceNum){
         incoming.housePicks[raceNum]=house.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
