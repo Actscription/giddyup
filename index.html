@@ -1028,9 +1028,11 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
   if(myTop4&&myTop4.length<4) myTop4=null;
   var houseFilled=house.slice(0,playDepth).every(function(v){return v!==''&&v!=null;});
   var buddyFilled=buddy.slice(0,playDepth).every(function(v){return v!==''&&v!=null;});
+  var [saveError,setSaveError]=useState('');
   async function sendToPlay(){
     if((top4||myTop4)&&!raceNum){setRaceWarn(true);return;}
     setRaceWarn(false);
+    setSaveError('');
     try{
       if(silksUser&&raceNum&&dayCardReady){
         var rn=parseInt(raceNum,10);
@@ -1044,14 +1046,38 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
         }
         if(houseFilled) dc.mlPicks[rn]=house.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
         if(buddyFilled) dc.buddyPicks[rn]=buddy.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
-        await GiddyUpAuth.saveDayCard(silksUser.id,localDateStr(),dc);
+        var result=await GiddyUpAuth.saveDayCard(silksUser.id,localDateStr(),dc);
+        if(result&&result.success===false){
+          setSaveError('Could not save to your account (' +(result.error||'unknown error')+'). Please try again.');
+          return;
+        }
         setDayCard(dc);
+      } else if(silksUser&&raceNum&&!dayCardReady){
+        setSaveError('Still loading your account data — please wait a second and try again.');
+        return;
       }
       setSent(true);
-    }catch(ex){}
+    }catch(ex){
+      setSaveError('Something went wrong saving your picks. Please try again.');
+    }
   }
   function openFullPlay(){
     window.open(PLAY_URL,'_blank');
+  }
+  async function resetTodaysCard(){
+    if(!silksUser) return;
+    if(!confirm('This clears ALL picks, results, and scores for today (all races) for your account — GiddyUp Picks, your Custom Ranking Picks, Track Selections, and Barn Mate. This cannot be undone. Continue?')) return;
+    var fresh=emptySilksDayCard();
+    var result=await GiddyUpAuth.saveDayCard(silksUser.id,localDateStr(),fresh);
+    if(result&&result.success===false){
+      setSaveError('Could not reset (' +(result.error||'unknown error')+').');
+      return;
+    }
+    setDayCard(fresh);
+    setSent(false);
+    setResultInputs(['','','','']);
+    setSaveError('');
+    alert('Today\'s card has been reset.');
   }
   async function submitRaceResult(){
     if(!silksUser||!raceNum||!dayCardReady) return;
@@ -1074,7 +1100,12 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
     if(ml){ dc.mlScores=dc.mlScores||{}; dc.mlScores[rn]=silksScoreRace({win:ml[0],field:ml},actual,rn,dc,'mlScores'); }
     var bm=dc.buddyPicks?dc.buddyPicks[rn]:null;
     if(bm){ dc.buddyScores=dc.buddyScores||{}; dc.buddyScores[rn]=silksScoreRace({win:bm[0],field:bm},actual,rn,dc,'buddyScores'); }
-    await GiddyUpAuth.saveDayCard(silksUser.id,localDateStr(),dc);
+    var result=await GiddyUpAuth.saveDayCard(silksUser.id,localDateStr(),dc);
+    if(result&&result.success===false){
+      setSaveError('Could not save the score (' +(result.error||'unknown error')+'). Please try again.');
+      setScoring(false);
+      return;
+    }
     setDayCard(dc);
     setScoring(false);
   }
@@ -1199,6 +1230,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
       h('button',{onClick:sendToPlay,disabled:!dayCardReady,style:{width:'100%',padding:'14px',background:!dayCardReady?'#94a3b8':'linear-gradient(135deg,#1a6b3c,#2d9155)',border:'none',borderRadius:12,color:'#c9a84c',fontSize:15,fontWeight:700,cursor:!dayCardReady?'wait':'pointer',marginBottom:10}},
         !dayCardReady?'Loading\u2026':((top4||myTop4)?(raceNum?'Save Race '+raceNum+' Picks':'Save Picks'):'Save Picks')
       ),
+      saveError&&h('div',{style:{fontSize:12,color:'#b91c1c',background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:8,padding:'10px 12px',marginBottom:4,fontWeight:600}},'\u26a0\ufe0f '+saveError),
       sent&&h('div',{style:{fontSize:12,color:'#15803d',background:'#f0fdf4',border:'1px solid #86efac',borderRadius:8,padding:'10px 12px',marginBottom:4,fontWeight:600}},'\u2713 Race '+raceNum+' picks saved \u2014 GiddyUp Play will show these automatically.'),
       (function(){
         var rnCheck=raceNum?parseInt(raceNum,10):null;
@@ -1226,7 +1258,10 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
         );
       })(),
       h('div',{style:{fontSize:11,color:'#334155',marginTop:10}},'Repeat for each race you handicap.'),
-      h('button',{onClick:openFullPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',border:'none',borderRadius:12,color:C.gold,fontSize:15,fontWeight:700,cursor:'pointer',marginTop:6}},'Open Full Play App (leaderboard, all races) \u2192')
+      h('button',{onClick:openFullPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',border:'none',borderRadius:12,color:C.gold,fontSize:15,fontWeight:700,cursor:'pointer',marginTop:6}},'Open Full Play App (leaderboard, all races) \u2192'),
+      h('div',{style:{textAlign:'center',marginTop:10}},
+        h('a',{href:'#',onClick:function(e){e.preventDefault();resetTodaysCard();},style:{fontSize:11,color:'#94a3b8',textDecoration:'underline'}},'Reset today\u2019s card (testing only)')
+      )
     ),
     h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border}},
       h('div',{style:{fontSize:11,fontWeight:700,color:C.text,textTransform:'uppercase',letterSpacing:2,marginBottom:12}},'How it works'),
