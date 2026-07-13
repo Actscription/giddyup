@@ -1234,29 +1234,26 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
       (function(){
         var rnCheck=raceNum?parseInt(raceNum,10):null;
         var raceHasSavedPicks=!!(dayCard&&rnCheck&&((dayCard.picks||{})[rnCheck]||(dayCard.guPicks||{})[rnCheck]||(dayCard.mlPicks||{})[rnCheck]||(dayCard.buddyPicks||{})[rnCheck]));
-        return (sent||raceHasSavedPicks)&&raceNum&&h('div',{style:{background:'#fffbeb',border:'1px solid '+C.gold,borderRadius:12,padding:'14px',marginTop:10,textAlign:'left'}},
+        var alreadyScored=!!(dayCard&&dayCard.scores&&rnCheck&&dayCard.scores[rnCheck]);
+        return (sent||raceHasSavedPicks)&&raceNum&&!alreadyScored&&h('div',{style:{background:'#fffbeb',border:'1px solid '+C.gold,borderRadius:12,padding:'14px',marginTop:10,textAlign:'left'}},
         h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\ud83c\udfc6 Race '+raceNum+' Results'),
-        (dayCard&&dayCard.scores&&dayCard.scores[parseInt(raceNum,10)])
-          ? h('div',{style:{fontSize:14,fontWeight:700,color:C.navy}},'\u2713 Scored \u2014 '+(dayCard.scores[parseInt(raceNum,10)].raceTotal+dayCard.scores[parseInt(raceNum,10)].streak)+' pts')
-          : h(Fragment,null,
-              h('div',{style:{fontSize:11,color:'#1e293b',marginBottom:8}},
-                playDepth<4?('You\u2019re playing '+pickType+' today \u2014 only '+playDepth+' finisher'+(playDepth>1?'s':'')+' needed.'):'Enter the official finish order.'
-              ),
-              h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10}},
-                ['1st','2nd','3rd','4th'].map(function(lbl,i){
-                  var inactive=i>=playDepth;
-                  return h('div',{key:i,style:{textAlign:'center',opacity:inactive?0.35:1}},
-                    h('div',{style:{fontSize:9,color:'#7a5205',textTransform:'uppercase',marginBottom:3}},lbl),
-                    h('input',{type:'number',min:'1',placeholder:'#',value:resultInputs[i],disabled:inactive,
-                      onChange:function(e){setResultInputs(function(r){var n=r.slice();n[i]=e.target.value;return n;});},
-                      style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:inactive?'#f1f5f9':'#fff',border:'1px solid #f0d080',borderRadius:8}})
-                  );
-                })
-              ),
-              h('button',{onClick:submitRaceResult,disabled:scoring,style:{padding:'10px 18px',background:'#1a6b3c',border:'none',borderRadius:8,color:'#fff',fontSize:13,fontWeight:700,cursor:scoring?'wait':'pointer'}},
-                scoring?'Scoring\u2026':'Score This Race'
-              )
-            )
+        h('div',{style:{fontSize:11,color:'#1e293b',marginBottom:8}},
+          playDepth<4?('You\u2019re playing '+pickType+' today \u2014 only '+playDepth+' finisher'+(playDepth>1?'s':'')+' needed.'):'Enter the official finish order.'
+        ),
+        h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10}},
+          ['1st','2nd','3rd','4th'].map(function(lbl,i){
+            var inactive=i>=playDepth;
+            return h('div',{key:i,style:{textAlign:'center',opacity:inactive?0.35:1}},
+              h('div',{style:{fontSize:9,color:'#7a5205',textTransform:'uppercase',marginBottom:3}},lbl),
+              h('input',{type:'number',min:'1',placeholder:'#',value:resultInputs[i],disabled:inactive,
+                onChange:function(e){setResultInputs(function(r){var n=r.slice();n[i]=e.target.value;return n;});},
+                style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:inactive?'#f1f5f9':'#fff',border:'1px solid #f0d080',borderRadius:8}})
+            );
+          })
+        ),
+        h('button',{onClick:submitRaceResult,disabled:scoring,style:{width:'100%',padding:'14px',background:scoring?'#d6c28a':'linear-gradient(135deg,#c9a84c,#f0d080)',border:'none',borderRadius:12,color:'#3d2e0a',fontSize:15,fontWeight:700,cursor:scoring?'wait':'pointer'}},
+          scoring?'Scoring\u2026':'Score This Race'
+        )
         );
       })(),
       h('div',{style:{fontSize:11,color:'#334155',marginTop:10}},'Repeat for each race you handicap.'),
