@@ -940,7 +940,36 @@ function TicketBuilder({scores,myOrder}){
   );
 }
 
-function PlayTab({scores,raceName,myOrder,raceNumber}){
+var SILKS_PICK_DEPTHS={win:1,exacta:2,trifecta:3,superfecta:4};
+function silksScoreRace(picks,actual,raceNum,card,scoreKey){
+  var field=picks.field,win=picks.win;
+  var depth=SILKS_PICK_DEPTHS[picks.pickType||'superfecta']||4;
+  var fieldPts=0,fieldHits=[];
+  field.slice(0,depth).forEach(function(hh){if(hh!=null&&actual.includes(hh)){fieldPts+=5;fieldHits.push(hh);}});
+  var sweep=depth===4&&fieldHits.length===4,sweepPts=sweep?10:0;
+  var winHit=actual[0]===win,winPts=winHit?20:0;
+  var exacta=depth>=2&&field[0]===actual[0]&&field[1]===actual[1];
+  var trifecta=depth>=3&&exacta&&field[2]===actual[2];
+  var superfecta=depth>=4&&trifecta&&field[3]===actual[3];
+  var exactaPts=exacta?30:0,trifectaPts=trifecta?50:0,superfectaPts=superfecta?70:0;
+  var exoticPts=exactaPts+trifectaPts+superfectaPts;
+  var raceTotal=fieldPts+sweepPts+winPts+exoticPts;
+  var streak=0;
+  if(raceNum>1&&scoreKey&&card){
+    var alive=true;
+    var history=card[scoreKey]||{};
+    for(var i=raceNum-1;i>=1;i--){
+      var prev=history[i];
+      if(!prev||prev.raceTotal===0){alive=false;break;}
+    }
+    if(alive&&raceTotal>0) streak=5;
+  }
+  return{fieldPts:fieldPts,fieldHits:fieldHits,sweepPts:sweepPts,winHit:winHit,winPts:winPts,exacta:exacta,trifecta:trifecta,superfecta:superfecta,exactaPts:exactaPts,trifectaPts:trifectaPts,superfectaPts:superfectaPts,exoticPts:exoticPts,raceTotal:raceTotal,streak:streak,actual:actual,picks:picks};
+}
+function silksZeroScore(actual){
+  return {fieldPts:0,fieldHits:[],sweepPts:0,winHit:false,winPts:0,exacta:false,trifecta:false,superfecta:false,exactaPts:0,trifectaPts:0,superfectaPts:0,exoticPts:0,raceTotal:0,streak:0,actual:actual,picks:null};
+}
+function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
   var PLAY_URL='https://giddyupsilks.app/play.html?tab=picks';
   var [raceNum,setRaceNum]=useState(raceNumber?String(raceNumber):'');
   useEffect(function(){
@@ -951,10 +980,31 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
   var buddyLabel='Barn Mate';
   var [house,setHouse]=useState(['','','','']);
   var [buddy,setBuddy]=useState(['','','','']);
+  var [dayCard,setDayCard]=useState(null);
+  var [dayCardReady,setDayCardReady]=useState(false);
+  var [resultInputs,setResultInputs]=useState(['','','','']);
+  var [scoring,setScoring]=useState(false);
+  function emptySilksDayCard(){
+    return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},mlScores:{},guPicks:{},guScores:{},buddyPicks:{},buddyScores:{},pickType:'superfecta',pickTypeLocked:false};
+  }
+  useEffect(function(){
+    if(!silksUser) return;
+    GiddyUpAuth.getDayCard(silksUser.id,localDateStr()).then(function(dc){
+      setDayCard(dc||emptySilksDayCard());
+      setDayCardReady(true);
+    });
+  },[silksUser]);
+  useEffect(function(){
+    setSent(false);
+    setResultInputs(['','','','']);
+  },[raceNum]);
   var [pickType,setPickType]=useState(function(){
     try{ return localStorage.getItem('giddyup_pick_type')||'superfecta'; }catch(ex){ return 'superfecta'; }
   });
-  var PICK_DEPTHS={win:1,exacta:2,trifecta:3,superfecta:4};
+  useEffect(function(){
+    if(dayCard&&dayCard.pickTypeLocked&&dayCard.pickType) setPickType(dayCard.pickType);
+  },[dayCard]);
+  var PICK_DEPTHS=SILKS_PICK_DEPTHS;
   var playDepth=PICK_DEPTHS[pickType]||4;
   function choosePickType(t){
     setPickType(t);
@@ -974,7 +1024,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
   if(myTop4&&myTop4.length<4) myTop4=null;
   var houseFilled=house.slice(0,playDepth).every(function(v){return v!==''&&v!=null;});
   var buddyFilled=buddy.slice(0,playDepth).every(function(v){return v!==''&&v!=null;});
-  function sendToPlay(){
+  async function sendToPlay(){
     if((top4||myTop4)&&!raceNum){setRaceWarn(true);return;}
     setRaceWarn(false);
     try{
@@ -1011,21 +1061,62 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
         }
       }catch(ex){}
       localStorage.setItem('giddyup_play_incoming',JSON.stringify(incoming));
+      if(silksUser&&raceNum&&dayCardReady){
+        var rn=parseInt(raceNum,10);
+        var dc=dayCard?JSON.parse(JSON.stringify(dayCard)):emptySilksDayCard();
+        dc.pickType=pickType;
+        dc.pickTypeLocked=true;
+        if(top4) dc.guPicks[rn]=top4.map(function(hh){return hh.number;});
+        if(myTop4){
+          var field=myTop4.map(function(hh,i){return i<playDepth?hh.number:null;});
+          dc.picks[rn]={win:field[0],field:field,pickType:pickType,savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),source:'silks'};
+        }
+        if(houseFilled) dc.mlPicks[rn]=house.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
+        if(buddyFilled) dc.buddyPicks[rn]=buddy.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
+        await GiddyUpAuth.saveDayCard(silksUser.id,localDateStr(),dc);
+        setDayCard(dc);
+      }
       setSent(true);
     }catch(ex){}
+  }
+  function openFullPlay(){
     window.open(PLAY_URL,'_blank');
+  }
+  async function submitRaceResult(){
+    if(!silksUser||!raceNum||!dayCardReady) return;
+    var rn=parseInt(raceNum,10);
+    var raw=resultInputs.map(function(v){return parseInt(v,10)||0;});
+    var required=raw.slice(0,playDepth);
+    if(required.some(function(v){return !v;})){
+      alert('Enter at least the top '+playDepth+' finisher'+(playDepth>1?'s':'')+' — you\'re playing '+pickType+' today.');
+      return;
+    }
+    setScoring(true);
+    var actual=raw.map(function(v){return v||null;});
+    var dc=dayCard?JSON.parse(JSON.stringify(dayCard)):emptySilksDayCard();
+    dc.results[rn]=actual;
+    var myPick=dc.picks[rn];
+    dc.scores[rn]=myPick?silksScoreRace(myPick,actual,rn,dc,'scores'):silksZeroScore(actual);
+    var gu=dc.guPicks?dc.guPicks[rn]:null;
+    if(gu){ dc.guScores=dc.guScores||{}; dc.guScores[rn]=silksScoreRace({win:gu[0],field:gu},actual,rn,dc,'guScores'); }
+    var ml=dc.mlPicks?dc.mlPicks[rn]:null;
+    if(ml){ dc.mlScores=dc.mlScores||{}; dc.mlScores[rn]=silksScoreRace({win:ml[0],field:ml},actual,rn,dc,'mlScores'); }
+    var bm=dc.buddyPicks?dc.buddyPicks[rn]:null;
+    if(bm){ dc.buddyScores=dc.buddyScores||{}; dc.buddyScores[rn]=silksScoreRace({win:bm[0],field:bm},actual,rn,dc,'buddyScores'); }
+    await GiddyUpAuth.saveDayCard(silksUser.id,localDateStr(),dc);
+    setDayCard(dc);
+    setScoring(false);
   }
   return h('div',{style:{paddingTop:14}},
     h(TabHelp,{title:"How to Use — Play",steps:[
       "Handicap a race using Upload → Angles → Rankings first.",
-      "In Rankings, set your ⭐ My Custom Rankings order (not just the GiddyUp default) — that's the order that gets sent here as your personal picks.",
+      "In Rankings, set your ⭐ My Custom Rankings order (not just the GiddyUp default) — that's the order that gets saved here as your personal picks.",
+      "Choose what you're playing today (Win, Exacta, Trifecta, or Superfecta) — it applies to every race and travels with your picks.",
       "Track Selections (the picks printed in the race program) are always available to enter, race by race — no setup needed.",
-      "Got a buddy playing along? Barn Mate Picks is a 4th, always-available entry — no name to set, no per-day setup. Just enter their 4 picks per race, same as Track Selections.",
-      "Optionally enter Track Selections' and Barn Mate's 4 picks for this race, to compete head-to-head.",
-      "Confirm which race these picks are for — it's filled in automatically from the race you just handicapped, but you can change it.",
-      "Tap Send Picks to transfer your GiddyUp Picks, Custom Ranking Picks, Track Selections, and Barn Mate's picks to GiddyUp Play — all at once. You'll land right on the Picks tab.",
-      "Repeat for each race — everything accumulates in Play until you load it.",
-      "In GiddyUp Play, confirm your picks, enter results, and see the leaderboard: You vs GiddyUp vs Track Selections vs Barn Mate.",
+      "Got a buddy playing along? Barn Mate Picks is a 4th, always-available entry — no name to set, no per-day setup.",
+      "Confirm which race these picks are for, then tap Save — no need to open GiddyUp Play separately.",
+      "After the race runs, come back here and enter the official finish order, then tap Score This Race.",
+      "Everything is saved to your account instantly — open the full Play app any time to see the day's leaderboard.",
     ]}),
     h('div',{style:{background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',borderRadius:16,padding:'16px 18px',marginBottom:16}},
       h('div',{style:{fontSize:10,color:'#c9a84c88',letterSpacing:3,textTransform:'uppercase',marginBottom:4}},'Free to Play'),
@@ -1131,23 +1222,52 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
             )
           )
         : h('div',{style:{background:'#fff8f0',border:'1px solid #f0d080',borderRadius:12,padding:'12px',marginBottom:14,fontSize:12,color:'#1e293b'}},
-            '\ud83d\udcc8 Handicap a race first (Upload \u2192 Rankings) to send your GiddyUp Picks to Play. You can still open Play and enter picks manually.'
+            '\ud83d\udcc8 Handicap a race first (Upload \u2192 Rankings) to save your GiddyUp Picks. You can still enter Track Selections and '+buddyLabel+'\u2019s picks manually below.'
           ),
-      h('button',{onClick:sendToPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,#1a6b3c,#2d9155)',border:'none',borderRadius:12,color:'#c9a84c',fontSize:15,fontWeight:700,cursor:'pointer',marginBottom:10}},
-        (top4||myTop4)?(raceNum?'Send Race '+raceNum+' Picks \u2192 Open GiddyUp Play':'Send Picks \u2192 Open GiddyUp Play'):'Open GiddyUp Play \u2192'
+      h('button',{onClick:sendToPlay,disabled:!dayCardReady,style:{width:'100%',padding:'14px',background:!dayCardReady?'#94a3b8':'linear-gradient(135deg,#1a6b3c,#2d9155)',border:'none',borderRadius:12,color:'#c9a84c',fontSize:15,fontWeight:700,cursor:!dayCardReady?'wait':'pointer',marginBottom:10}},
+        !dayCardReady?'Loading\u2026':((top4||myTop4)?(raceNum?'Save Race '+raceNum+' Picks':'Save Picks'):'Save Picks')
       ),
-      sent&&h('div',{style:{fontSize:11,color:'#15803d',background:'#f0fdf4',borderRadius:6,padding:'6px 10px'}},'\u2713 Sent! You\u2019ll land on the Picks tab in GiddyUp Play \u2014 look for the gold banner to load your picks, Track Selections, and '+buddyLabel+'\u2019s picks.'),
-      h('div',{style:{fontSize:11,color:'#334155',marginTop:6}},'Repeat for each race you handicap \u2014 picks accumulate until loaded in Play')
+      sent&&h('div',{style:{fontSize:12,color:'#15803d',background:'#f0fdf4',border:'1px solid #86efac',borderRadius:8,padding:'10px 12px',marginBottom:4,fontWeight:600}},'\u2713 Race '+raceNum+' picks saved \u2014 GiddyUp Play will show these automatically.'),
+      (function(){
+        var rnCheck=raceNum?parseInt(raceNum,10):null;
+        var raceHasSavedPicks=!!(dayCard&&rnCheck&&(dayCard.picks[rnCheck]||dayCard.guPicks[rnCheck]||dayCard.mlPicks[rnCheck]||dayCard.buddyPicks[rnCheck]));
+        return (sent||raceHasSavedPicks)&&raceNum&&h('div',{style:{background:'#fffbeb',border:'1px solid '+C.gold,borderRadius:12,padding:'14px',marginTop:10,textAlign:'left'}},
+        h('div',{style:{fontSize:11,fontWeight:700,color:'#92620a',textTransform:'uppercase',letterSpacing:1,marginBottom:8}},'\ud83c\udfc6 Race '+raceNum+' Results'),
+        (dayCard&&dayCard.scores&&dayCard.scores[parseInt(raceNum,10)])
+          ? h('div',{style:{fontSize:14,fontWeight:700,color:C.navy}},'\u2713 Scored \u2014 '+(dayCard.scores[parseInt(raceNum,10)].raceTotal+dayCard.scores[parseInt(raceNum,10)].streak)+' pts')
+          : h(Fragment,null,
+              h('div',{style:{fontSize:11,color:'#1e293b',marginBottom:8}},
+                playDepth<4?('You\u2019re playing '+pickType+' today \u2014 only '+playDepth+' finisher'+(playDepth>1?'s':'')+' needed.'):'Enter the official finish order.'
+              ),
+              h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10}},
+                ['1st','2nd','3rd','4th'].map(function(lbl,i){
+                  var inactive=i>=playDepth;
+                  return h('div',{key:i,style:{textAlign:'center',opacity:inactive?0.35:1}},
+                    h('div',{style:{fontSize:9,color:'#7a5205',textTransform:'uppercase',marginBottom:3}},lbl),
+                    h('input',{type:'number',min:'1',placeholder:'#',value:resultInputs[i],disabled:inactive,
+                      onChange:function(e){setResultInputs(function(r){var n=r.slice();n[i]=e.target.value;return n;});},
+                      style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:inactive?'#f1f5f9':'#fff',border:'1px solid #f0d080',borderRadius:8}})
+                  );
+                })
+              ),
+              h('button',{onClick:submitRaceResult,disabled:scoring,style:{padding:'10px 18px',background:'#1a6b3c',border:'none',borderRadius:8,color:'#fff',fontSize:13,fontWeight:700,cursor:scoring?'wait':'pointer'}},
+                scoring?'Scoring\u2026':'Score This Race'
+              )
+            )
+        );
+      })(),
+      h('div',{style:{fontSize:11,color:'#334155',marginTop:10}},'Repeat for each race you handicap.'),
+      h('button',{onClick:openFullPlay,style:{width:'100%',padding:'10px',background:'#fff',border:'1px solid '+C.border,borderRadius:10,color:C.navy,fontSize:12,fontWeight:600,cursor:'pointer',marginTop:6}},'Open Full Play App (leaderboard, all races) \u2192')
     ),
     h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border}},
       h('div',{style:{fontSize:11,fontWeight:700,color:C.text,textTransform:'uppercase',letterSpacing:2,marginBottom:12}},'How it works'),
       [
         ['\ud83d\udcf7','Handicap in GiddyUp Silks','Upload the race program, set your angles, get rankings'],
-        ['\ud83e\udd1d','Set your buddy (optional) and everyone\u2019s picks','Right here in Play \u2014 once per day for your buddy\u2019s name, per race for Track Selections and their 4 picks'],
-        ['\ud83c\udfab','Send picks to Play','Pick the race number, tap Send \u2014 you\u2019ll land on the Picks tab. Repeat for each race'],
-        ['\u270f\ufe0f','Confirm your picks in Play','GiddyUp Picks, Custom Picks, Track Selections, and '+buddyLabel+'\u2019s picks are all pre-loaded'],
-        ['\ud83d\udccb','Enter results after the race','Type in the official finish and score automatically'],
-        ['\ud83c\udfc6','Check the leaderboard','You vs GiddyUp vs Track Selections vs '+buddyLabel+' \u2014 who wins the day?'],
+        ['\ud83c\udfaf','Choose what you\u2019re playing today','Win, Exacta, Trifecta, or Superfecta \u2014 applies to every race'],
+        ['\ud83e\udd1d','Set your buddy (optional) and everyone\u2019s picks','Right here in Silks \u2014 once per day for your buddy\u2019s name, per race for Track Selections and their picks'],
+        ['\ud83d\udcbe','Save your picks','Pick the race number, tap Save \u2014 no need to open a separate app'],
+        ['\ud83d\udccb','Enter results after the race','Right here, once the race is final \u2014 tap Score This Race'],
+        ['\ud83c\udfc6','Check the leaderboard','Open the full Play app any time \u2014 You vs GiddyUp vs Track Selections vs '+buddyLabel],
         ['\ud83d\udcd3','Keep a diary','Notes and photos including winning tickets'],
       ].map(function(item,i){
         return h('div',{key:i,style:{display:'flex',gap:12,marginBottom:i<6?12:0,paddingBottom:i<6?12:0,borderBottom:i<6?'1px solid '+C.border:'none'}},
@@ -1409,7 +1529,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles}),
       activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
       activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
-      activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null}),
+      activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser}),
       activeTab==="diary"&&h(DiaryTab,null)));}
 ReactDOM.render(h(GiddyUp,null),document.getElementById("root"));
 </script>
