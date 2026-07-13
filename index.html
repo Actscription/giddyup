@@ -954,9 +954,14 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
   var [pickType,setPickType]=useState(function(){
     try{ return localStorage.getItem('giddyup_pick_type')||'superfecta'; }catch(ex){ return 'superfecta'; }
   });
+  var PICK_DEPTHS={win:1,exacta:2,trifecta:3,superfecta:4};
+  var playDepth=PICK_DEPTHS[pickType]||4;
   function choosePickType(t){
     setPickType(t);
     try{ localStorage.setItem('giddyup_pick_type',t); }catch(ex){}
+    var d=PICK_DEPTHS[t]||4;
+    setHouse(function(h){var n=h.slice();for(var i=d;i<4;i++) n[i]='';return n;});
+    setBuddy(function(b){var n=b.slice();for(var i=d;i<4;i++) n[i]='';return n;});
   }
   function setHouseField(i,val){setHouse(function(h){var n=h.slice();n[i]=val;return n;});}
   function clearHouse(){setHouse(['','','','']);}
@@ -967,8 +972,8 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
     ?myOrder.map(function(n){return scores.find(function(s){return s.number===n;});}).filter(Boolean).slice(0,4)
     :null;
   if(myTop4&&myTop4.length<4) myTop4=null;
-  var houseFilled=house.every(function(v){return v!==''&&v!=null;});
-  var buddyFilled=buddy.every(function(v){return v!==''&&v!=null;});
+  var houseFilled=house.slice(0,playDepth).every(function(v){return v!==''&&v!=null;});
+  var buddyFilled=buddy.slice(0,playDepth).every(function(v){return v!==''&&v!=null;});
   function sendToPlay(){
     if((top4||myTop4)&&!raceNum){setRaceWarn(true);return;}
     setRaceWarn(false);
@@ -983,10 +988,10 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
         incoming.rankPicks[raceNum]=myTop4.map(function(hh){return hh.number;});
       }
       if(houseFilled&&raceNum){
-        incoming.housePicks[raceNum]=house.map(function(v){return parseInt(v,10);});
+        incoming.housePicks[raceNum]=house.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
       }
       if(buddyFilled&&raceNum){
-        incoming.buddyPicks[raceNum]=buddy.map(function(v){return parseInt(v,10);});
+        incoming.buddyPicks[raceNum]=buddy.map(function(v,i){return i<playDepth?parseInt(v,10):null;});
       }
       try{
         var existing=JSON.parse(localStorage.getItem('giddyup_play_incoming')||'null');
@@ -1052,7 +1057,8 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
               h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
                 top4.map(function(hh,i){
                   var lbl=['\u2605 Win','Place','Show','4th'][i];
-                  return h('div',{key:i,style:{textAlign:'center'}},
+                  var inactive=i>=playDepth;
+                  return h('div',{key:i,style:{textAlign:'center',opacity:inactive?0.35:1}},
                     h('div',{style:{fontSize:9,color:'#15803d',textTransform:'uppercase',marginBottom:3}},lbl),
                     h('div',{style:{fontSize:18,fontWeight:900,color:C.navy,background:'#fff',borderRadius:8,padding:'6px 0',border:'1px solid #86efac'}},'#'+hh.number)
                   );
@@ -1065,7 +1071,8 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
               h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
                 myTop4.map(function(hh,i){
                   var lbl=['\u2605 Win','Place','Show','4th'][i];
-                  return h('div',{key:i,style:{textAlign:'center'}},
+                  var inactive=i>=playDepth;
+                  return h('div',{key:i,style:{textAlign:'center',opacity:inactive?0.35:1}},
                     h('div',{style:{fontSize:9,color:'#92620a',textTransform:'uppercase',marginBottom:3}},lbl),
                     h('div',{style:{fontSize:18,fontWeight:900,color:C.navy,background:'#fff',borderRadius:8,padding:'6px 0',border:'1px solid '+C.gold}},'#'+hh.number)
                   );
@@ -1078,15 +1085,16 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
                 house.some(function(v){return v!=='';})&&h('button',{onClick:clearHouse,style:{fontSize:10,fontWeight:700,color:'#ef4444',background:'none',border:'none',cursor:'pointer'}},'Clear')
               ),
               h('div',{style:{fontSize:11,color:'#1e293b',marginBottom:10}},
-                'Enter the 4 selections printed in the race program to compete head-to-head against the track picks.'
+                'Enter the selections printed in the race program to compete head-to-head against the track picks.'
               ),
               h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
                 ['\u2605 Win','Place','Show','4th'].map(function(lbl,i){
-                  return h('div',{key:i,style:{textAlign:'center'}},
+                  var inactive=i>=playDepth;
+                  return h('div',{key:i,style:{textAlign:'center',opacity:inactive?0.35:1}},
                     h('div',{style:{fontSize:9,color:'#7a5205',textTransform:'uppercase',marginBottom:3}},lbl),
-                    h('input',{type:'number',min:'1',placeholder:'#',value:house[i],
+                    h('input',{type:'number',min:'1',placeholder:'#',value:house[i],disabled:inactive,
                       onChange:function(e){setHouseField(i,e.target.value);},
-                      style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:'#fff',border:'1px solid #f0d080',borderRadius:8}})
+                      style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:inactive?'#f1f5f9':'#fff',border:'1px solid #f0d080',borderRadius:8,cursor:inactive?'not-allowed':'text'}})
                   );
                 })
               )
@@ -1097,15 +1105,16 @@ function PlayTab({scores,raceName,myOrder,raceNumber}){
                 buddy.some(function(v){return v!=='';})&&h('button',{onClick:clearBuddy,style:{fontSize:10,fontWeight:700,color:'#ef4444',background:'none',border:'none',cursor:'pointer'}},'Clear')
               ),
               h('div',{style:{fontSize:11,color:'#1e293b',marginBottom:10}},
-                'Enter '+buddyLabel+'\u2019s 4 picks to compete head-to-head. This is separate from Track Selections \u2014 your buddy picks their own horses.'
+                'Enter '+buddyLabel+'\u2019s picks to compete head-to-head. This is separate from Track Selections \u2014 your buddy picks their own horses.'
               ),
               h('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}},
                 ['\u2605 Win','Place','Show','4th'].map(function(lbl,i){
-                  return h('div',{key:i,style:{textAlign:'center'}},
+                  var inactive=i>=playDepth;
+                  return h('div',{key:i,style:{textAlign:'center',opacity:inactive?0.35:1}},
                     h('div',{style:{fontSize:9,color:'#5b21b6',textTransform:'uppercase',marginBottom:3}},lbl),
-                    h('input',{type:'number',min:'1',placeholder:'#',value:buddy[i],
+                    h('input',{type:'number',min:'1',placeholder:'#',value:buddy[i],disabled:inactive,
                       onChange:function(e){setBuddyField(i,e.target.value);},
-                      style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:'#fff',border:'1px solid #c4b5fd',borderRadius:8}})
+                      style:{width:'100%',padding:'8px 0',textAlign:'center',fontSize:16,fontWeight:900,color:C.navy,background:inactive?'#f1f5f9':'#fff',border:'1px solid #c4b5fd',borderRadius:8,cursor:inactive?'not-allowed':'text'}})
                   );
                 })
               )
