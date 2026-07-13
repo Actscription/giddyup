@@ -119,6 +119,11 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .race-cell .rc-status{font-size:11px;color:var(--muted);margin-top:3px;}
 .race-cell.has-picks .rc-num,.race-cell.scored .rc-num{color:var(--green);}
 .race-cell.has-results .rc-num{color:var(--gold-dark);}
+.depth-selector{display:flex;gap:6px;margin-bottom:12px;}
+.depth-btn{flex:1;padding:9px 4px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.depth-btn.active{border-color:var(--green);background:var(--green-light);color:var(--green-dark);}
+.pick-slot.slot-inactive{opacity:0.4;}
+.pick-slot.slot-inactive label{color:var(--muted)!important;}
 .pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .pick-slot label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;display:block;}
 .pick-slot.win label{color:var(--gold-dark);}
@@ -277,6 +282,18 @@ input[type=file]{display:none;}
       <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--green);line-height:1;">🚦 They're at the Post</div>
     </div>
     <div id="p-today-card" style="margin-bottom:10px;"></div>
+    <div class="card" style="padding:12px 14px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Playing Today</div>
+        <div id="p-depth-badge-note" style="font-size:11px;color:var(--muted);"></div>
+      </div>
+      <div class="depth-selector" id="p-depth-selector-landing">
+        <button type="button" class="depth-btn" data-depth="win" onclick="setPickType('win')">Win</button>
+        <button type="button" class="depth-btn" data-depth="exacta" onclick="setPickType('exacta')">Exacta</button>
+        <button type="button" class="depth-btn" data-depth="trifecta" onclick="setPickType('trifecta')">Trifecta</button>
+        <button type="button" class="depth-btn" data-depth="superfecta" onclick="setPickType('superfecta')">Superfecta</button>
+      </div>
+    </div>
     <div style="margin-bottom:14px;text-align:center;">
       <div style="font-size:14px;color:var(--ink);font-weight:600;">Select a race to enter your picks</div>
     </div>
@@ -285,6 +302,16 @@ input[type=file]{display:none;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="p-racenum">1</span></div>
         <button class="btn btn-outline btn-sm" onclick="showGrid()">↑ All Races</button>
+      </div>
+      <div class="card" style="padding:12px 14px;">
+        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Playing For This Card</div>
+        <div class="depth-selector" id="p-depth-selector">
+          <button type="button" class="depth-btn" data-depth="win" onclick="setPickType('win')">Win</button>
+          <button type="button" class="depth-btn" data-depth="exacta" onclick="setPickType('exacta')">Exacta</button>
+          <button type="button" class="depth-btn" data-depth="trifecta" onclick="setPickType('trifecta')">Trifecta</button>
+          <button type="button" class="depth-btn" data-depth="superfecta" onclick="setPickType('superfecta')">Superfecta</button>
+        </div>
+        <div class="hint" style="margin-top:4px;">Applies to your whole card today. Switch any time before a race locks.</div>
       </div>
       <div class="gu-section" id="gu-section">
         <div class="gu-title">🔬 GiddyUp Picks</div>
@@ -436,6 +463,7 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="page-pad">
+    <div id="sc-pick-type-badge" class="notice" style="display:none;padding:8px 12px;font-size:12px;text-align:center;"></div>
     <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter your picks and results to get started.</div>
     <div id="sc-tabs-wrap" style="display:none;">
       <div class="sc-tabbar">
@@ -597,8 +625,12 @@ function localDateStr(d = new Date()) {
 const TODAY = localDateStr();
 
 function emptyDayCard(){
-  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},buddyPicks:{}};
+  return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},buddyPicks:{},pickType:'superfecta'};
 }
+const PICK_DEPTHS={win:1,exacta:2,trifecta:3,superfecta:4};
+const PICK_DEPTH_LABELS={win:'Win',exacta:'Exacta',trifecta:'Trifecta',superfecta:'Superfecta'};
+function getPickType(card){return (card&&card.pickType)||'superfecta';}
+function getPickDepth(card){return PICK_DEPTHS[getPickType(card)]||4;}
 
 let CU = null;
 let dayCard = null;
@@ -745,6 +777,7 @@ function loadPicks(){
   document.getElementById('p-name').textContent=displayName(CU);
   document.getElementById('p-date').textContent=formatDate(TODAY);
   renderTodayCard();
+  renderDepthSelector();
   checkSilksBridge();
   showGrid();
   renderRaceGrid();
@@ -827,10 +860,14 @@ function loadSilksPicks(){
         }
       });
     }
+    if(data.pickType&&PICK_DEPTHS[data.pickType]){
+      card.pickType=data.pickType;
+    }
     saveUser();
     localStorage.removeItem('giddyup_play_incoming');
     dismissSilksBridge();
     renderRaceGrid();
+    renderDepthSelector();
     let msg='';
     if(guCount) msg+='GiddyUp Picks loaded for '+guCount+' race'+(guCount!==1?'s':'')+' (locked). ';
     if(rankCount) msg+='Your Ranking Picks loaded for '+rankCount+' race'+(rankCount!==1?'s':'')+' as My Picks \u2014 still editable. ';
@@ -874,7 +911,41 @@ function selectPickRace(r){
   document.getElementById('p-racenum').textContent=r;
   document.getElementById('p-race-grid').style.display='none';
   document.getElementById('p-pick-panel').style.display='block';
+  renderDepthSelector();
   loadPickRaceData(r);
+}
+function renderDepthSelector(){
+  const card=getTodayCard();
+  const type=getPickType(card);
+  document.querySelectorAll('.depth-selector .depth-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.depth===type);
+  });
+  const note=document.getElementById('p-depth-badge-note');
+  if(note) note.textContent=PICK_DEPTH_LABELS[type]+' · '+getPickDepth(card)+' pick'+(getPickDepth(card)>1?'s':'')+' per race';
+}
+function applyDepthToSlots(){
+  const card=getTodayCard();
+  const depth=getPickDepth(card);
+  const hasResults=!!card.results[curPickRace];
+  ['pp1','pp2','pp3','pp4'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    const slot=el.closest('.pick-slot');
+    const active=(i<depth);
+    if(!active) el.value='';
+    el.disabled=hasResults?true:!active;
+    el.style.opacity=hasResults?'0.5':(active?'1':'');
+    if(slot) slot.classList.toggle('slot-inactive',!active);
+  });
+}
+function setPickType(type){
+  if(!PICK_DEPTHS[type]) return;
+  const card=getTodayCard();
+  const panelOpen=document.getElementById('p-pick-panel').style.display!=='none';
+  if(panelOpen&&card.results[curPickRace]){showErr('p-err','Race already locked — can\'t change pick type now.');return;}
+  card.pickType=type;
+  saveUser();
+  renderDepthSelector();
+  applyDepthToSlots();
 }
 function loadPickRaceData(r){
   const card=getTodayCard();
@@ -930,10 +1001,7 @@ function loadPickRaceData(r){
     document.getElementById('bm-empty-state').style.display='block';
   }
   const locked=hasResults;
-  ['pp1','pp2','pp3','pp4'].forEach(id=>{
-    const el=document.getElementById(id);
-    el.disabled=locked;el.style.opacity=locked?'0.5':'1';
-  });
+  applyDepthToSlots();
   const saveBtn=document.getElementById('p-save-btn');
   saveBtn.disabled=locked;
   const lockMsg=document.getElementById('p-lock-msg');
@@ -949,11 +1017,15 @@ function clearPickInputs(){
   ['pp1','pp2','pp3','pp4'].forEach(id=>document.getElementById(id).value='');
 }
 function savePicks(){
-  const p1=gi('pp1'),p2=gi('pp2'),p3=gi('pp3'),p4=gi('pp4');
-  if(!p1||!p2||!p3||!p4){showErr('p-err','Please fill in all 4 picks.');return;}
   const card=getTodayCard();
+  const pickType=getPickType(card);
+  const depth=getPickDepth(card);
+  const p1=gi('pp1'),p2=gi('pp2'),p3=gi('pp3'),p4=gi('pp4');
+  const entered=[p1,p2,p3,p4].slice(0,depth);
+  if(entered.some(p=>!p)){showErr('p-err','Please fill in your '+depth+' pick'+(depth>1?'s':'')+' for '+PICK_DEPTH_LABELS[pickType]+'.');return;}
   if(card.results[curPickRace]){showErr('p-err','Results already entered for this race — picks locked.');return;}
-  card.picks[curPickRace]={win:p1,field:[p1,p2,p3,p4],savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+  const field=[p1,p2,p3,p4].map((p,i)=>i<depth?p:null);
+  card.picks[curPickRace]={win:p1,field,pickType,savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
   saveUser();
   document.getElementById('p-err').style.display='none';
   renderSavedPicksList();
@@ -979,7 +1051,7 @@ function renderSavedPicksList(){
     let badge=sc?'<span class="tag tag-green">Scored</span>':card.results[r]?'<span class="tag tag-gold">Results in</span>':'<span class="tag tag-muted">Pending</span>';
     return`<tr><td><strong>R${r}</strong></td>
       <td style="color:var(--gold-dark);font-weight:600;">${pk.field[0]}</td>
-      <td>${pk.field[1]}</td><td>${pk.field[2]}</td><td>${pk.field[3]}</td>
+      <td>${pk.field[1]!=null?pk.field[1]:'—'}</td><td>${pk.field[2]!=null?pk.field[2]:'—'}</td><td>${pk.field[3]!=null?pk.field[3]:'—'}</td>
       <td style="color:var(--muted);font-size:11px;">${ml?ml.join(','):'—'}</td>
       <td style="font-size:11px;color:var(--muted);">${pk.savedAt||"—"}</td><td>${badge}</td></tr>`;
   }).join('')}</tbody></table></div>`;
@@ -1101,14 +1173,18 @@ function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore,buddy,bud
     html+='</div>';
   }
   if(myScore){
+    const myDepth=PICK_DEPTHS[(myScore.picks&&myScore.picks.pickType)||'superfecta']||4;
+    const exRow=myDepth>=2?`<div class="score-row"><span>Exacta</span><span class="pts ${!myScore.exactaPts?'zero':''}">${myScore.exactaPts?'+30':'—'}</span></div>`:`<div class="score-row"><span style="color:var(--muted);">Exacta</span><span class="pts" style="color:var(--muted);">N/A</span></div>`;
+    const triRow=myDepth>=3?`<div class="score-row"><span>Trifecta</span><span class="pts ${!myScore.trifectaPts?'zero':''}">${myScore.trifectaPts?'+50':'—'}</span></div>`:`<div class="score-row"><span style="color:var(--muted);">Trifecta</span><span class="pts" style="color:var(--muted);">N/A</span></div>`;
+    const sfRow=myDepth>=4?`<div class="score-row"><span>Superfecta</span><span class="pts ${!myScore.superfectaPts?'zero':''}">${myScore.superfectaPts?'+70':'—'}</span></div>`:`<div class="score-row"><span style="color:var(--muted);">Superfecta</span><span class="pts" style="color:var(--muted);">N/A</span></div>`;
     html+=`<div style="font-weight:500;margin-bottom:8px;">My Score: <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);">${myScore.raceTotal+myScore.streak} pts</span></div>
     <div class="score-bd">
-      <div class="score-row"><span>Field picks (${myScore.fieldHits.length}/4)</span><span class="pts ${!myScore.fieldPts?'zero':''}">${myScore.fieldPts?'+'+myScore.fieldPts:'—'}</span></div>
-      <div class="score-row"><span>Sweep bonus</span><span class="pts ${!myScore.sweepPts?'zero':''}">${myScore.sweepPts?'+10':'—'}</span></div>
+      <div class="score-row"><span>Field picks (${myScore.fieldHits.length}/${myDepth})</span><span class="pts ${!myScore.fieldPts?'zero':''}">${myScore.fieldPts?'+'+myScore.fieldPts:'—'}</span></div>
+      ${myDepth>=4?`<div class="score-row"><span>Sweep bonus</span><span class="pts ${!myScore.sweepPts?'zero':''}">${myScore.sweepPts?'+10':'—'}</span></div>`:`<div class="score-row"><span style="color:var(--muted);">Sweep bonus</span><span class="pts" style="color:var(--muted);">N/A</span></div>`}
       <div class="score-row"><span>Win bonus</span><span class="pts ${!myScore.winPts?'zero':''}">${myScore.winPts?'+20':'—'}</span></div>
-      <div class="score-row"><span>Exacta</span><span class="pts ${!myScore.exactaPts?'zero':''}">${myScore.exactaPts?'+30':'—'}</span></div>
-      <div class="score-row"><span>Trifecta</span><span class="pts ${!myScore.trifectaPts?'zero':''}">${myScore.trifectaPts?'+50':'—'}</span></div>
-      <div class="score-row"><span>Superfecta</span><span class="pts ${!myScore.superfectaPts?'zero':''}">${myScore.superfectaPts?'+70':'—'}</span></div>
+      ${exRow}
+      ${triRow}
+      ${sfRow}
       <div class="score-total-row"><span>Race total</span><span class="pts">${myScore.raceTotal} pts</span></div>
     </div>
     ${myScore.streak?'<div style="margin-top:8px;background:var(--gold-light);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--gold-dark);font-weight:500;">🔥 Streak bonus: +5 pts</div>':''}`;
@@ -1161,6 +1237,11 @@ function loadScorecard(){
   document.getElementById('sc-name').textContent=displayName(CU);
   document.getElementById('sc-date').textContent=formatDate(TODAY);
   const card=getTodayCard();
+  const badge=document.getElementById('sc-pick-type-badge');
+  if(badge){
+    badge.style.display='block';
+    badge.textContent='🎟️ Playing '+PICK_DEPTH_LABELS[getPickType(card)]+' today ('+getPickDepth(card)+' pick'+(getPickDepth(card)>1?'s':'')+' per race)';
+  }
   const rns=Object.keys(card.scores).map(Number).sort((a,b)=>a-b);
   const noData=document.getElementById('sc-no-data'),tabsWrap=document.getElementById('sc-tabs-wrap');
   if(!rns.length){
