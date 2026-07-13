@@ -406,7 +406,8 @@ input[type=file]{display:none;}
   <div class="page-pad">
     <div style="background:linear-gradient(135deg,var(--gold-light),#fff8dc);border:1px solid var(--gold);border-radius:12px;padding:14px 16px;margin-bottom:14px;text-align:center;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--gold-dark);line-height:1;">🏆 The Winner's Circle</div>
-      <div style="font-size:13px;color:var(--ink);margin-top:5px;font-weight:500;">Enter the official top 4 finishers — picks score automatically</div>
+      <div style="font-size:13px;color:var(--ink);margin-top:5px;font-weight:500;">Enter the official finishers — picks score automatically</div>
+      <div id="r-depth-note" style="font-size:12px;color:var(--gold-dark);margin-top:6px;font-weight:600;"></div>
     </div>
     <div id="r-race-grid" class="race-grid"></div>
     <div id="r-entry-panel" style="display:none;">
@@ -419,8 +420,8 @@ input[type=file]{display:none;}
         <div class="pick-grid">
           <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">1st</label><input type="number" id="rr1" class="pi" placeholder="#" min="1"></div>
           <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">2nd</label><input type="number" id="rr2" class="pi" placeholder="#" min="1"></div>
-          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">3rd</label><input type="number" id="rr3" class="pi" placeholder="#" min="1"></div>
-          <div><label style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">4th</label><input type="number" id="rr4" class="pi" placeholder="#" min="1"></div>
+          <div><label id="r-lbl-3" style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">3rd</label><input type="number" id="rr3" class="pi" placeholder="#" min="1"></div>
+          <div><label id="r-lbl-4" style="font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;">4th</label><input type="number" id="rr4" class="pi" placeholder="#" min="1"></div>
         </div>
         <div id="r-err" class="err-msg" style="display:none;margin-top:8px;"></div>
         <div style="margin-top:12px;display:flex;gap:8px;">
@@ -1008,7 +1009,7 @@ function loadPickRaceData(r){
   if(locked){
     const res=card.results[r];
     lockMsg.style.display='block';
-    lockMsg.innerHTML=`🔒 Race ${r} is locked — official result: ${res.map((h,i)=>['1st','2nd','3rd','4th'][i]+' #'+h).join(' · ')}`;
+    lockMsg.innerHTML=`🔒 Race ${r} is locked — official result: ${res.map((h,i)=>h!=null?['1st','2nd','3rd','4th'][i]+' #'+h:null).filter(Boolean).join(' · ')}`;
   } else lockMsg.style.display='none';
   document.getElementById('p-err').style.display='none';
   renderSavedPicksList();
@@ -1062,6 +1063,7 @@ function loadResultsScreen(){
   document.getElementById('r-date').textContent=formatDate(TODAY);
   showResultGrid();
   renderResultGrid();
+  applyResultDepthHints();
 }
 function renderResultGrid(){
   const card=getTodayCard();
@@ -1086,6 +1088,24 @@ function showResultGrid(){
   document.getElementById('r-race-grid').style.display='grid';
   document.getElementById('r-entry-panel').style.display='none';
 }
+function applyResultDepthHints(){
+  const card=getTodayCard();
+  const depth=getPickDepth(card);
+  const note=document.getElementById('r-depth-note');
+  if(note){
+    note.textContent=depth<4
+      ?('You\'re playing '+PICK_DEPTH_LABELS[getPickType(card)]+' today — only 1st'+(depth>1?' through '+['','','2nd','3rd','4th'][depth]:'')+' is required. Enter more if you know it.')
+      :'';
+  }
+  [[3,'r-lbl-3','3rd'],[4,'r-lbl-4','4th']].forEach(([pos,id,txt])=>{
+    const lbl=document.getElementById(id);
+    if(!lbl) return;
+    const optional=pos>depth;
+    lbl.textContent=optional?txt+' (optional)':txt;
+    lbl.style.color=optional?'var(--muted)':'var(--muted)';
+    lbl.style.fontStyle=optional?'italic':'normal';
+  });
+}
 function selectResultRace(r){
   curResultRace=r;
   document.getElementById('r-racenum').textContent=r;
@@ -1095,10 +1115,11 @@ function selectResultRace(r){
   const existing=card.results[r];
   document.getElementById('rr1').value=existing?existing[0]:'';
   document.getElementById('rr2').value=existing?existing[1]:'';
-  document.getElementById('rr3').value=existing?existing[2]:'';
-  document.getElementById('rr4').value=existing?existing[3]:'';
+  document.getElementById('rr3').value=(existing&&existing[2]!=null)?existing[2]:'';
+  document.getElementById('rr4').value=(existing&&existing[3]!=null)?existing[3]:'';
   document.getElementById('r-err').style.display='none';
   document.getElementById('r-score-display').innerHTML='';
+  applyResultDepthHints();
 }
 function clearResultInputs(){
   ['rr1','rr2','rr3','rr4'].forEach(id=>document.getElementById(id).value='');
@@ -1106,10 +1127,16 @@ function clearResultInputs(){
   document.getElementById('r-err').style.display='none';
 }
 function submitResult(){
-  const r1=gi('rr1'),r2=gi('rr2'),r3=gi('rr3'),r4=gi('rr4');
-  if(!r1||!r2||!r3||!r4){showErr('r-err','Please enter all 4 finishers.');return;}
-  const actual=[r1,r2,r3,r4];
   const card=getTodayCard();
+  const depth=getPickDepth(card);
+  const r1=gi('rr1'),r2=gi('rr2'),r3=gi('rr3'),r4=gi('rr4');
+  const raw=[r1,r2,r3,r4];
+  const required=raw.slice(0,depth);
+  if(required.some(v=>!v)){
+    showErr('r-err','Please enter at least the top '+depth+' finisher'+(depth>1?'s':'')+' (you\'re playing '+PICK_DEPTH_LABELS[getPickType(card)]+' today).');
+    return;
+  }
+  const actual=raw.map(v=>v||null);
   if(card.results[curResultRace]&&card.scores[curResultRace]){
     if(!confirm('Race '+curResultRace+' is already scored. Re-entering will recalculate. Continue?')) return;
   }
@@ -1152,7 +1179,7 @@ function submitResult(){
 function renderResultOutput(actual,picks,myScore,ml,mlScore,gu,guScore,buddy,buddyScore){
   const div=document.getElementById('r-score-display');
   let html=`<div class="card" style="margin-top:14px;">
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Official finish: ${actual.map((h,i)=>['1st','2nd','3rd','4th'][i]+' #'+h).join(' · ')}</div>`;
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Official finish: ${actual.map((h,i)=>h!=null?['1st','2nd','3rd','4th'][i]+' #'+h:null).filter(Boolean).join(' · ')}</div>`;
   const competitors=[];
   if(mlScore) competitors.push({name:'Track Selections',icon:'📰',score:mlScore,color:'var(--blue)'});
   if(guScore) competitors.push({name:'GiddyUp',icon:'🔬',score:guScore,color:'var(--gold-dark)'});
