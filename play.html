@@ -789,6 +789,16 @@ function checkSilksBridge(){
     if(!incoming) return;
     const data=JSON.parse(incoming);
     if(!data||data.date!==TODAY) return;
+    if(data.pickType&&PICK_DEPTHS[data.pickType]){
+      const card=getTodayCard();
+      if(card.pickType!==data.pickType||!card.pickTypeLocked){
+        card.pickType=data.pickType;
+        card.pickTypeLocked=true;
+        saveUser();
+        renderDepthSelector();
+        applyDepthToSlots();
+      }
+    }
     const existing=document.getElementById('silks-bridge-banner');
     if(existing) return;
     const guCount=Object.keys(data.picks||{}).length;
