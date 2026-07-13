@@ -700,17 +700,18 @@ return h("div",{style:{paddingTop:14}},
   !horses||!horses.length?h("div",{onClick:()=>setActiveTab("upload"),style:{background:"rgba(201,168,76,0.08)",border:"1.5px dashed "+C.gold,borderRadius:14,padding:"12px 16px",marginBottom:16,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},h("div",{style:{fontSize:26}},"📷"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:13,color:C.gold}},"Upload a Race Program First")),h("div",{style:{color:C.gold,fontSize:16}},"→")):h("div",{style:{background:"rgba(201,168,76,0.08)",border:"2px solid rgba(201,168,76,0.4)",borderRadius:14,padding:"12px 16px",marginBottom:14}},h("div",{style:{display:"flex",alignItems:"center",gap:10}},h("div",{style:{fontSize:22}},"🤖"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:800,fontSize:15,color:C.gold}},activeRace==="custom"?"Custom Race Type":activeRace.charAt(0).toUpperCase()+activeRace.slice(1)+" Race Detected"),h("div",{style:{fontSize:11,color:"#a07830",marginTop:2}},activeRace==="custom"?"Your own angle mix — set it up below":"Angles preset — adjust below if needed"))),h("div",{style:{fontSize:11,color:"#a07830",paddingTop:8,borderTop:"1px solid rgba(201,168,76,0.2)",marginTop:8}},"✅ "+(horses?horses.length:0)+" horses loaded")),
   h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:12}},"Choose Your Angles"),
-    h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🐴 GiddyUp Presets"),
+    h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🐴 GiddyUp Presets"),
     h("div",{style:{display:"flex",gap:4,marginBottom:14}},
       RACE_TYPES.map(rt=>h("button",{key:"gu-"+rt.id,onClick:()=>selectGiddyUpForRace(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:(activeRace===rt.id&&activeSpecialist==='giddyup')?"2px solid "+rt.color:"1.5px solid "+C.border,background:(activeRace===rt.id&&activeSpecialist==='giddyup')?rt.color+"18":"#fff",cursor:"pointer"}},
         h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
         h("div",{style:{fontSize:8,fontWeight:700,color:(activeRace===rt.id&&activeSpecialist==='giddyup')?rt.color:"#64748b",textTransform:"uppercase"}},rt.label)))),
-    h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"⭐ "+uName+"'s DNA"),
-    h("div",{style:{display:"flex",gap:4,marginBottom:14}},
-      RACE_TYPES.map(rt=>h("button",{key:"me-"+rt.id,onClick:()=>selectMyDNAForRace(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?"2px solid "+rt.color:"1.5px solid "+C.border,background:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?rt.color+"18":"#fff",cursor:"pointer"}},
-        h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
-        h("div",{style:{fontSize:8,fontWeight:700,color:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?rt.color:"#64748b",textTransform:"uppercase"}},rt.label)))),
-    h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🎯 Specialist Presets"),
+    h("div",{style:{background:"rgba(201,168,76,0.10)",borderRadius:10,padding:"8px 8px 10px",marginBottom:14}},
+      h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"⭐ "+uName+"'s DNA"),
+      h("div",{style:{display:"flex",gap:4}},
+        RACE_TYPES.map(rt=>h("button",{key:"me-"+rt.id,onClick:()=>selectMyDNAForRace(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?"2px solid "+rt.color:"1.5px solid "+C.border,background:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?rt.color+"18":"#fff",cursor:"pointer"}},
+          h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
+          h("div",{style:{fontSize:8,fontWeight:700,color:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?rt.color:"#64748b",textTransform:"uppercase"}},rt.label))))),
+    h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🎯 Specialist Presets"),
     h("div",{style:{display:"flex",gap:4}},
       SPECIALIST_PRESETS.map(p=>h("button",{key:p.id,onClick:()=>selectSpecialist(p),style:{flex:1,padding:"8px 2px",borderRadius:10,border:activeSpecialist===p.id?"2px solid "+C.gold:"1.5px solid "+C.border,background:activeSpecialist===p.id?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",textAlign:"center"}},
         h("div",{style:{fontSize:14,marginBottom:1}},p.icon),
@@ -1130,20 +1131,21 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
       h('div',{style:{fontSize:48,marginBottom:8}},'\ud83c\udfc7'),
       h('div',{style:{fontFamily:'Georgia,serif',fontSize:18,fontWeight:900,color:C.text,marginBottom:6}},'Are you playing today?'),
       h('div',{style:{fontSize:13,color:'#334155',lineHeight:1.6,marginBottom:16}},'Pick horses. Track your score. No betting required.'),
-      h('div',{style:{background:'#f0fdf4',border:'1px solid #86efac',borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
-        h('div',{style:{fontSize:11,fontWeight:700,color:'#15803d',textTransform:'uppercase',letterSpacing:1,marginBottom:10}},'\ud83c\udfaf What Are You Playing Today?'),
+      h('div',{style:{background:'#eff6ff',border:'1px solid #93c5fd',borderRadius:12,padding:'14px',marginBottom:14,textAlign:'left'}},
+        h('div',{style:{fontSize:11,fontWeight:700,color:'#1d4ed8',textTransform:'uppercase',letterSpacing:1,marginBottom:10}},'\ud83c\udfaf What Are You Playing Today?'),
         h('div',{style:{display:'flex',gap:6}},
           [['win','Win'],['exacta','Exacta'],['trifecta','Trifecta'],['superfecta','Superfecta']].map(function(opt){
             var active=pickType===opt[0];
             return h('button',{key:opt[0],type:'button',onClick:function(){choosePickType(opt[0]);},
-              style:{flex:1,padding:'9px 4px',border:'1.5px solid '+(active?'#15803d':'#86efac'),borderRadius:8,
-                background:active?'#bbf7d0':'#fff',fontSize:12,fontWeight:700,
-                color:active?'#15803d':'#166534',cursor:'pointer'}
+              style:{flex:1,padding:'9px 4px',border:'1.5px solid '+(active?'#1d4ed8':'#93c5fd'),borderRadius:8,
+                background:active?'#bfdbfe':'#fff',fontSize:12,fontWeight:700,
+                color:active?'#1d4ed8':'#1e40af',cursor:'pointer'}
             },opt[1]);
           })
         ),
-        h('div',{style:{fontSize:10,color:'#166534',marginTop:8}},'This travels with your picks so GiddyUp Play knows how many spots to score.')
+        h('div',{style:{fontSize:10,color:'#1e40af',marginTop:8}},'This travels with your picks so GiddyUp Play knows how many spots to score.')
       ),
+      h('div',{style:{height:2,background:'#93c5fd',borderRadius:2,marginBottom:16}}),
       (top4||myTop4)
         ? h(Fragment,null,
             top4&&h('div',{style:{background:'#f0fdf4',border:'1px solid #86efac',borderRadius:12,padding:'14px',marginBottom:10,textAlign:'left'}},
@@ -1257,7 +1259,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
         );
       })(),
       h('div',{style:{fontSize:11,color:'#334155',marginTop:10}},'Repeat for each race you handicap.'),
-      h('button',{onClick:openFullPlay,style:{width:'100%',padding:'10px',background:'#fff',border:'1px solid '+C.border,borderRadius:10,color:C.navy,fontSize:12,fontWeight:600,cursor:'pointer',marginTop:6}},'Open Full Play App (leaderboard, all races) \u2192')
+      h('button',{onClick:openFullPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',border:'none',borderRadius:12,color:C.gold,fontSize:15,fontWeight:700,cursor:'pointer',marginTop:6}},'Open Full Play App (leaderboard, all races) \u2192')
     ),
     h('div',{style:{background:'#fff',borderRadius:14,padding:'16px',border:'1px solid '+C.border}},
       h('div',{style:{fontSize:11,fontWeight:700,color:C.text,textTransform:'uppercase',letterSpacing:2,marginBottom:12}},'How it works'),
