@@ -846,7 +846,7 @@ function loadSilksPicks(){
       Object.keys(data.housePicks).forEach(raceNum=>{
         const p=data.housePicks[raceNum];
         if(p&&p.length>=4){
-          card.mlPicks[raceNum]=[parseInt(p[0],10),parseInt(p[1],10),parseInt(p[2],10),parseInt(p[3],10)];
+          card.mlPicks[raceNum]=p.map(v=>v!=null?parseInt(v,10):null);
           houseCount++;
         }
       });
@@ -856,7 +856,7 @@ function loadSilksPicks(){
       Object.keys(data.buddyPicks).forEach(raceNum=>{
         const p=data.buddyPicks[raceNum];
         if(p&&p.length>=4){
-          card.buddyPicks[raceNum]=[parseInt(p[0],10),parseInt(p[1],10),parseInt(p[2],10),parseInt(p[3],10)];
+          card.buddyPicks[raceNum]=p.map(v=>v!=null?parseInt(v,10):null);
           buddyCount++;
         }
       });
