@@ -531,7 +531,7 @@ return h("div",{style:{paddingTop:14}},
           h("div",{style:{fontSize:12,fontWeight:700,color:"#1f3610",marginTop:2}},[r0.postTime?"Approx Post "+r0.postTime:"",("Now "+nowLabel)].filter(Boolean).join("   ·   ")));
       })(),
       h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
-        h("div",{style:{fontSize:11,color:C.muted}},races.length+" race"+(races.length!==1?"s":"")+" loaded"),
+        h("div",{style:{fontSize:13,fontWeight:700,color:C.text}},races.length+" race"+(races.length!==1?"s":"")+" loaded"),
         h("button",{onClick:clearAll,style:{background:"transparent",border:"none",color:"#ef4444",fontSize:11,cursor:"pointer",fontWeight:700}},"Clear all")),
 
       races.map(race=>{
