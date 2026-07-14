@@ -160,8 +160,8 @@ input.pi:disabled{opacity:0.45;cursor:not-allowed;}
 .sc-table td:first-child{text-align:left;}
 .sc-foot-row td{background:var(--green-light);font-weight:600;font-size:13px;border-top:2px solid var(--green)!important;}
 .sc-grand-row td{background:var(--green);color:var(--white);font-weight:600;font-size:14px;}
-.sc-tabbar{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px;}
-.sc-tab-btn{flex:0 0 auto;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);color:var(--muted);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;}
+.sc-tabbar{display:flex;gap:4px;margin-bottom:14px;}
+.sc-tab-btn{flex:1;padding:8px 4px;border-radius:16px;border:1.5px solid var(--border);background:var(--white);color:var(--muted);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;cursor:pointer;text-align:center;}
 .sc-tab-btn.active{background:var(--green);border-color:var(--green);color:var(--white);}
 .sc-panel-empty{font-size:12px;color:var(--muted);padding:14px 4px;text-align:center;}
 .compare-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
@@ -288,10 +288,10 @@ input[type=file]{display:none;}
         <div id="p-depth-badge-note" style="font-size:11px;color:var(--muted);"></div>
       </div>
       <div class="depth-selector" id="p-depth-selector-landing">
-        <button type="button" class="depth-btn" data-depth="win" onclick="setPickType('win')">Win</button>
-        <button type="button" class="depth-btn" data-depth="exacta" onclick="setPickType('exacta')">Exacta</button>
-        <button type="button" class="depth-btn" data-depth="trifecta" onclick="setPickType('trifecta')">Trifecta</button>
-        <button type="button" class="depth-btn" data-depth="superfecta" onclick="setPickType('superfecta')">Superfecta</button>
+        <button type="button" class="depth-btn" data-depth="win">Win</button>
+        <button type="button" class="depth-btn" data-depth="exacta">Exacta</button>
+        <button type="button" class="depth-btn" data-depth="trifecta">Trifecta</button>
+        <button type="button" class="depth-btn" data-depth="superfecta">Superfecta</button>
       </div>
     </div>
     <div style="margin-bottom:14px;text-align:center;">
@@ -303,15 +303,19 @@ input[type=file]{display:none;}
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="p-racenum">1</span></div>
         <button class="btn btn-outline btn-sm" onclick="showGrid()">↑ All Races</button>
       </div>
+      <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#1e40af;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span>📌 Picks are entered in <strong>GiddyUp Silks</strong> — this is a view-only summary.</span>
+        <button class="btn btn-sm" style="background:#1e40af;color:#fff;border:none;flex-shrink:0;" onclick="openSilks()">Open Silks</button>
+      </div>
       <div class="card" style="padding:12px 14px;">
         <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Playing For This Card</div>
         <div class="depth-selector" id="p-depth-selector">
-          <button type="button" class="depth-btn" data-depth="win" onclick="setPickType('win')">Win</button>
-          <button type="button" class="depth-btn" data-depth="exacta" onclick="setPickType('exacta')">Exacta</button>
-          <button type="button" class="depth-btn" data-depth="trifecta" onclick="setPickType('trifecta')">Trifecta</button>
-          <button type="button" class="depth-btn" data-depth="superfecta" onclick="setPickType('superfecta')">Superfecta</button>
+          <button type="button" class="depth-btn" data-depth="win" disabled>Win</button>
+          <button type="button" class="depth-btn" data-depth="exacta" disabled>Exacta</button>
+          <button type="button" class="depth-btn" data-depth="trifecta" disabled>Trifecta</button>
+          <button type="button" class="depth-btn" data-depth="superfecta" disabled>Superfecta</button>
         </div>
-        <div class="hint" style="margin-top:4px;">Applies to your whole card today. Switch any time before a race locks.</div>
+        <div class="hint" style="margin-top:4px;">Set in GiddyUp Silks and applies to your whole card today.</div>
       </div>
       <div class="gu-section" id="gu-section">
         <div class="gu-title">🔬 GiddyUp Picks</div>
@@ -324,16 +328,15 @@ input[type=file]{display:none;}
             <div class="pick-slot fourth"><label>4th</label><input type="number" id="gu4" class="pi" placeholder="#" min="1" disabled=""></div>
           </div>
         </div>
-        <div id="gu-empty-state" style="display:none;font-size:13px;color:var(--muted);padding:6px 0;">⏳ Not loaded yet — go to <strong>All Races</strong> and tap <strong>Load</strong> on the GiddyUp Picks banner.</div>
+        <div id="gu-empty-state" style="display:none;font-size:13px;color:var(--muted);padding:6px 0;">⏳ Not entered yet in GiddyUp Silks for this race.</div>
       </div>
       <div class="card">
         <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">My Picks</div>
-        <div id="pp-rank-badge" style="display:none;font-size:11px;color:var(--gold-dark);background:var(--gold-light);border:1px solid var(--gold);border-radius:8px;padding:6px 10px;margin-bottom:10px;">⭐ Pre-filled from your GiddyUp Silks My Rankings — edit freely, then Save Picks.</div>
         <div class="pick-grid">
-          <div class="pick-slot win"><label>★ Win</label><input type="number" id="pp1" class="pi pi-win" placeholder="#" min="1"></div>
-          <div class="pick-slot place"><label>Place</label><input type="number" id="pp2" class="pi pi-place" placeholder="#" min="1"></div>
-          <div class="pick-slot show"><label>Show</label><input type="number" id="pp3" class="pi pi-show" placeholder="#" min="1"></div>
-          <div class="pick-slot fourth"><label>4th</label><input type="number" id="pp4" class="pi" placeholder="#" min="1"></div>
+          <div class="pick-slot win"><label>★ Win</label><input type="number" id="pp1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
+          <div class="pick-slot place"><label>Place</label><input type="number" id="pp2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
+          <div class="pick-slot show"><label>Show</label><input type="number" id="pp3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
+          <div class="pick-slot fourth"><label>4th</label><input type="number" id="pp4" class="pi" placeholder="#" min="1" disabled=""></div>
         </div>
         <div class="hint" style="margin-top:8px;">★ Win Pick finishes 1st = +20 pts bonus</div>
         <div id="p-lock-msg" style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-light);border:1px solid var(--red);border-radius:8px;font-size:12px;color:var(--red);"></div>
@@ -350,7 +353,7 @@ input[type=file]{display:none;}
             <div class="pick-slot fourth"><label>4th</label><input type="number" id="ml4" class="pi" placeholder="#" min="1" disabled=""></div>
           </div>
         </div>
-        <div id="ml-empty-state" style="font-size:12px;color:var(--gold-dark);padding:6px 0;">Not entered for this race — add Track Selections picks in GiddyUp Silks' Play tab, then Send Picks.</div>
+        <div id="ml-empty-state" style="font-size:12px;color:var(--gold-dark);padding:6px 0;">Not entered for this race — add Track Selections picks in GiddyUp Silks' Play tab.</div>
       </div>
       <div class="ml-section" style="background:var(--purple-light);border-color:var(--purple);">
         <div class="ml-title" style="color:var(--purple);">🐴 Barn Mate Picks (optional)</div>
@@ -363,11 +366,7 @@ input[type=file]{display:none;}
             <div class="pick-slot fourth"><label>4th</label><input type="number" id="bm4" class="pi" placeholder="#" min="1" disabled=""></div>
           </div>
         </div>
-        <div id="bm-empty-state" style="font-size:12px;color:var(--purple);padding:6px 0;">Not entered for this race — add Barn Mate picks in GiddyUp Silks' Play tab, then Send Picks.</div>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:8px;">
-        <button class="btn btn-green btn-sm" id="p-save-btn" onclick="savePicks()">Save Picks</button>
-        <button class="btn btn-outline btn-sm" onclick="clearPickInputs()">Clear</button>
+        <div id="bm-empty-state" style="font-size:12px;color:var(--purple);padding:6px 0;">Not entered for this race — add Barn Mate picks in GiddyUp Silks' Play tab.</div>
       </div>
 
     </div>
@@ -469,9 +468,9 @@ input[type=file]{display:none;}
     <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter your picks and results to get started.</div>
     <div id="sc-tabs-wrap" style="display:none;">
       <div class="sc-tabbar">
-        <button class="sc-tab-btn active" id="sc-tabbtn-leaderboard" onclick="scShowTab('leaderboard')">🏆 Leaderboard</button>
+        <button class="sc-tab-btn active" id="sc-tabbtn-leaderboard" onclick="scShowTab('leaderboard')">🏆 Scoreboard</button>
         <button class="sc-tab-btn" id="sc-tabbtn-h2h" onclick="scShowTab('h2h')">⚔️ Head-to-Head</button>
-        <button class="sc-tab-btn" id="sc-tabbtn-exotic" onclick="scShowTab('exotic')">🎯 Exotic Bets</button>
+        <button class="sc-tab-btn" id="sc-tabbtn-exotic" onclick="scShowTab('exotic')">🎯 Exotics</button>
       </div>
       <div class="sc-panel" id="sc-panel-leaderboard">
         <div id="sc-ml-compare"></div>
@@ -818,49 +817,17 @@ function selectPickRace(r){
 function renderDepthSelector(){
   const card=getTodayCard();
   const type=getPickType(card);
-  const locked=!!card.pickTypeLocked;
   document.querySelectorAll('.depth-selector .depth-btn').forEach(btn=>{
     btn.classList.toggle('active',btn.dataset.depth===type);
-    btn.disabled=locked;
-    btn.style.opacity=locked&&btn.dataset.depth!==type?'0.5':'1';
-    btn.style.cursor=locked?'not-allowed':'pointer';
+    btn.disabled=true;
+    btn.style.opacity=btn.dataset.depth!==type?'0.5':'1';
+    btn.style.cursor='not-allowed';
   });
   const note=document.getElementById('p-depth-badge-note');
   if(note){
     note.innerHTML=PICK_DEPTH_LABELS[type]+' · '+getPickDepth(card)+' pick'+(getPickDepth(card)>1?'s':'')+' per race'
-      +(locked?' <span style="color:var(--green-dark);font-weight:600;">— set from GiddyUp Silks</span> <a href="#" onclick="unlockPickType();return false;" style="color:var(--muted);text-decoration:underline;margin-left:4px;">change</a>':'');
+      +' <span style="color:var(--green-dark);font-weight:600;">— set in GiddyUp Silks</span>';
   }
-}
-function unlockPickType(){
-  const card=getTodayCard();
-  card.pickTypeLocked=false;
-  saveUser();
-  renderDepthSelector();
-}
-function applyDepthToSlots(){
-  const card=getTodayCard();
-  const depth=getPickDepth(card);
-  const hasResults=!!card.results[curPickRace];
-  ['pp1','pp2','pp3','pp4'].forEach((id,i)=>{
-    const el=document.getElementById(id);
-    const slot=el.closest('.pick-slot');
-    const active=(i<depth);
-    if(!active) el.value='';
-    el.disabled=hasResults?true:!active;
-    el.style.opacity=hasResults?'0.5':(active?'1':'');
-    if(slot) slot.classList.toggle('slot-inactive',!active);
-  });
-}
-function setPickType(type){
-  if(!PICK_DEPTHS[type]) return;
-  const card=getTodayCard();
-  if(card.pickTypeLocked){showErr('p-err','Pick type was set from GiddyUp Silks. Tap "change" to override.');return;}
-  const panelOpen=document.getElementById('p-pick-panel').style.display!=='none';
-  if(panelOpen&&card.results[curPickRace]){showErr('p-err','Race already locked — can\'t change pick type now.');return;}
-  card.pickType=type;
-  saveUser();
-  renderDepthSelector();
-  applyDepthToSlots();
 }
 function loadPickRaceData(r){
   const card=getTodayCard();
@@ -868,16 +835,15 @@ function loadPickRaceData(r){
   const ml=card.mlPicks?card.mlPicks[r]:null;
   const hasResults=!!card.results[r];
   document.getElementById('pp1').value=pk?pk.field[0]:'';
-  document.getElementById('pp2').value=pk?pk.field[1]:'';
-  document.getElementById('pp3').value=pk?pk.field[2]:'';
-  document.getElementById('pp4').value=pk?pk.field[3]:'';
-  document.getElementById('pp-rank-badge').style.display=(pk&&pk.source==='myRankings')?'block':'none';
+  document.getElementById('pp2').value=pk&&pk.field[1]!=null?pk.field[1]:'';
+  document.getElementById('pp3').value=pk&&pk.field[2]!=null?pk.field[2]:'';
+  document.getElementById('pp4').value=pk&&pk.field[3]!=null?pk.field[3]:'';
   const gu=card.guPicks?card.guPicks[r]:null;
   if(gu){
     document.getElementById('gu1').value=gu[0];
-    document.getElementById('gu2').value=gu[1];
-    document.getElementById('gu3').value=gu[2];
-    document.getElementById('gu4').value=gu[3];
+    document.getElementById('gu2').value=gu[1]!=null?gu[1]:'';
+    document.getElementById('gu3').value=gu[2]!=null?gu[2]:'';
+    document.getElementById('gu4').value=gu[3]!=null?gu[3]:'';
     document.getElementById('gu-loaded-state').style.display='block';
     document.getElementById('gu-empty-state').style.display='none';
   } else {
@@ -886,9 +852,9 @@ function loadPickRaceData(r){
   }
   if(ml){
     document.getElementById('ml1').value=ml[0];
-    document.getElementById('ml2').value=ml[1];
-    document.getElementById('ml3').value=ml[2];
-    document.getElementById('ml4').value=ml[3];
+    document.getElementById('ml2').value=ml[1]!=null?ml[1]:'';
+    document.getElementById('ml3').value=ml[2]!=null?ml[2]:'';
+    document.getElementById('ml4').value=ml[3]!=null?ml[3]:'';
     document.getElementById('ml-loaded-state').style.display='block';
     document.getElementById('ml-empty-state').style.display='none';
   } else {
@@ -902,9 +868,9 @@ function loadPickRaceData(r){
   const bm=card.buddyPicks?card.buddyPicks[r]:null;
   if(bm){
     document.getElementById('bm1').value=bm[0];
-    document.getElementById('bm2').value=bm[1];
-    document.getElementById('bm3').value=bm[2];
-    document.getElementById('bm4').value=bm[3];
+    document.getElementById('bm2').value=bm[1]!=null?bm[1]:'';
+    document.getElementById('bm3').value=bm[2]!=null?bm[2]:'';
+    document.getElementById('bm4').value=bm[3]!=null?bm[3]:'';
     document.getElementById('bm-loaded-state').style.display='block';
     document.getElementById('bm-empty-state').style.display='none';
   } else {
@@ -915,42 +881,14 @@ function loadPickRaceData(r){
     document.getElementById('bm-loaded-state').style.display='none';
     document.getElementById('bm-empty-state').style.display='block';
   }
-  const locked=hasResults;
-  applyDepthToSlots();
-  const saveBtn=document.getElementById('p-save-btn');
-  saveBtn.disabled=locked;
   const lockMsg=document.getElementById('p-lock-msg');
-  if(locked){
+  if(hasResults){
     const res=card.results[r];
     lockMsg.style.display='block';
-    lockMsg.innerHTML=`🔒 Race ${r} is locked — official result: ${res.map((h,i)=>h!=null?['1st','2nd','3rd','4th'][i]+' #'+h:null).filter(Boolean).join(' · ')}`;
+    lockMsg.innerHTML=`🔒 Race ${r} is scored — official result: ${res.map((h,i)=>h!=null?['1st','2nd','3rd','4th'][i]+' #'+h:null).filter(Boolean).join(' · ')}`;
   } else lockMsg.style.display='none';
   document.getElementById('p-err').style.display='none';
 }
-function clearPickInputs(){
-  ['pp1','pp2','pp3','pp4'].forEach(id=>document.getElementById(id).value='');
-}
-function savePicks(){
-  const card=getTodayCard();
-  const pickType=getPickType(card);
-  const depth=getPickDepth(card);
-  const p1=gi('pp1'),p2=gi('pp2'),p3=gi('pp3'),p4=gi('pp4');
-  const entered=[p1,p2,p3,p4].slice(0,depth);
-  if(entered.some(p=>!p)){showErr('p-err','Please fill in your '+depth+' pick'+(depth>1?'s':'')+' for '+PICK_DEPTH_LABELS[pickType]+'.');return;}
-  if(card.results[curPickRace]){showErr('p-err','Results already entered for this race — picks locked.');return;}
-  const field=[p1,p2,p3,p4].map((p,i)=>i<depth?p:null);
-  card.picks[curPickRace]={win:p1,field,pickType,savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
-  saveUser();
-  document.getElementById('p-err').style.display='none';
-  renderRaceGrid();
-  if(curPickRace<card.numRaces){
-    curPickRace++;
-    document.getElementById('p-racenum').textContent=curPickRace;
-    loadPickRaceData(curPickRace);
-  }
-}
-
-
 async function loadResultsScreen(){
   document.getElementById('r-name').textContent=displayName(CU);
   document.getElementById('r-date').textContent=formatDate(TODAY);
@@ -968,9 +906,10 @@ function renderResultGrid(){
     const hasResults=!!card.results[r];
     const isScored=!!card.scores[r];
     const res=card.results[r];
-    let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Result entered</span>':hasPicks?'<span class="tag tag-muted">Ready to score</span>':'<span class="tag tag-muted">No picks yet</span>';
+    const outOfOrder=r>1&&!card.results[r-1];
+    let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Result entered</span>':outOfOrder?'<span class="tag tag-muted">🔒 Enter Race '+(r-1)+' first</span>':hasPicks?'<span class="tag tag-muted">Ready to score</span>':'<span class="tag tag-muted">No picks yet</span>';
     const f=res||[null,null,null,null];
-    rows+=`<tr onclick="selectResultRace(${r})" style="cursor:pointer;${isScored?'background:var(--gold-light);':''}">
+    rows+=`<tr onclick="selectResultRace(${r})" style="cursor:pointer;${isScored?'background:var(--gold-light);':''}${outOfOrder?'opacity:0.5;':''}">
       <td><strong>${isScored?'🏆 ':''}R${r}</strong></td>
       <td>${badge}</td>
       <td style="color:var(--gold-dark);font-weight:600;">${f[0]!=null?f[0]:'—'}</td>
@@ -1040,12 +979,16 @@ function unlockResultEntry(){
   applyResultDepthHints();
 }
 function selectResultRace(r){
+  const card=getTodayCard();
+  if(r>1&&!card.results[r-1]){
+    alert('Race '+(r-1)+' doesn\'t have a result yet. Enter results in order — Race '+(r-1)+' first.');
+    return;
+  }
   curResultRace=r;
   resultUnlocked=false;
   document.getElementById('r-racenum').textContent=r;
   document.getElementById('r-race-grid').style.display='none';
   document.getElementById('r-entry-panel').style.display='block';
-  const card=getTodayCard();
   const existing=card.results[r];
   document.getElementById('rr1').value=existing?existing[0]:'';
   document.getElementById('rr2').value=existing?existing[1]:'';
@@ -1249,7 +1192,7 @@ async function loadScorecard(){
     competitors.push({name:CU?displayName(CU):'You',icon:'🏇',total:myTotal,races:rns.length,cons:myCons,color:'var(--green)',isMe:true});
     const ranked=[...competitors].sort((a,b)=>b.total-a.total);
     mlEl.style.display='block';
-    mlEl.innerHTML=`<div class="section-title" style="margin-bottom:8px;">Leaderboard — Today</div>
+    mlEl.innerHTML=`<div class="section-title" style="margin-bottom:8px;">Scoreboard — Today</div>
     <div class="card" style="padding:10px;">
       ${ranked.map((c,i)=>{
         const medal=['🥇','🥈','🥉'][i]||'';
@@ -1371,7 +1314,7 @@ function renderHeadToHead(card,rns){
       </table>
     </div>`;
   exoticEl.innerHTML=`
-    <div class="section-title">Exotic Bets Breakdown</div>
+    <div class="section-title">Exotics Breakdown</div>
     <div style="padding:0;">
       <table class="sc-table">
         <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>Ex</th><th>Tri</th><th>Sfcta</th><th>Total</th></tr></thead>
@@ -1395,18 +1338,16 @@ const TBTS_RULES=[
   {num:10,icon:"🎩",title:"The Steward's Decision is Final",rule:"All decisions on any dispute are final. There is no appeal process. There is no commissioner. There is no tribunal. This is a free game.",tbts:"The steward has spoken. Too Bad Too Sad."},
 ];
 const HOW_TO_USE = [
-  {icon:"🎟️", title:"Step 1 — Set Your Race Card",
-   desc:"At the top of the Picks tab, tap how many races are on today's card. This sets up your pick grid for the day."},
-  {icon:"✏️", title:"Step 2 — Enter Your Picks Before the Races Start",
-   desc:"Below that, you'll see a grid of all today's races. Tap any race to enter your 4 picks — Win, Place, Show and 4th. Your Win Pick is your bonus horse — if it finishes 1st you get +20 bonus points on top of your regular score."},
-  {icon:"📰", title:"Step 3 — Optional: Enter Selections and Load GiddyUp Picks",
-   desc:"Below your picks you'll see a Track Selections section — enter the 4 picks printed in the race program if you want to compare yourself against the house experts. If you're playing with a buddy, their picks go in a separate Barn Mate section. If you came from GiddyUp Silks, your AI-ranked picks are also loaded automatically as GiddyUp Picks. All of this is optional — the app works fine with just your own picks."},
-  {icon:"🏆", title:"Four-Way Leaderboard",
-   desc:"After each race, see how Track Selections, GiddyUp, your Barn Mate, and you stack up head to head. The Scorecard shows a running leaderboard for the day — who's leading after every race scored. It's the ultimate test: can you beat the house? Can you beat the AI? Can you beat your buddy?"},
-  {icon:"📋", title:"Step 4 — Enter the Official Results",
-   desc:"After each race, tap the Results tab. Select the race and enter the official top 4 finishers in order. Your picks are scored automatically the moment you submit."},
-  {icon:"📊", title:"Step 5 — Check Your Scorecard",
-   desc:"Tap the Scorecard tab to see your full daily breakdown — race by race scores, streak bonus, consistency bonus and grand total. If you entered morning line picks, you'll see a head-to-head comparison showing whether you beat the chalk."},
+  {icon:"🎟️", title:"Step 1 — Enter Everything in GiddyUp Silks",
+   desc:"Picks, pick type (Win/Exacta/Trifecta/Superfecta), Track Selections, and Barn Mate are all entered in GiddyUp Silks' Play tab, then saved from there. Play is where you watch things unfold — it doesn't take pick entry itself."},
+  {icon:"👀", title:"Step 2 — Review Your Picks Here",
+   desc:"The Picks tab shows a read-only summary of everything saved from Silks — your picks, GiddyUp's AI picks, Track Selections, and Barn Mate's picks, race by race. Need to change something? Tap Open Silks."},
+  {icon:"🏆", title:"Four-Way Scoreboard",
+   desc:"After each race, see how Track Selections, GiddyUp, your Barn Mate, and you stack up head to head. The Scorecard shows a running scoreboard for the day — who's leading after every race scored. It's the ultimate test: can you beat the house? Can you beat the AI? Can you beat your buddy?"},
+  {icon:"📋", title:"Step 3 — Enter Official Results in Order",
+   desc:"After each race, tap the Results tab. Select the race and enter the official top finishers — results are locked to entry order, so Race 2 can't be scored until Race 1 has a result. Your picks are scored automatically the moment you submit."},
+  {icon:"📊", title:"Step 4 — Check Your Scorecard",
+   desc:"Tap the Scorecard tab to see your full daily breakdown — race by race scores, streak bonus, consistency bonus and grand total, plus head-to-head and exotic bet comparisons against the house, the AI, and your buddy."},
   {icon:"⭐", title:"How Scoring Works",
    desc:"Each of your 4 picks that lands anywhere in the top 4 (any order) = 5 pts. Sweep all 4 = +10 bonus. Win Pick finishes 1st = +20 bonus. Exacta (Win + Place in correct order) = +30. Trifecta = +50. Superfecta = +70. Perfect race = 200 pts."},
   {icon:"🔥", title:"Streak Bonus",
