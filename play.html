@@ -1197,6 +1197,13 @@ function scoreRace(picks,actual,raceNum,card,isOpponent,scoreKey){
   return{fieldPts,fieldHits,sweepPts,winHit,winPts,exacta,trifecta,superfecta,exactaPts,trifectaPts,superfectaPts,exoticPts,raceTotal,streak,actual,picks};
 }
 
+function consistencyBonus(scoresObj,numRaces){
+  if(!scoresObj||!numRaces) return 0;
+  const rnsX=Object.keys(scoresObj).map(Number);
+  if(rnsX.length!==numRaces) return 0;
+  const allAlive=rnsX.every(r=>scoresObj[r].raceTotal>0);
+  return allAlive?numRaces*5:0;
+}
 async function loadScorecard(){
   document.getElementById('sc-name').textContent=displayName(CU);
   document.getElementById('sc-date').textContent=formatDate(TODAY);
@@ -1218,7 +1225,7 @@ async function loadScorecard(){
   }
   noData.style.display='none';tabsWrap.style.display='block';
   let tR=0;
-  rns.forEach(r=>{ tR+=card.scores[r].raceTotal; });
+  rns.forEach(r=>{ tR+=card.scores[r].raceTotal+(card.scores[r].streak||0); });
   const mlScores=card.mlScores||{};
   const guScores=card.guScores||{};
   const buddyScores=card.buddyScores||{};
@@ -1227,15 +1234,19 @@ async function loadScorecard(){
   const buddyRns=Object.keys(buddyScores).map(Number);
   const mlEl=document.getElementById('sc-ml-compare');
   if(mlRns.length||guRns.length||buddyRns.length){
-    const myTotal=tR;
-    const mlTotal=mlRns.reduce((a,r)=>a+mlScores[r].raceTotal,0);
-    const guTotal=guRns.reduce((a,r)=>a+guScores[r].raceTotal,0);
-    const buddyTotal=buddyRns.reduce((a,r)=>a+buddyScores[r].raceTotal,0);
+    const myCons=consistencyBonus(card.scores,card.numRaces);
+    const mlCons=consistencyBonus(mlScores,card.numRaces);
+    const guCons=consistencyBonus(guScores,card.numRaces);
+    const buddyCons=consistencyBonus(buddyScores,card.numRaces);
+    const myTotal=tR+myCons;
+    const mlTotal=mlRns.reduce((a,r)=>a+mlScores[r].raceTotal+(mlScores[r].streak||0),0)+mlCons;
+    const guTotal=guRns.reduce((a,r)=>a+guScores[r].raceTotal+(guScores[r].streak||0),0)+guCons;
+    const buddyTotal=buddyRns.reduce((a,r)=>a+buddyScores[r].raceTotal+(buddyScores[r].streak||0),0)+buddyCons;
     const competitors=[];
-    if(mlRns.length) competitors.push({name:'Track Selections',icon:'📰',total:mlTotal,races:mlRns.length,color:'var(--blue)'});
-    if(guRns.length) competitors.push({name:'GiddyUp',icon:'🔬',total:guTotal,races:guRns.length,color:'var(--gold-dark)'});
-    if(buddyRns.length) competitors.push({name:getBuddyName(),icon:'🐴',total:buddyTotal,races:buddyRns.length,color:'var(--purple)'});
-    competitors.push({name:CU?displayName(CU):'You',icon:'🏇',total:myTotal,races:rns.length,color:'var(--green)',isMe:true});
+    if(mlRns.length) competitors.push({name:'Track Selections',icon:'📰',total:mlTotal,races:mlRns.length,cons:mlCons,color:'var(--blue)'});
+    if(guRns.length) competitors.push({name:'GiddyUp',icon:'🔬',total:guTotal,races:guRns.length,cons:guCons,color:'var(--gold-dark)'});
+    if(buddyRns.length) competitors.push({name:getBuddyName(),icon:'🐴',total:buddyTotal,races:buddyRns.length,cons:buddyCons,color:'var(--purple)'});
+    competitors.push({name:CU?displayName(CU):'You',icon:'🏇',total:myTotal,races:rns.length,cons:myCons,color:'var(--green)',isMe:true});
     const ranked=[...competitors].sort((a,b)=>b.total-a.total);
     mlEl.style.display='block';
     mlEl.innerHTML=`<div class="section-title" style="margin-bottom:8px;">Leaderboard — Today</div>
@@ -1246,7 +1257,7 @@ async function loadScorecard(){
           <div style="font-size:20px;width:28px;text-align:center;">${medal||c.icon}</div>
           <div style="flex:1;">
             <div style="font-weight:500;font-size:14px;${c.isMe?'color:var(--green);':''}">${c.icon} ${c.name}${c.isMe?' <span class=\"tag tag-green\" style=\"font-size:9px;\">You</span>':''}</div>
-            <div style="font-size:11px;color:var(--muted);">${c.races} race${c.races!==1?'s':''} scored</div>
+            <div style="font-size:11px;color:var(--muted);">${c.races} race${c.races!==1?'s':''} scored${c.cons?' · 🏆 +'+c.cons+' consistency':''}</div>
           </div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${c.color};">${c.total}</div>
         </div>`;
@@ -1284,10 +1295,13 @@ function renderHeadToHead(card,rns){
     return '—';
   }
   let rows='';
+  const mainTotals={};
+  competitors.forEach(c=>{mainTotals[c.key]=0;});
   rns.forEach(r=>{
     competitors.forEach((c,ci)=>{
       const sc=c.scores[r];
       if(!sc) return;
+      mainTotals[c.key]+=sc.raceTotal+(sc.streak||0);
       const isFirst=ci===0;
       rows+=`<tr style="${isFirst?'border-top:2px solid var(--border);':''}">
         <td style="${isFirst?'':'color:var(--muted);'}">${isFirst?'<strong>R'+r+'</strong>':''}</td>
@@ -1300,6 +1314,15 @@ function renderHeadToHead(card,rns){
         <td><strong style="color:${c.color};">${sc.raceTotal+(sc.streak||0)}</strong></td>
       </tr>`;
     });
+  });
+  let mainFootRows='';
+  competitors.forEach(c=>{
+    const cons=consistencyBonus(c.scores,card.numRaces);
+    mainFootRows+=`<tr style="background:${c.isMe?'var(--green-light)':'var(--bg)'};font-weight:600;">
+      <td colspan="2" style="text-align:left;${c.isMe?'color:var(--green);':''}">${c.icon} ${c.name}${c.isMe?' <span class="tag tag-green" style="font-size:9px;">You</span>':''}${cons?' <span class="tag tag-gold" style="font-size:9px;">🏆+'+cons+'</span>':''}</td>
+      <td colspan="4"></td>
+      <td style="color:${c.color};">${mainTotals[c.key]+cons}</td>
+    </tr>`;
   });
   let exoticRows='';
   const exoticTotals={};
@@ -1344,6 +1367,7 @@ function renderHeadToHead(card,rns){
       <table class="sc-table">
         <thead><tr><th>Race</th><th style="text-align:left;">Who</th><th>W</th><th>Fld</th><th>Exot</th><th>Swp</th><th>Stk</th><th>Total</th></tr></thead>
         <tbody>${rows}</tbody>
+        <tfoot>${mainFootRows}</tfoot>
       </table>
     </div>`;
   exoticEl.innerHTML=`
