@@ -257,9 +257,9 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item active" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
-    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
   </div>
   <div class="help-panel-wrap">
@@ -385,9 +385,9 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item active" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
-    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
   </div>
   <div class="help-panel-wrap">
@@ -446,9 +446,9 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
+    <div class="nav-item active" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
-    <div class="nav-item active" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
   </div>
   <div class="help-panel-wrap">
@@ -512,9 +512,9 @@ input[type=file]{display:none;}
     </div>
   </div>
   <div class="top-nav">
+    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
-    <div class="nav-item" onclick="nav('scorecard')"><div class="ni">📊</div><div class="nl">Scorecard</div></div>
     <div class="nav-item active" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
   </div>
   <div class="help-panel-wrap">
@@ -703,7 +703,7 @@ async function handleRegister(){
   const profile=await GiddyUpAuth.getProfile(result.user.id);
   CU={id:result.user.id,username:profile?profile.username:u,email:e,city:profile?profile.city:c,diary:loadDiary(result.user.id)};
   dayCard=await loadDayCard();
-  loadPicks();go('screen-picks');
+  loadScorecard();go('screen-scorecard');
 }
 async function handleLogin(){
   const e=v('login-e').toLowerCase(),p=v('login-p');
@@ -713,7 +713,7 @@ async function handleLogin(){
   const profile=await GiddyUpAuth.getProfile(result.user.id);
   CU={id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',diary:loadDiary(result.user.id)};
   dayCard=await loadDayCard();
-  loadPicks();go('screen-picks');
+  loadScorecard();go('screen-scorecard');
 }
 async function handleLogout(){
   await GiddyUpAuth.logout();
@@ -1684,7 +1684,7 @@ function showErr(id,msg){const el=document.getElementById(id);if(el){el.textCont
     const profile=await GiddyUpAuth.getProfile(session.user.id);
     CU={id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',diary:loadDiary(session.user.id)};
     dayCard=await loadDayCard();
-    nav('picks');
+    nav('scorecard');
     return;
   }
   go('screen-splash');
