@@ -252,7 +252,6 @@ input[type=file]{display:none;}
     <div class="top-bar-left"><div class="tb-ctx">My Picks</div><div class="tb-name" id="p-name">FastEddie</div></div>
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="p-date"></div>
-      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
       <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
@@ -261,6 +260,7 @@ input[type=file]{display:none;}
     <div class="nav-item active" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+    <div class="nav-item" onclick="goToSilksUpload()"><div class="ni">🏇</div><div class="nl">Riders Up</div></div>
   </div>
   <div class="help-panel-wrap">
     <div class="help-toggle-bar" onclick="toggleHelp('help-picks')">
@@ -307,7 +307,6 @@ input[type=file]{display:none;}
     <div class="top-bar-left"><div class="tb-ctx">Enter Results</div><div class="tb-name" id="r-name">FastEddie</div></div>
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="r-date"></div>
-      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
       <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
@@ -316,6 +315,7 @@ input[type=file]{display:none;}
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item active" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+    <div class="nav-item" onclick="goToSilksUpload()"><div class="ni">🏇</div><div class="nl">Riders Up</div></div>
   </div>
   <div class="help-panel-wrap">
     <div class="help-toggle-bar" onclick="toggleHelp('help-results')">
@@ -369,7 +369,6 @@ input[type=file]{display:none;}
     <div class="top-bar-left"><div class="tb-ctx">My Scorecard</div><div class="tb-name" id="sc-name">FastEddie</div></div>
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="sc-date"></div>
-      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
       <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
@@ -378,6 +377,7 @@ input[type=file]{display:none;}
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+    <div class="nav-item" onclick="goToSilksUpload()"><div class="ni">🏇</div><div class="nl">Riders Up</div></div>
   </div>
   <div class="help-panel-wrap">
     <div class="help-toggle-bar" onclick="toggleHelp('help-scorecard')">
@@ -435,7 +435,6 @@ input[type=file]{display:none;}
     <div class="top-bar-left"><div class="tb-ctx">My Racing Diary</div><div class="tb-name" id="d-name">FastEddie</div></div>
     <div class="hdr-actions">
       <div class="cpill cpill-gold" id="d-date"></div>
-      <button class="hdr-pill-btn" onclick="openSilks()">GiddyUp Silks</button>
       <button class="hdr-icon-btn" onclick="loadSettings();go('screen-settings')">⚙️</button>
     </div>
   </div>
@@ -444,6 +443,7 @@ input[type=file]{display:none;}
     <div class="nav-item" onclick="nav('picks')"><div class="ni">🎟️</div><div class="nl">Picks</div></div>
     <div class="nav-item" onclick="nav('results')"><div class="ni">📋</div><div class="nl">Results</div></div>
     <div class="nav-item active" onclick="nav('diary')"><div class="ni">📓</div><div class="nl">Diary</div></div>
+    <div class="nav-item" onclick="goToSilksUpload()"><div class="ni">🏇</div><div class="nl">Riders Up</div></div>
   </div>
   <div class="help-panel-wrap">
     <div class="help-toggle-bar" onclick="toggleHelp('help-diary')">
@@ -608,6 +608,9 @@ function toggleHelp(id){
 }
 function openSilks(){
   window.open('https://giddyupsilks.app','_blank');
+}
+function goToSilksUpload(){
+  window.open('https://giddyupsilks.app?tab=upload','_blank');
 }
 function togglePW(id,eye){
   const el=document.getElementById(id);
