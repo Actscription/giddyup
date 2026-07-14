@@ -269,12 +269,11 @@ input[type=file]{display:none;}
       <span class="help-toggle-caret" id="help-picks-caret">Show ▼</span>
     </div>
     <div id="help-picks" class="help-panel-body">
-    <div class="help-step"><div class="help-num">1</div><div>Set how many races are on today's card using the number buttons up top — defaults to 9.</div></div>
-    <div class="help-step"><div class="help-num">2</div><div>Tap any race cell to open the pick entry form.</div></div>
-    <div class="help-step"><div class="help-num">3</div><div>Enter horse numbers for <strong>Win, Place, Show</strong> and <strong>4th</strong>.</div></div>
+    <div class="help-step"><div class="help-num">1</div><div>Picks are entered in <strong>GiddyUp Silks</strong> — this tab is a read-only summary of what's been saved.</div></div>
+    <div class="help-step"><div class="help-num">2</div><div>Set how many races are on today's card and what you're playing (Win, Exacta, Trifecta, Superfecta) in Silks — both show here automatically.</div></div>
+    <div class="help-step"><div class="help-num">3</div><div>The table shows your picks alongside GiddyUp, Track Selections, and Barn Mate, race by race.</div></div>
     <div class="help-step"><div class="help-num">4</div><div>Your <strong>★ Win Pick</strong> earns +20 bonus points if that horse finishes 1st.</div></div>
-    <div class="help-step"><div class="help-num">5</div><div>Tap <strong>Save Picks</strong> — picks lock once results are entered for that race.</div></div>
-    <div class="help-step"><div class="help-num">6</div><div>Track Selections and your Barn Mate's 4 picks (if you're playing with one) are entered in GiddyUp Silks' Play tab and show up here once sent.</div></div>
+    <div class="help-step"><div class="help-num">5</div><div>Need to add or change picks? Tap <strong>Open Silks</strong> above the table.</div></div>
     </div>
   </div>
   <div class="page-pad">
@@ -325,10 +324,11 @@ input[type=file]{display:none;}
       <span class="help-toggle-caret" id="help-results-caret">Show ▼</span>
     </div>
     <div id="help-results" class="help-panel-body">
-    <div class="help-step"><div class="help-num">1</div><div>After each race finishes, tap the race cell.</div></div>
-    <div class="help-step"><div class="help-num">2</div><div>Enter the <strong>official top 4 finishers</strong> in order — 1st through 4th.</div></div>
+    <div class="help-step"><div class="help-num">1</div><div>After a race finishes, tap its row in the table.</div></div>
+    <div class="help-step"><div class="help-num">2</div><div>Enter the <strong>official finishers</strong> in order. Only as many spots as your pick type needs — Exacta only asks for 1st and 2nd, for example.</div></div>
     <div class="help-step"><div class="help-num">3</div><div>Tap <strong>Score This Race</strong> — your picks calculate automatically.</div></div>
-    <div class="help-step"><div class="help-num">4</div><div>The app advances to the next race for you. Repeat after every race.</div></div>
+    <div class="help-step"><div class="help-num">4</div><div>Results go in order — you can't score Race 3 until Race 2 has a result, and a race with no picks saved can't be scored at all.</div></div>
+    <div class="help-step"><div class="help-num">5</div><div>Made a mistake on a scored race? Tap <strong>Unlock to correct a mistake</strong> to fix it — it'll recalculate everyone's points for that race.</div></div>
     </div>
   </div>
   <div class="page-pad">
@@ -389,12 +389,12 @@ input[type=file]{display:none;}
     <div class="help-step"><div class="help-num">1</div><div>Shows your running point total — updated after every race you score.</div></div>
     <div class="help-step"><div class="help-num">2</div><div><strong>Streak bonus:</strong> score in consecutive races for +5 pts each race.</div></div>
     <div class="help-step"><div class="help-num">3</div><div><strong>Consistency bonus:</strong> score in every single race = number of races × 5 pts.</div></div>
-    <div class="help-step"><div class="help-num">4</div><div>If you entered Track Selections or Barn Mate picks, the leaderboard shows who's winning the day.</div></div>
+    <div class="help-step"><div class="help-num">4</div><div>If you have Track Selections or Barn Mate picks, the Scoreboard shows who's winning the day.</div></div>
     </div>
   </div>
   <div class="page-pad">
     <div id="sc-pick-type-badge" class="notice" style="display:none;padding:8px 12px;font-size:12px;text-align:center;"></div>
-    <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter your picks and results to get started.</div>
+    <div id="sc-no-data" class="notice" style="display:none;">No scored races yet today. Enter picks in GiddyUp Silks, then come here to enter results and get started.</div>
     <div id="sc-tabs-wrap" style="display:none;">
       <div class="sc-tabbar">
         <button class="sc-tab-btn active" id="sc-tabbtn-leaderboard" onclick="scShowTab('leaderboard')">🏆 Scoreboard</button>
@@ -1067,7 +1067,7 @@ async function loadScorecard(){
         </div>`;
       }).join('')}
     </div>`;
-  } else mlEl.innerHTML='<div class="sc-panel-empty">No Track Selections, GiddyUp, or Barn Mate picks recorded today \u2014 you\'re playing solo. Add one of them in GiddyUp Silks\' Play tab to see a leaderboard here.</div>';
+  } else mlEl.innerHTML='<div class="sc-panel-empty">No Track Selections, GiddyUp, or Barn Mate picks recorded today \u2014 you\'re playing solo. Add one of them in GiddyUp Silks\' Play tab to see a scoreboard here.</div>';
   renderHeadToHead(card,rns);
   scShowTab(scActiveTab);
 }
@@ -1190,7 +1190,7 @@ const TBTS_RULES=[
   {num:1,icon:"🚫",title:"Scratches",rule:"If your horse is scratched before the race, it scores zero. No substitutions, no replacements, no do-overs.",tbts:"Your horse didn't run. Too Bad Too Sad."},
   {num:2,icon:"🔢",title:"Wrong Number Entry",rule:"You typed #12 when you meant #2. You entered a horse number that doesn't exist in the field. You picked the same horse twice. Pay attention — your picks are your responsibility.",tbts:"You entered it wrong. Too Bad Too Sad."},
   {num:3,icon:"⏰",title:"Missed the Cutoff",rule:"Picks are made before the races start. If you didn't enter your picks in time, you have no picks for the day. Set an alarm. Enter early.",tbts:"The gate opened without you. Too Bad Too Sad."},
-  {num:4,icon:"💾",title:"Forgot to Save",rule:"You filled in your picks but didn't tap Save Picks. Unsaved picks do not exist. The app does not read minds.",tbts:"It was never saved. Too Bad Too Sad."},
+  {num:4,icon:"💾",title:"Forgot to Save",rule:"You filled in your picks in GiddyUp Silks but didn't tap Save. Unsaved picks do not exist. The app does not read minds.",tbts:"It was never saved. Too Bad Too Sad."},
   {num:5,icon:"📵",title:"Device Issues",rule:"Your phone died. Your wifi dropped. The app crashed. Technical problems on your end are not the pool's problem. Enter early.",tbts:"Not our circus, not our horse. Too Bad Too Sad."},
   {num:6,icon:"🥈",title:"No Partial Credit",rule:"Close doesn't count. Your Win Pick finished second. The scoring system is the scoring system. There is no almost.",tbts:"Almost only counts in horseshoes. Too Bad Too Sad."},
   {num:7,icon:"🤝",title:"Dead Heats",rule:"In a dead heat, both horses are awarded the finishing position. If you picked either one for that position, you get full credit. Dead heats expand your winning combinations.",tbts:"This one works in your favour. You're welcome."},
