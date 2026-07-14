@@ -755,20 +755,30 @@ function formatDate(d){
 
 function renderTodayCard(){
   const card=getTodayCard();
+  const locked=!!card.numRacesLocked;
   document.getElementById('p-today-card').innerHTML=`
     <div style="text-align:center;margin-bottom:8px;">
       <div style="font-size:14px;color:var(--ink);font-weight:600;">How Many Races Today?</div>
+      ${locked?`<div style="font-size:11px;margin-top:2px;"><span style="color:var(--green-dark);font-weight:600;">Set from GiddyUp Silks</span> <a href="#" onclick="unlockNumRaces();return false;" style="color:var(--muted);text-decoration:underline;margin-left:4px;">change</a></div>`:''}
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-      ${[6,7,8,9,10].map(n=>`<button class="btn btn-outline btn-sm" style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
-      <button class="btn btn-outline btn-sm" onclick="promptCustomRaces()">Other</button>
+      ${[6,7,8,9,10].map(n=>`<button class="btn btn-outline btn-sm" ${locked?'disabled':''} style="${card.numRaces===n?'background:var(--green);color:white;border-color:var(--green)':''}${locked&&card.numRaces!==n?'opacity:0.5;':''}" onclick="setNumRaces(${n})">${n}</button>`).join('')}
+      <button class="btn btn-outline btn-sm" ${locked?'disabled':''} style="${locked?'opacity:0.5;':''}" onclick="promptCustomRaces()">Other</button>
     </div>`;
+}
+function unlockNumRaces(){
+  const card=getTodayCard();
+  card.numRacesLocked=false;
+  saveUser();
+  renderTodayCard();
 }
 function getBuddyName(){
   return 'Barn Mate';
 }
 function setNumRaces(n){
-  const card=getTodayCard();card.numRaces=n;saveUser();renderTodayCard();renderRaceGrid();
+  const card=getTodayCard();
+  if(card.numRacesLocked) return;
+  card.numRaces=n;saveUser();renderTodayCard();renderRaceGrid();
 }
 function promptCustomRaces(){
   const n=parseInt(prompt('How many races? (1-20)'));
@@ -796,20 +806,20 @@ function renderRaceGrid(){
     const bm=card.buddyPicks?card.buddyPicks[r]:null;
     const hasResults=!!card.results[r];
     const isScored=!!card.scores[r];
-    const sc=card.scores[r];
+    const depth=pk?(PICK_DEPTHS[pk.pickType||'superfecta']||4):null;
+    const guTrimmed=(gu&&depth)?gu.slice(0,depth):gu;
     let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Results in</span>':pk?'<span class="tag tag-muted">Picks saved</span>':'<span class="tag tag-muted">No picks yet</span>';
     rows+=`<tr onclick="selectPickRace(${r})" style="cursor:pointer;">
       <td><strong>R${r}</strong></td>
       <td style="color:var(--green-dark);font-weight:600;">${pk?pk.field.filter(v=>v!=null).join('-'):'—'}</td>
-      <td style="color:var(--muted);font-size:11px;">${gu&&gu.filter(v=>v!=null).length?gu.filter(v=>v!=null).join('-'):'—'}</td>
+      <td style="color:var(--muted);font-size:11px;">${guTrimmed&&guTrimmed.filter(v=>v!=null).length?guTrimmed.filter(v=>v!=null).join('-'):'—'}</td>
       <td style="color:var(--muted);font-size:11px;">${ml&&ml.filter(v=>v!=null).length?ml.filter(v=>v!=null).join('-'):'—'}</td>
       <td style="color:var(--muted);font-size:11px;">${bm&&bm.filter(v=>v!=null).length?bm.filter(v=>v!=null).join('-'):'—'}</td>
       <td>${badge}</td>
-      <td style="font-weight:700;color:${isScored?'var(--gold-dark)':'var(--muted)'};">${sc?(sc.raceTotal+sc.streak)+' pts':'—'}</td>
     </tr>`;
   }
   grid.innerHTML=`<div class="card" style="padding:10px;overflow-x:auto;">
-    <table class="sc-table"><thead><tr><th>Race</th><th>My Picks</th><th>GiddyUp</th><th>Track Sel</th><th>Barn Mate</th><th>Status</th><th>Score</th></tr></thead>
+    <table class="sc-table"><thead><tr><th>Race</th><th>My Picks</th><th>GiddyUp</th><th>Track Sel</th><th>Barn Mate</th><th>Status</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
 function showGrid(){
@@ -977,7 +987,6 @@ function renderResultGrid(){
     const hasResults=!!card.results[r];
     const isScored=!!card.scores[r];
     const res=card.results[r];
-    const sc=card.scores[r];
     let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Result entered</span>':hasPicks?'<span class="tag tag-muted">Ready to score</span>':'<span class="tag tag-muted">No picks yet</span>';
     const f=res||[null,null,null,null];
     rows+=`<tr onclick="selectResultRace(${r})" style="cursor:pointer;${isScored?'background:var(--gold-light);':''}">
@@ -987,11 +996,10 @@ function renderResultGrid(){
       <td>${f[1]!=null?f[1]:'—'}</td>
       <td>${f[2]!=null?f[2]:'—'}</td>
       <td>${f[3]!=null?f[3]:'—'}</td>
-      <td style="font-weight:700;color:${isScored?'var(--gold-dark)':'var(--muted)'};">${sc?(sc.raceTotal+sc.streak)+' pts':'—'}</td>
     </tr>`;
   }
   grid.innerHTML=`<div class="card" style="padding:10px;overflow-x:auto;">
-    <table class="sc-table"><thead><tr><th>Race</th><th>Status</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>Score</th></tr></thead>
+    <table class="sc-table"><thead><tr><th>Race</th><th>Status</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
 function showResultGrid(){
