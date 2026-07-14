@@ -1122,7 +1122,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser,numRacesToday}){
       "Got a buddy playing along? Barn Mate Picks is a 4th, always-available entry — no name to set, no per-day setup.",
       "Confirm which race these picks are for, then tap Save — no need to open GiddyUp Play separately.",
       "After the race runs, come back here and enter the official finish order, then tap Score This Race.",
-      "Everything is saved to your account instantly — open the full Play app any time to see the day's leaderboard.",
+      "Everything is saved to your account instantly — open the full Play app any time to see the day's scoreboard.",
     ]}),
     h('div',{style:{background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',borderRadius:16,padding:'16px 18px',marginBottom:16}},
       h('div',{style:{fontSize:10,color:'#c9a84c88',letterSpacing:3,textTransform:'uppercase',marginBottom:4}},'Free to Play'),
@@ -1262,7 +1262,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser,numRacesToday}){
         );
       })(),
       h('div',{style:{fontSize:11,color:'#334155',marginTop:10}},'Repeat for each race you handicap.'),
-      h('button',{onClick:openFullPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',border:'none',borderRadius:12,color:C.gold,fontSize:15,fontWeight:700,cursor:'pointer',marginTop:6}},'Open Full Play App (leaderboard, all races) \u2192'),
+      h('button',{onClick:openFullPlay,style:{width:'100%',padding:'14px',background:'linear-gradient(135deg,'+C.navy+','+C.navy2+')',border:'none',borderRadius:12,color:C.gold,fontSize:15,fontWeight:700,cursor:'pointer',marginTop:6}},'Open Full Play App (scoreboard, all races) \u2192'),
       h('div',{style:{textAlign:'center',marginTop:10}},
         h('a',{href:'#',onClick:function(e){e.preventDefault();resetTodaysCard();},style:{fontSize:13,color:'#dc2626',fontWeight:600,textDecoration:'underline'}},'\u21ba Reset today\u2019s card (testing only)')
       )
@@ -1275,7 +1275,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser,numRacesToday}){
         ['\ud83e\udd1d','Set your buddy (optional) and everyone\u2019s picks','Right here in Silks \u2014 once per day for your buddy\u2019s name, per race for Track Selections and their picks'],
         ['\ud83d\udcbe','Save your picks','Pick the race number, tap Save \u2014 no need to open a separate app'],
         ['\ud83d\udccb','Enter results after the race','Right here, once the race is final \u2014 tap Score This Race'],
-        ['\ud83c\udfc6','Check the leaderboard','Open the full Play app any time \u2014 You vs GiddyUp vs Track Selections vs '+buddyLabel],
+        ['\ud83c\udfc6','Check the scoreboard','Open the full Play app any time \u2014 You vs GiddyUp vs Track Selections vs '+buddyLabel],
         ['\ud83d\udcd3','Keep a diary','Notes and photos including winning tickets'],
       ].map(function(item,i){
         return h('div',{key:i,style:{display:'flex',gap:12,marginBottom:i<6?12:0,paddingBottom:i<6?12:0,borderBottom:i<6?'1px solid '+C.border:'none'}},
