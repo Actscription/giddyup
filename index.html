@@ -826,7 +826,68 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
     h("div",{style:{display:"flex",gap:10,marginTop:12}},
       h("button",{onClick:()=>shareContent("GiddyUp Picks",buildShareText()),style:{padding:"10px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:13,fontWeight:700,cursor:"pointer"}},"📤 Share"),
       h("button",{onClick:()=>setActiveTab("giddyup"),style:{flex:2,padding:"14px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"🐴 GiddyUp Suggestions →")));}
-function GiddyUpTab({scores,setActiveTab,myOrder}){if(!scores.length)return h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program"));const bets=buildBets(scores);if(!bets)return h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses.");const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);
+const LEARN_CONTENT={
+  beginner:{label:"🌱 Beginner",tips:[
+    "Know your bet types first. Win = finishes 1st. Place = 1st or 2nd. Show = 1st, 2nd, or 3rd — these are the safest bets to start with. Exacta, Trifecta, and Superfecta ask you to pick multiple horses in order — save those for later.",
+    "Never chase a loss. If a bet doesn't hit, don't bet bigger on the next race trying to win it back. That instinct is exactly how a bad afternoon turns into a bad week.",
+    "Start small — $2 bets, Win/Place/Show only, until you've got a feel for how races actually unfold.",
+    "Use the Rankings tab to pick your horse. GiddyUp's default ranking is a strong starting point — you don't need to touch Angles yet.",
+    "It's okay to skip a race. You don't have to bet every single one just because you're at the track — some races just don't have a clear read, and passing is a real skill.",
+    "Set a daily limit before you start, and stick to it no matter what. Until you have a feel for things, $2 a race is plenty.",
+    "Keep a diary. A quick note after each race — even just \"liked the winner, ignored my own pick\" — and patterns start showing up fast."
+  ]},
+  novice:{label:"📈 Novice",tips:[
+    "Start using and developing your Angles. This is where you begin putting your own read on a race ahead of GiddyUp's default weighting.",
+    "Use the presets first — Stakes, Allowance, Claiming, Maiden — and watch how each one reshuffles the rankings. Get a feel for how weighting changes the picture before building your own.",
+    "Start branching into Exacta and Trifecta bets, small stakes, just to learn the mechanics.",
+    "Boxing, explained: a box bet covers every order of finish for your chosen horses. Box 3 horses for a Trifecta and you win if they finish 1-2-3 in any order. Build Your Ticket does this for you automatically — tap horses under each position, or tap Field to include the whole field in a slot.",
+    "Watch for value, not just rank. Check a horse's Angle rank against its odds — a well-ranked horse going off at long odds is often the smarter bet than the favorite at odds-on. That gap is exactly what Smart Money is built to flag.",
+    "Set a daily limit before you start playing.",
+    "Keep a diary of your insights — note which presets worked for which race types. Instincts get built from patterns you actually wrote down."
+  ]},
+  expert:{label:"🎯 Expert",tips:[
+    "Build and refine your Custom DNA before you get to the track. Angle DNA saves a weight profile per race type, so you're not building from scratch trackside.",
+    "Watch closely how your DNA shifts the rankings compared to the presets — that gap is where your edge lives.",
+    "Keep extensive diary notes. At this level, the difference between profitable and not is usually in the details you'd otherwise forget by the next meet.",
+    "Protect your bankroll first. Even a great system loses sometimes — the discipline is what keeps you in the game long enough for your edge to actually show up.",
+    "Set your daily limit before the card starts, same as always. No exceptions, no matter how good a read feels in the moment."
+  ]},
+  points:{label:"🔢 Points",tips:[
+    "GiddyUp Score works like golf — lower is better.",
+    "Every horse is scored across 17 factors (Speed Figures, Jockey, Trainer, Recent Form, and more). For each factor, horses are ranked 1st through last within today's field — 1st is best at that specific factor, not necessarily the best horse overall.",
+    "That rank gets multiplied by how much weight you've given that factor in Angles. A heavily-weighted factor moves the needle more; a lightly-weighted one barely matters.",
+    "Add up all 17 weighted ranks and you get the horse's total score. Lowest total score in the field = your #1 overall pick.",
+    "This is why changing your Angle weights — or switching presets, or building DNA — can reshuffle the rankings without any of the underlying stats changing. You're just telling GiddyUp what matters most to you.",
+    "Want the full factor-by-factor breakdown for a specific horse? Head to the Rankings tab and tap into any horse's card."
+  ]}
+};
+function LearnToPlaySection(){
+  const[tab,setTab]=useState("beginner");
+  const active=LEARN_CONTENT[tab];
+  return h("div",{style:{marginTop:20}},
+    h("div",{style:{textAlign:"center",marginBottom:14}},
+      h("div",{style:{fontSize:11,fontWeight:700,color:C.gold,textTransform:"uppercase",letterSpacing:2,marginBottom:4}},"📖 New Here? Start With This"),
+      h("div",{style:{fontSize:20,fontWeight:900,color:C.navy}},"Learn to Play")
+    ),
+    h("div",{style:{display:"flex",gap:6,marginBottom:14}},
+      Object.keys(LEARN_CONTENT).map(key=>
+        h("button",{key,onClick:()=>setTab(key),style:{
+          flex:1,padding:"10px 4px",borderRadius:10,border:tab===key?"2px solid "+C.navy:"1.5px solid "+C.border,
+          background:tab===key?C.navy:"#fff",color:tab===key?C.gold:C.text,fontSize:12,fontWeight:700,cursor:"pointer"
+        }},LEARN_CONTENT[key].label)
+      )
+    ),
+    h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:14,padding:"16px"}},
+      active.tips.map((tip,i)=>
+        h("div",{key:i,style:{display:"flex",gap:10,marginBottom:i<active.tips.length-1?12:0,paddingBottom:i<active.tips.length-1?12:0,borderBottom:i<active.tips.length-1?"1px solid "+C.border:"none"}},
+          h("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",background:C.navy,color:C.gold,fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}},i+1),
+          h("div",{style:{fontSize:13,color:C.text,lineHeight:1.5}},tip)
+        )
+      )
+    )
+  );
+}
+function GiddyUpTab({scores,setActiveTab,myOrder}){if(!scores.length)return h(Fragment,null,h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program")),h(LearnToPlaySection,null));const bets=buildBets(scores);if(!bets)return h(Fragment,null,h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses."),h(LearnToPlaySection,null));const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);
   function SL(text){return h("div",{style:{fontSize:11,fontWeight:700,color:C.text,letterSpacing:2,textTransform:"uppercase",margin:"20px 0 10px",borderBottom:"1px solid "+C.border,paddingBottom:6}},text);}function BC(icon,title,horses,note,highlight){
   const list=Array.isArray(horses)?horses:[horses];
   return h("div",{style:{background:highlight?"#fffbf0":"#fff",border:"1px solid "+(highlight?"#e8d48a":C.border),borderRadius:12,padding:"14px 16px",marginBottom:8}},
@@ -850,7 +911,7 @@ function GiddyUpTab({scores,setActiveTab,myOrder}){if(!scores.length)return h("d
     "Smart Money highlights value horses at long odds worth considering.",
     "The Bomb is a longshot with a real angle — it won't show up in every race, only when our algorithm finds a genuine value angle worth flagging.",
     "Always verify current odds at the window before betting.",
-  ]}),h(TicketBuilder,{scores,myOrder}),SL("Suggested Bets"),h("div",{style:{background:"#fff",border:"2px solid #e8d48a",borderRadius:14,padding:"14px 16px",marginBottom:10}},h("div",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"🐴 GiddyUp Silks Choice"),h("div",{style:{fontSize:22,fontWeight:900,color:C.navy,marginBottom:2}},"#"+top.number+" "+top.name),h("div",{style:{fontSize:12,color:C.muted,marginBottom:10}},top.odds+" · Score: "+top.totalScore+" · "+top.jockey),h("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:4}},h("span",{style:{fontSize:10,color:C.muted}},"Confidence:"),h("div",{style:{display:"flex",gap:2}},[...Array(10)].map((_,i)=>h("div",{key:i,style:{width:8,height:8,borderRadius:2,background:i<conf.bars?conf.color:"#e2e8f0"}}))),h("span",{style:{fontSize:10,color:conf.color,fontWeight:700}},conf.label))),SL("Win Bets"),BC("🥇","Best Bet — Win",top,"Scored "+top.totalScore+" — best in a field of "+scores.length+". "+(gap>=50?"Clear top choice, leads by "+gap+" points.":gap>=25?"Solid edge, "+gap+" points clear of #"+second.number+".":"Tight race — only "+gap+" points separate 1st and 2nd."),true),smartWin&&smartWin.number!==top.number&&BC("💎","Smart Money",smartWin,"#"+smartWin.number+" is "+smartWin.odds+" but scored "+smartWin.totalScore+" — only "+(smartWin.totalScore-top.totalScore)+" points off our top pick. Real value here."),SL("Exacta"),BC("📦","Box "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap<20?"Tight field — boxing gives you 6 combinations and covers all likely orders.":"Top 3 boxed. These three stand clear of the field."),SL("Trifecta"),BC("🎲","Straight "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap>=40?"High confidence — straight trifecta is the play.":"Competitive field — consider boxing rather than straight."),bets.superfecta&&scores.length>=4&&h(Fragment,null,SL("Superfecta"),BC("💎","Top 4 Box",bets.superfecta,"Top 4 in any order. Small bet, big potential payout.")),bomb&&h(Fragment,null,SL("The Bomb"),h("div",{style:{background:"#fff8f0",border:"2px solid #f59e42",borderRadius:14,padding:"14px 16px"}},h("div",{style:{fontSize:10,fontWeight:700,color:"#c2410c",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"💥 Longshot Alert"),h("div",{style:{fontSize:20,fontWeight:900,color:"#92400e",marginBottom:3}},"#"+bomb.number+" "+bomb.name),h("div",{style:{fontSize:12,color:"#a16207",marginBottom:4}},bomb.odds+" · Score: "+bomb.totalScore),h("div",{style:{fontSize:12,color:"#78350f",lineHeight:1.6}},"Within "+(bomb.totalScore-top.totalScore)+" points of our top pick. Algorithm found a real angle. Small wager only."))),h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px",marginTop:12,fontSize:11,color:C.muted,textAlign:"center"}},"Always check current odds. Bet responsibly."));}
+  ]}),h(TicketBuilder,{scores,myOrder}),SL("Suggested Bets"),h("div",{style:{background:"#fff",border:"2px solid #e8d48a",borderRadius:14,padding:"14px 16px",marginBottom:10}},h("div",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"🐴 GiddyUp Silks Choice"),h("div",{style:{fontSize:22,fontWeight:900,color:C.navy,marginBottom:2}},"#"+top.number+" "+top.name),h("div",{style:{fontSize:12,color:C.muted,marginBottom:10}},top.odds+" · Score: "+top.totalScore+" · "+top.jockey),h("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:4}},h("span",{style:{fontSize:10,color:C.muted}},"Confidence:"),h("div",{style:{display:"flex",gap:2}},[...Array(10)].map((_,i)=>h("div",{key:i,style:{width:8,height:8,borderRadius:2,background:i<conf.bars?conf.color:"#e2e8f0"}}))),h("span",{style:{fontSize:10,color:conf.color,fontWeight:700}},conf.label))),SL("Win Bets"),BC("🥇","Best Bet — Win",top,"Scored "+top.totalScore+" — best in a field of "+scores.length+". "+(gap>=50?"Clear top choice, leads by "+gap+" points.":gap>=25?"Solid edge, "+gap+" points clear of #"+second.number+".":"Tight race — only "+gap+" points separate 1st and 2nd."),true),smartWin&&smartWin.number!==top.number&&BC("💎","Smart Money",smartWin,"#"+smartWin.number+" is "+smartWin.odds+" but scored "+smartWin.totalScore+" — only "+(smartWin.totalScore-top.totalScore)+" points off our top pick. Real value here."),SL("Exacta"),BC("📦","Box "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap<20?"Tight field — boxing gives you 6 combinations and covers all likely orders.":"Top 3 boxed. These three stand clear of the field."),SL("Trifecta"),BC("🎲","Straight "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap>=40?"High confidence — straight trifecta is the play.":"Competitive field — consider boxing rather than straight."),bets.superfecta&&scores.length>=4&&h(Fragment,null,SL("Superfecta"),BC("💎","Top 4 Box",bets.superfecta,"Top 4 in any order. Small bet, big potential payout.")),bomb&&h(Fragment,null,SL("The Bomb"),h("div",{style:{background:"#fff8f0",border:"2px solid #f59e42",borderRadius:14,padding:"14px 16px"}},h("div",{style:{fontSize:10,fontWeight:700,color:"#c2410c",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"💥 Longshot Alert"),h("div",{style:{fontSize:20,fontWeight:900,color:"#92400e",marginBottom:3}},"#"+bomb.number+" "+bomb.name),h("div",{style:{fontSize:12,color:"#a16207",marginBottom:4}},bomb.odds+" · Score: "+bomb.totalScore),h("div",{style:{fontSize:12,color:"#78350f",lineHeight:1.6}},"Within "+(bomb.totalScore-top.totalScore)+" points of our top pick. Algorithm found a real angle. Small wager only."))),h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px",marginTop:12,fontSize:11,color:C.muted,textAlign:"center"}},"Always check current odds. Bet responsibly."),h(LearnToPlaySection,null));}
 function TicketBuilder({scores,myOrder}){
   const[sel,setSel]=useState({1:[],2:[],3:[],4:[]});
   const[expanded,setExpanded]=useState(false);
@@ -1512,6 +1573,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
         h("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:1}},
           h("div",{style:{fontSize:20,fontWeight:900,letterSpacing:1}},"Riders Up!"),
           h("div",{style:{fontSize:11,fontWeight:600,letterSpacing:2}},"START HERE"))),
+      h("div",{onClick:()=>{setShowSplash(false);setActiveTab("giddyup");},style:{fontSize:12,color:"rgba(255,255,255,0.85)",textAlign:"center",marginBottom:20,cursor:"pointer",textDecoration:"underline",textUnderlineOffset:3}},"New here? 📖 Learn how to play first"),
       h("div",{style:{textAlign:"center",marginBottom:20}},
         h("div",{style:{fontSize:10,color:"rgba(255,255,255,0.5)",letterSpacing:4,textTransform:"uppercase",marginBottom:8}},"Welcome back"),
         h("div",{style:{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,maxWidth:280,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:"0 2px 12px rgba(0,0,0,0.8)"}},(silksUser.username||"Rider"))),
