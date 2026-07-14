@@ -970,7 +970,7 @@ function silksScoreRace(picks,actual,raceNum,card,scoreKey){
 function silksZeroScore(actual){
   return {fieldPts:0,fieldHits:[],sweepPts:0,winHit:false,winPts:0,exacta:false,trifecta:false,superfecta:false,exactaPts:0,trifectaPts:0,superfectaPts:0,exoticPts:0,raceTotal:0,streak:0,actual:actual,picks:null};
 }
-function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
+function PlayTab({scores,raceName,myOrder,raceNumber,silksUser,numRacesToday}){
   var PLAY_URL='https://giddyupsilks.app/play.html?tab=picks';
   var [raceNum,setRaceNum]=useState(raceNumber?String(raceNumber):'');
   useEffect(function(){
@@ -986,7 +986,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
   var [resultInputs,setResultInputs]=useState(['','','','']);
   var [scoring,setScoring]=useState(false);
   function emptySilksDayCard(){
-    return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},mlScores:{},guPicks:{},guScores:{},buddyPicks:{},buddyScores:{},pickType:'superfecta',pickTypeLocked:false};
+    return {numRaces:9,picks:{},results:{},scores:{},mlPicks:{},mlScores:{},guPicks:{},guScores:{},buddyPicks:{},buddyScores:{},pickType:'superfecta',pickTypeLocked:false,numRacesLocked:false};
   }
   function normalizeDayCard(dc){
     return Object.assign(emptySilksDayCard(), dc||{});
@@ -1039,6 +1039,10 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser}){
         var dc=normalizeDayCard(dayCard?JSON.parse(JSON.stringify(dayCard)):null);
         dc.pickType=pickType;
         dc.pickTypeLocked=true;
+        if(numRacesToday>0){
+          dc.numRaces=numRacesToday;
+          dc.numRacesLocked=true;
+        }
         if(top4) dc.guPicks[rn]=top4.map(function(hh){return hh.number;});
         if(myTop4){
           var field=myTop4.map(function(hh,i){return i<playDepth?hh.number:null;});
@@ -1533,7 +1537,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles}),
       activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
       activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
-      activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser}),
+      activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser,numRacesToday:races.length}),
       activeTab==="diary"&&h(DiaryTab,null)));}
 ReactDOM.render(h(GiddyUp,null),document.getElementById("root"));
 </script>
