@@ -971,7 +971,7 @@ function silksZeroScore(actual){
   return {fieldPts:0,fieldHits:[],sweepPts:0,winHit:false,winPts:0,exacta:false,trifecta:false,superfecta:false,exactaPts:0,trifectaPts:0,superfectaPts:0,exoticPts:0,raceTotal:0,streak:0,actual:actual,picks:null};
 }
 function PlayTab({scores,raceName,myOrder,raceNumber,silksUser,numRacesToday}){
-  var PLAY_URL='https://giddyupsilks.app/play.html?tab=picks';
+  var PLAY_URL='https://giddyupsilks.app/play.html?tab=scorecard';
   var [raceNum,setRaceNum]=useState(raceNumber?String(raceNumber):'');
   useEffect(function(){
     if(raceNumber&&!raceNum) setRaceNum(String(raceNumber));
