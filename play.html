@@ -369,7 +369,7 @@ input[type=file]{display:none;}
         <button class="btn btn-green btn-sm" id="p-save-btn" onclick="savePicks()">Save Picks</button>
         <button class="btn btn-outline btn-sm" onclick="clearPickInputs()">Clear</button>
       </div>
-      <div id="p-saved" style="margin-top:14px;"></div>
+
     </div>
   </div>
 </div>
@@ -788,24 +788,32 @@ async function loadPicks(){
 function renderRaceGrid(){
   const card=getTodayCard();
   const grid=document.getElementById('p-race-grid');
-  let html='';
+  let rows='';
   for(let r=1;r<=card.numRaces;r++){
-    const hasPicks=!!card.picks[r];
+    const pk=card.picks[r];
+    const gu=card.guPicks?card.guPicks[r]:null;
+    const ml=card.mlPicks?card.mlPicks[r]:null;
+    const bm=card.buddyPicks?card.buddyPicks[r]:null;
     const hasResults=!!card.results[r];
     const isScored=!!card.scores[r];
-    let cls='race-cell',status='Tap to pick';
-    if(isScored){cls='race-cell scored';status='✓ Scored';}
-    else if(hasResults){cls='race-cell has-results';status='Results in';}
-    else if(hasPicks){cls='race-cell has-picks';status='✓ Picks saved';}
-    html+=`<div class="${cls}" onclick="selectPickRace(${r})">
-      <div class="rc-num">Race ${r}</div>
-      <div class="rc-status">${status}</div>
-    </div>`;
+    const sc=card.scores[r];
+    let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Results in</span>':pk?'<span class="tag tag-muted">Picks saved</span>':'<span class="tag tag-muted">No picks yet</span>';
+    rows+=`<tr onclick="selectPickRace(${r})" style="cursor:pointer;">
+      <td><strong>R${r}</strong></td>
+      <td style="color:var(--green-dark);font-weight:600;">${pk?pk.field.filter(v=>v!=null).join('-'):'—'}</td>
+      <td style="color:var(--muted);font-size:11px;">${gu&&gu.filter(v=>v!=null).length?gu.filter(v=>v!=null).join('-'):'—'}</td>
+      <td style="color:var(--muted);font-size:11px;">${ml&&ml.filter(v=>v!=null).length?ml.filter(v=>v!=null).join('-'):'—'}</td>
+      <td style="color:var(--muted);font-size:11px;">${bm&&bm.filter(v=>v!=null).length?bm.filter(v=>v!=null).join('-'):'—'}</td>
+      <td>${badge}</td>
+      <td style="font-weight:700;color:${isScored?'var(--gold-dark)':'var(--muted)'};">${sc?(sc.raceTotal+sc.streak)+' pts':'—'}</td>
+    </tr>`;
   }
-  grid.innerHTML=html;
+  grid.innerHTML=`<div class="card" style="padding:10px;overflow-x:auto;">
+    <table class="sc-table"><thead><tr><th>Race</th><th>My Picks</th><th>GiddyUp</th><th>Track Sel</th><th>Barn Mate</th><th>Status</th><th>Score</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
 }
 function showGrid(){
-  document.getElementById('p-race-grid').style.display='grid';
+  document.getElementById('p-race-grid').style.display='block';
   document.getElementById('p-pick-panel').style.display='none';
 }
 function selectPickRace(r){
@@ -927,7 +935,6 @@ function loadPickRaceData(r){
     lockMsg.innerHTML=`🔒 Race ${r} is locked — official result: ${res.map((h,i)=>h!=null?['1st','2nd','3rd','4th'][i]+' #'+h:null).filter(Boolean).join(' · ')}`;
   } else lockMsg.style.display='none';
   document.getElementById('p-err').style.display='none';
-  renderSavedPicksList();
 }
 function clearPickInputs(){
   ['pp1','pp2','pp3','pp4'].forEach(id=>document.getElementById(id).value='');
@@ -944,7 +951,6 @@ function savePicks(){
   card.picks[curPickRace]={win:p1,field,pickType,savedAt:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
   saveUser();
   document.getElementById('p-err').style.display='none';
-  renderSavedPicksList();
   renderRaceGrid();
   if(curPickRace<card.numRaces){
     curPickRace++;
@@ -952,26 +958,7 @@ function savePicks(){
     loadPickRaceData(curPickRace);
   }
 }
-function renderSavedPicksList(){
-  const card=getTodayCard();
-  const races=Object.keys(card.picks).sort((a,b)=>a-b);
-  const div=document.getElementById('p-saved');
-  if(!races.length){div.innerHTML='';return;}
-  div.innerHTML=`<div class="section-title" style="margin-top:14px;">Saved Picks</div>
-  <div class="card" style="padding:10px;">
-  <table class="sc-table"><thead><tr><th>Race</th><th>★ Win</th><th>Place</th><th>Show</th><th>4th</th><th>ML</th><th>Saved</th><th></th></tr></thead><tbody>
-  ${races.map(r=>{
-    const pk=card.picks[r];
-    const ml=card.mlPicks?card.mlPicks[r]:null;
-    const sc=card.scores[r];
-    let badge=sc?'<span class="tag tag-green">Scored</span>':card.results[r]?'<span class="tag tag-gold">Results in</span>':'<span class="tag tag-muted">Pending</span>';
-    return`<tr><td><strong>R${r}</strong></td>
-      <td style="color:var(--gold-dark);font-weight:600;">${pk.field[0]}</td>
-      <td>${pk.field[1]!=null?pk.field[1]:'—'}</td><td>${pk.field[2]!=null?pk.field[2]:'—'}</td><td>${pk.field[3]!=null?pk.field[3]:'—'}</td>
-      <td style="color:var(--muted);font-size:11px;">${ml?ml.join(','):'—'}</td>
-      <td style="font-size:11px;color:var(--muted);">${pk.savedAt||"—"}</td><td>${badge}</td></tr>`;
-  }).join('')}</tbody></table></div>`;
-}
+
 
 async function loadResultsScreen(){
   document.getElementById('r-name').textContent=displayName(CU);
@@ -984,24 +971,31 @@ async function loadResultsScreen(){
 function renderResultGrid(){
   const card=getTodayCard();
   const grid=document.getElementById('r-race-grid');
-  let html='';
+  let rows='';
   for(let r=1;r<=card.numRaces;r++){
     const hasPicks=!!card.picks[r];
     const hasResults=!!card.results[r];
     const isScored=!!card.scores[r];
-    let cls='race-cell',status='No picks yet';
-    if(isScored){cls='race-cell scored';status='✓ Scored';}
-    else if(hasResults){cls='race-cell has-results';status='✓ Result entered';}
-    else if(hasPicks){cls='race-cell has-picks';status='Ready to score';}
-    html+=`<div class="${cls}" onclick="selectResultRace(${r})" style="${isScored?'border-color:var(--gold);background:var(--gold-light);':''}${hasResults&&!isScored?'':''}">
-      <div class="rc-num" style="${isScored?'color:var(--gold-dark);':''}">${isScored?'🏆 ':''} Race ${r}</div>
-      <div class="rc-status">${status}</div>
-    </div>`;
+    const res=card.results[r];
+    const sc=card.scores[r];
+    let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Result entered</span>':hasPicks?'<span class="tag tag-muted">Ready to score</span>':'<span class="tag tag-muted">No picks yet</span>';
+    const f=res||[null,null,null,null];
+    rows+=`<tr onclick="selectResultRace(${r})" style="cursor:pointer;${isScored?'background:var(--gold-light);':''}">
+      <td><strong>${isScored?'🏆 ':''}R${r}</strong></td>
+      <td>${badge}</td>
+      <td style="color:var(--gold-dark);font-weight:600;">${f[0]!=null?f[0]:'—'}</td>
+      <td>${f[1]!=null?f[1]:'—'}</td>
+      <td>${f[2]!=null?f[2]:'—'}</td>
+      <td>${f[3]!=null?f[3]:'—'}</td>
+      <td style="font-weight:700;color:${isScored?'var(--gold-dark)':'var(--muted)'};">${sc?(sc.raceTotal+sc.streak)+' pts':'—'}</td>
+    </tr>`;
   }
-  grid.innerHTML=html;
+  grid.innerHTML=`<div class="card" style="padding:10px;overflow-x:auto;">
+    <table class="sc-table"><thead><tr><th>Race</th><th>Status</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>Score</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
 }
 function showResultGrid(){
-  document.getElementById('r-race-grid').style.display='grid';
+  document.getElementById('r-race-grid').style.display='block';
   document.getElementById('r-entry-panel').style.display='none';
 }
 let resultUnlocked=false;
