@@ -294,82 +294,11 @@ input[type=file]{display:none;}
         <button type="button" class="depth-btn" data-depth="superfecta">Superfecta</button>
       </div>
     </div>
-    <div style="margin-bottom:14px;text-align:center;">
-      <div style="font-size:14px;color:var(--ink);font-weight:600;">Select a race to enter your picks</div>
+    <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#1e40af;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span>📌 Picks are entered in <strong>GiddyUp Silks</strong> — this is a view-only summary.</span>
+      <button class="btn btn-sm" style="background:#1e40af;color:#fff;border:none;flex-shrink:0;" onclick="openSilks()">Open Silks</button>
     </div>
     <div id="p-race-grid" class="race-grid"></div>
-    <div id="p-pick-panel" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--green);">Race <span id="p-racenum">1</span></div>
-        <button class="btn btn-outline btn-sm" onclick="showGrid()">↑ All Races</button>
-      </div>
-      <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#1e40af;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span>📌 Picks are entered in <strong>GiddyUp Silks</strong> — this is a view-only summary.</span>
-        <button class="btn btn-sm" style="background:#1e40af;color:#fff;border:none;flex-shrink:0;" onclick="openSilks()">Open Silks</button>
-      </div>
-      <div class="card" style="padding:12px 14px;">
-        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Playing For This Card</div>
-        <div class="depth-selector" id="p-depth-selector">
-          <button type="button" class="depth-btn" data-depth="win" disabled>Win</button>
-          <button type="button" class="depth-btn" data-depth="exacta" disabled>Exacta</button>
-          <button type="button" class="depth-btn" data-depth="trifecta" disabled>Trifecta</button>
-          <button type="button" class="depth-btn" data-depth="superfecta" disabled>Superfecta</button>
-        </div>
-        <div class="hint" style="margin-top:4px;">Set in GiddyUp Silks and applies to your whole card today.</div>
-      </div>
-      <div class="gu-section" id="gu-section">
-        <div class="gu-title">🔬 GiddyUp Picks</div>
-        <div id="gu-loaded-state">
-          <div style="font-size:12px;color:var(--green-dark);margin-bottom:10px;">Loaded from GiddyUp Silks — your AI handicapper's picks for this race.</div>
-          <div class="pick-grid">
-            <div class="pick-slot win"><label>★ Win</label><input type="number" id="gu1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot place"><label>Place</label><input type="number" id="gu2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot show"><label>Show</label><input type="number" id="gu3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot fourth"><label>4th</label><input type="number" id="gu4" class="pi" placeholder="#" min="1" disabled=""></div>
-          </div>
-        </div>
-        <div id="gu-empty-state" style="display:none;font-size:13px;color:var(--muted);padding:6px 0;">⏳ Not entered yet in GiddyUp Silks for this race.</div>
-      </div>
-      <div class="card">
-        <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">My Picks</div>
-        <div class="pick-grid">
-          <div class="pick-slot win"><label>★ Win</label><input type="number" id="pp1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
-          <div class="pick-slot place"><label>Place</label><input type="number" id="pp2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
-          <div class="pick-slot show"><label>Show</label><input type="number" id="pp3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
-          <div class="pick-slot fourth"><label>4th</label><input type="number" id="pp4" class="pi" placeholder="#" min="1" disabled=""></div>
-        </div>
-        <div class="hint" style="margin-top:8px;">★ Win Pick finishes 1st = +20 pts bonus</div>
-        <div id="p-lock-msg" style="display:none;margin-top:8px;padding:8px 12px;background:var(--red-light);border:1px solid var(--red);border-radius:8px;font-size:12px;color:var(--red);"></div>
-        <div id="p-err" class="err-msg" style="display:none;margin-top:8px;"></div>
-      </div>
-      <div class="ml-section">
-        <div class="ml-title">📰 Track Selections Picks (optional)</div>
-        <div id="ml-loaded-state" style="display:none;">
-          <div style="font-size:12px;color:var(--gold-dark);margin-bottom:10px;">Loaded from GiddyUp Silks.</div>
-          <div class="pick-grid">
-            <div class="pick-slot win"><label>★ Win</label><input type="number" id="ml1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot place"><label>Place</label><input type="number" id="ml2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot show"><label>Show</label><input type="number" id="ml3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot fourth"><label>4th</label><input type="number" id="ml4" class="pi" placeholder="#" min="1" disabled=""></div>
-          </div>
-        </div>
-        <div id="ml-empty-state" style="font-size:12px;color:var(--gold-dark);padding:6px 0;">Not entered for this race — add Track Selections picks in GiddyUp Silks' Play tab.</div>
-      </div>
-      <div class="ml-section" style="background:var(--purple-light);border-color:var(--purple);">
-        <div class="ml-title" style="color:var(--purple);">🐴 Barn Mate Picks (optional)</div>
-        <div id="bm-loaded-state" style="display:none;">
-          <div style="font-size:12px;color:var(--purple);margin-bottom:10px;">Loaded from GiddyUp Silks.</div>
-          <div class="pick-grid">
-            <div class="pick-slot win"><label>★ Win</label><input type="number" id="bm1" class="pi pi-win" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot place"><label>Place</label><input type="number" id="bm2" class="pi pi-place" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot show"><label>Show</label><input type="number" id="bm3" class="pi pi-show" placeholder="#" min="1" disabled=""></div>
-            <div class="pick-slot fourth"><label>4th</label><input type="number" id="bm4" class="pi" placeholder="#" min="1" disabled=""></div>
-          </div>
-        </div>
-        <div id="bm-empty-state" style="font-size:12px;color:var(--purple);padding:6px 0;">Not entered for this race — add Barn Mate picks in GiddyUp Silks' Play tab.</div>
-      </div>
-
-    </div>
   </div>
 </div>
 
@@ -772,7 +701,6 @@ async function loadPicks(){
   renderTodayCard();
   renderDepthSelector();
   try{ localStorage.removeItem('giddyup_play_incoming'); }catch(e){} // legacy bridge, no longer used — Silks writes directly now
-  showGrid();
   renderRaceGrid();
 }
 function renderRaceGrid(){
@@ -789,7 +717,7 @@ function renderRaceGrid(){
     const depth=pk?(PICK_DEPTHS[pk.pickType||'superfecta']||4):null;
     const guTrimmed=(gu&&depth)?gu.slice(0,depth):gu;
     let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Results in</span>':pk?'<span class="tag tag-muted">Picks saved</span>':'<span class="tag tag-muted">No picks yet</span>';
-    rows+=`<tr onclick="selectPickRace(${r})" style="cursor:pointer;">
+    rows+=`<tr>
       <td><strong>R${r}</strong></td>
       <td style="color:var(--green-dark);font-weight:600;">${pk?pk.field.filter(v=>v!=null).join('-'):'—'}</td>
       <td style="color:var(--ink);font-size:12px;font-weight:600;">${guTrimmed&&guTrimmed.filter(v=>v!=null).length?guTrimmed.filter(v=>v!=null).join('-'):'—'}</td>
@@ -801,18 +729,6 @@ function renderRaceGrid(){
   grid.innerHTML=`<div class="card" style="padding:10px;overflow-x:auto;">
     <table class="sc-table"><thead><tr><th>Race</th><th>My Picks</th><th>GiddyUp</th><th>Track Sel</th><th>Barn Mate</th><th>Status</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
-}
-function showGrid(){
-  document.getElementById('p-race-grid').style.display='block';
-  document.getElementById('p-pick-panel').style.display='none';
-}
-function selectPickRace(r){
-  curPickRace=r;
-  document.getElementById('p-racenum').textContent=r;
-  document.getElementById('p-race-grid').style.display='none';
-  document.getElementById('p-pick-panel').style.display='block';
-  renderDepthSelector();
-  loadPickRaceData(r);
 }
 function renderDepthSelector(){
   const card=getTodayCard();
@@ -828,66 +744,6 @@ function renderDepthSelector(){
     note.innerHTML=PICK_DEPTH_LABELS[type]+' · '+getPickDepth(card)+' pick'+(getPickDepth(card)>1?'s':'')+' per race'
       +' <span style="color:var(--green-dark);font-weight:600;">— set in GiddyUp Silks</span>';
   }
-}
-function loadPickRaceData(r){
-  const card=getTodayCard();
-  const pk=card.picks[r];
-  const ml=card.mlPicks?card.mlPicks[r]:null;
-  const hasResults=!!card.results[r];
-  document.getElementById('pp1').value=pk?pk.field[0]:'';
-  document.getElementById('pp2').value=pk&&pk.field[1]!=null?pk.field[1]:'';
-  document.getElementById('pp3').value=pk&&pk.field[2]!=null?pk.field[2]:'';
-  document.getElementById('pp4').value=pk&&pk.field[3]!=null?pk.field[3]:'';
-  const gu=card.guPicks?card.guPicks[r]:null;
-  if(gu){
-    document.getElementById('gu1').value=gu[0];
-    document.getElementById('gu2').value=gu[1]!=null?gu[1]:'';
-    document.getElementById('gu3').value=gu[2]!=null?gu[2]:'';
-    document.getElementById('gu4').value=gu[3]!=null?gu[3]:'';
-    document.getElementById('gu-loaded-state').style.display='block';
-    document.getElementById('gu-empty-state').style.display='none';
-  } else {
-    document.getElementById('gu-loaded-state').style.display='none';
-    document.getElementById('gu-empty-state').style.display='block';
-  }
-  if(ml){
-    document.getElementById('ml1').value=ml[0];
-    document.getElementById('ml2').value=ml[1]!=null?ml[1]:'';
-    document.getElementById('ml3').value=ml[2]!=null?ml[2]:'';
-    document.getElementById('ml4').value=ml[3]!=null?ml[3]:'';
-    document.getElementById('ml-loaded-state').style.display='block';
-    document.getElementById('ml-empty-state').style.display='none';
-  } else {
-    document.getElementById('ml1').value='';
-    document.getElementById('ml2').value='';
-    document.getElementById('ml3').value='';
-    document.getElementById('ml4').value='';
-    document.getElementById('ml-loaded-state').style.display='none';
-    document.getElementById('ml-empty-state').style.display='block';
-  }
-  const bm=card.buddyPicks?card.buddyPicks[r]:null;
-  if(bm){
-    document.getElementById('bm1').value=bm[0];
-    document.getElementById('bm2').value=bm[1]!=null?bm[1]:'';
-    document.getElementById('bm3').value=bm[2]!=null?bm[2]:'';
-    document.getElementById('bm4').value=bm[3]!=null?bm[3]:'';
-    document.getElementById('bm-loaded-state').style.display='block';
-    document.getElementById('bm-empty-state').style.display='none';
-  } else {
-    document.getElementById('bm1').value='';
-    document.getElementById('bm2').value='';
-    document.getElementById('bm3').value='';
-    document.getElementById('bm4').value='';
-    document.getElementById('bm-loaded-state').style.display='none';
-    document.getElementById('bm-empty-state').style.display='block';
-  }
-  const lockMsg=document.getElementById('p-lock-msg');
-  if(hasResults){
-    const res=card.results[r];
-    lockMsg.style.display='block';
-    lockMsg.innerHTML=`🔒 Race ${r} is scored — official result: ${res.map((h,i)=>h!=null?['1st','2nd','3rd','4th'][i]+' #'+h:null).filter(Boolean).join(' · ')}`;
-  } else lockMsg.style.display='none';
-  document.getElementById('p-err').style.display='none';
 }
 async function loadResultsScreen(){
   document.getElementById('r-name').textContent=displayName(CU);
@@ -907,9 +763,10 @@ function renderResultGrid(){
     const isScored=!!card.scores[r];
     const res=card.results[r];
     const outOfOrder=r>1&&!card.results[r-1];
-    let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Result entered</span>':outOfOrder?'<span class="tag tag-muted">🔒 Enter Race '+(r-1)+' first</span>':hasPicks?'<span class="tag tag-muted">Ready to score</span>':'<span class="tag tag-muted">No picks yet</span>';
+    const locked=outOfOrder||!hasPicks;
+    let badge=isScored?'<span class="tag tag-gold">✓ Scored</span>':hasResults?'<span class="tag tag-green">Result entered</span>':outOfOrder?'<span class="tag tag-muted">🔒 Enter Race '+(r-1)+' first</span>':!hasPicks?'<span class="tag tag-muted">No picks yet</span>':'<span class="tag tag-muted">Ready to score</span>';
     const f=res||[null,null,null,null];
-    rows+=`<tr onclick="selectResultRace(${r})" style="cursor:pointer;${isScored?'background:var(--gold-light);':''}${outOfOrder?'opacity:0.5;':''}">
+    rows+=`<tr onclick="selectResultRace(${r})" style="cursor:pointer;${isScored?'background:var(--gold-light);':''}${locked?'opacity:0.5;':''}">
       <td><strong>${isScored?'🏆 ':''}R${r}</strong></td>
       <td>${badge}</td>
       <td style="color:var(--gold-dark);font-weight:600;">${f[0]!=null?f[0]:'—'}</td>
@@ -982,6 +839,10 @@ function selectResultRace(r){
   const card=getTodayCard();
   if(r>1&&!card.results[r-1]){
     alert('Race '+(r-1)+' doesn\'t have a result yet. Enter results in order — Race '+(r-1)+' first.');
+    return;
+  }
+  if(!card.picks[r]){
+    alert('No picks saved for Race '+r+' yet. Enter picks in GiddyUp Silks first.');
     return;
   }
   curResultRace=r;
