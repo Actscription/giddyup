@@ -472,7 +472,6 @@ input[type=file]{display:none;}
         <button class="sc-tab-btn active" id="sc-tabbtn-leaderboard" onclick="scShowTab('leaderboard')">🏆 Leaderboard</button>
         <button class="sc-tab-btn" id="sc-tabbtn-h2h" onclick="scShowTab('h2h')">⚔️ Head-to-Head</button>
         <button class="sc-tab-btn" id="sc-tabbtn-exotic" onclick="scShowTab('exotic')">🎯 Exotic Bets</button>
-        <button class="sc-tab-btn" id="sc-tabbtn-daily" onclick="scShowTab('daily')">📅 Daily Card</button>
       </div>
       <div class="sc-panel" id="sc-panel-leaderboard">
         <div id="sc-ml-compare"></div>
@@ -482,24 +481,6 @@ input[type=file]{display:none;}
       </div>
       <div class="sc-panel" id="sc-panel-exotic" style="display:none;">
         <div id="sc-exotic"></div>
-      </div>
-      <div class="sc-panel" id="sc-panel-daily" style="display:none;">
-        <div id="sc-summary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;"></div>
-        <div class="card" id="sc-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <div class="section-title" style="margin-bottom:0;">Daily Card</div>
-            <div id="sc-cons-status" style="font-size:13px;"></div>
-          </div>
-          <div class="streak-row" id="sc-streak-dots"></div>
-          <div class="divider"></div>
-          <div style="overflow-x:auto;">
-            <table class="sc-table">
-              <thead><tr><th>Race</th><th>W</th><th>F</th><th>E</th><th>T</th><th>S</th><th>SW</th><th>ST</th><th>Total</th></tr></thead>
-              <tbody id="sc-body"></tbody>
-              <tfoot id="sc-foot"></tfoot>
-            </table>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -683,7 +664,7 @@ function nav(tab){
 let scActiveTab='leaderboard';
 function scShowTab(tabName){
   scActiveTab=tabName;
-  ['leaderboard','h2h','exotic','daily'].forEach(t=>{
+  ['leaderboard','h2h','exotic'].forEach(t=>{
     const panel=document.getElementById('sc-panel-'+t);
     const btn=document.getElementById('sc-tabbtn-'+t);
     if(panel) panel.style.display=(t===tabName)?'block':'none';
@@ -812,9 +793,9 @@ function renderRaceGrid(){
     rows+=`<tr onclick="selectPickRace(${r})" style="cursor:pointer;">
       <td><strong>R${r}</strong></td>
       <td style="color:var(--green-dark);font-weight:600;">${pk?pk.field.filter(v=>v!=null).join('-'):'—'}</td>
-      <td style="color:var(--muted);font-size:11px;">${guTrimmed&&guTrimmed.filter(v=>v!=null).length?guTrimmed.filter(v=>v!=null).join('-'):'—'}</td>
-      <td style="color:var(--muted);font-size:11px;">${ml&&ml.filter(v=>v!=null).length?ml.filter(v=>v!=null).join('-'):'—'}</td>
-      <td style="color:var(--muted);font-size:11px;">${bm&&bm.filter(v=>v!=null).length?bm.filter(v=>v!=null).join('-'):'—'}</td>
+      <td style="color:var(--ink);font-size:12px;font-weight:600;">${guTrimmed&&guTrimmed.filter(v=>v!=null).length?guTrimmed.filter(v=>v!=null).join('-'):'—'}</td>
+      <td style="color:var(--ink);font-size:12px;font-weight:600;">${ml&&ml.filter(v=>v!=null).length?ml.filter(v=>v!=null).join('-'):'—'}</td>
+      <td style="color:var(--ink);font-size:12px;font-weight:600;">${bm&&bm.filter(v=>v!=null).length?bm.filter(v=>v!=null).join('-'):'—'}</td>
       <td>${badge}</td>
     </tr>`;
   }
@@ -1230,47 +1211,14 @@ async function loadScorecard(){
   const noData=document.getElementById('sc-no-data'),tabsWrap=document.getElementById('sc-tabs-wrap');
   if(!rns.length){
     noData.style.display='block';tabsWrap.style.display='none';
-    document.getElementById('sc-summary').innerHTML='';
     document.getElementById('sc-ml-compare').innerHTML='';
     document.getElementById('sc-h2h').innerHTML='';
     document.getElementById('sc-exotic').innerHTML='';
     return;
   }
   noData.style.display='none';tabsWrap.style.display='block';
-  let tF=0,tW=0,tE=0,tS=0,tSt=0,tR=0,tEx=0,tTri=0,tSf=0,consAlive=true;
-  let dots='';
-  for(let i=1;i<=card.numRaces;i++){
-    const sc=card.scores[i];
-    if(!sc) dots+=`<div class="sdot pending">${i}</div>`;
-    else if(sc.raceTotal>0) dots+=`<div class="sdot scored">${i}</div>`;
-    else{dots+=`<div class="sdot blank">${i}</div>`;consAlive=false;}
-  }
-  document.getElementById('sc-streak-dots').innerHTML=dots;
-  rns.forEach(r=>{if(card.scores[r].raceTotal===0) consAlive=false;});
-  const allScored=rns.length===card.numRaces,consBonus=allScored&&consAlive?card.numRaces*5:0;
-  let rows='';
-  rns.forEach(r=>{
-    const sc=card.scores[r];
-    tF+=sc.fieldPts;tW+=sc.winPts;tE+=sc.exoticPts;tS+=sc.sweepPts;tSt+=sc.streak;tR+=sc.raceTotal;
-    if(sc.exacta) tEx+=sc.exactaPts;
-    if(sc.trifecta) tTri+=sc.trifectaPts;
-    if(sc.superfecta) tSf+=sc.superfectaPts;
-    rows+=`<tr><td><strong>R${r}</strong></td>
-      <td>${sc.winHit?'<span style="color:var(--gold-dark);font-weight:500;">+20</span>':'—'}</td>
-      <td>${sc.fieldPts||'—'}</td>
-      <td>${sc.exacta?'<span class="tag tag-green">+30</span>':'—'}</td>
-      <td>${sc.trifecta?'<span class="tag tag-gold">+50</span>':'—'}</td>
-      <td>${sc.superfecta?'<span class="tag tag-gold">+70</span>':'—'}</td>
-      <td>${sc.sweepPts?'<span class="tag tag-green">+10</span>':'—'}</td>
-      <td>${sc.streak?'<span style="color:var(--gold-dark);font-weight:500;">+5</span>':'—'}</td>
-      <td><strong>${sc.raceTotal+sc.streak}</strong></td></tr>`;
-  });
-  const grand=tR+tSt+consBonus;
-  document.getElementById('sc-summary').innerHTML=`
-    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Race Score</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);">${tR}</div></div>
-    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Streak Bonus</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold-dark);">${tSt}</div></div>
-    <div class="card" style="text-align:center;padding:12px 8px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Grand Total</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green);">${grand}</div></div>`;
-  document.getElementById('sc-cons-status').innerHTML=consAlive?'<span style="color:var(--green);font-weight:500;">🟢 Alive</span>':'<span style="color:var(--red);font-weight:500;">🔴 Lost</span>';
+  let tR=0;
+  rns.forEach(r=>{ tR+=card.scores[r].raceTotal; });
   const mlScores=card.mlScores||{};
   const guScores=card.guScores||{};
   const buddyScores=card.buddyScores||{};
@@ -1305,11 +1253,6 @@ async function loadScorecard(){
       }).join('')}
     </div>`;
   } else mlEl.innerHTML='<div class="sc-panel-empty">No Track Selections, GiddyUp, or Barn Mate picks recorded today \u2014 you\'re playing solo. Add one of them in GiddyUp Silks\' Play tab to see a leaderboard here.</div>';
-  document.getElementById('sc-body').innerHTML=rows;
-  document.getElementById('sc-foot').innerHTML=`
-    <tr class="sc-foot-row"><td><strong>Totals</strong></td><td>${tW?'+'+tW:'—'}</td><td>${tF}</td><td>${tEx?'+'+tEx:'—'}</td><td>${tTri?'+'+tTri:'—'}</td><td>${tSf?'+'+tSf:'—'}</td><td>${tS?'+'+tS:'—'}</td><td>${tSt?'+'+tSt:'—'}</td><td><strong>${tR+tSt}</strong></td></tr>
-    ${consBonus?`<tr style="background:var(--gold-light);"><td colspan="8" style="text-align:right;color:var(--gold-dark);font-size:12px;">🏆 Consistency (${card.numRaces}×5)</td><td style="font-weight:600;color:var(--gold-dark);">+${consBonus}</td></tr>`:''}
-    <tr class="sc-grand-row"><td colspan="8"><strong>Grand Total</strong></td><td><strong>${grand}</strong></td></tr>`;
   renderHeadToHead(card,rns);
   scShowTab(scActiveTab);
 }
