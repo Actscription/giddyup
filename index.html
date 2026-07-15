@@ -784,7 +784,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
       h("ol",{style:{margin:0,paddingLeft:18,fontSize:12,color:C.text,lineHeight:1.6}},
         h("li",null,"Click the header in each column to edit it."),
         h("li",null,"Use + or – to raise or lower a number, or tap the box and enter a number manually."),
-        h("li",null,"Core Factors, Race Conditions, and Deep Dive (shown in green) are your fixed category limits — each factor is capped so you can't push it past its category's limit."),
+        h("li",null,h("span",{style:{color:"#ef4444",fontWeight:800}},"First set these."),"  Core Factors, Race Conditions, and Deep Dive (shown in green) are your fixed category limits — each factor is capped so you can't push it past its category's limit."),
         h("li",null,"Tap Save once the total reads 100 pts.")))));
 }
 function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles}){const [openGroups,setOpenGroups]=useState({core:false,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount>0;
