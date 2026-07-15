@@ -672,7 +672,7 @@ function TabHelp({title,steps}){
         h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},step)))));
 }
 
-function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode}){
+function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace}){
   const matrixTypes=RACE_TYPES.filter(rt=>rt.id!=='custom');
   const [editingCol,setEditingCol]=useState(null);
   const [editBuffer,setEditBuffer]=useState(null);
@@ -779,9 +779,11 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
             h("th",{style:{position:"sticky",left:0,zIndex:2,background:"#f8fafc",textAlign:"left",fontSize:13,fontWeight:700,color:C.text,padding:"7px 8px",borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,minWidth:118}},"Factor"),
             matrixTypes.map(rt=>{
               const isEditing=editingCol===rt.id;
+              const isActive=!isEditing&&rt.id===activeRace;
               const total=isEditing?editTotal:Object.values(data[rt.id].weights).reduce((a,b)=>a+b,0);
-              return h("th",{key:rt.id,onClick:()=>startEdit(rt.id),style:{textAlign:"center",fontSize:13,fontWeight:700,color:C.text,padding:"7px 6px",borderBottom:isEditing?"2px solid "+C.gold:"2px solid "+C.border,background:isEditing?"rgba(201,168,76,0.10)":"transparent",minWidth:92,cursor:"pointer"}},
+              return h("th",{key:rt.id,onClick:()=>startEdit(rt.id),style:{textAlign:"center",fontSize:13,fontWeight:700,color:isActive?"#0c447c":C.text,padding:"7px 6px",borderBottom:isEditing?"2px solid "+C.gold:isActive?"2px solid #378ADD":"2px solid "+C.border,background:isEditing?"rgba(201,168,76,0.10)":isActive?"#e6f1fb":"transparent",minWidth:92,cursor:"pointer"}},
                 h("div",null,rt.label),
+                isActive?h("div",{style:{fontSize:9,fontWeight:800,color:"#0c447c",marginTop:1}},"ACTIVE"):null,
                 h("div",{style:{fontSize:11,fontWeight:700,color:total===100?"#4a9e6e":"#ef4444",marginTop:1}},total+"pt"));
             }))),
         h("tbody",null,
@@ -791,8 +793,9 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
               matrixTypes.map(rt=>{
                 const isEditing=editingCol===rt.id;
                 if(!isEditing){
+                  const isActive=rt.id===activeRace;
                   const sub=group.factors.reduce((s,f)=>s+(data[rt.id].weights[f.id]||0),0);
-                  return h("td",{key:rt.id,style:{textAlign:"center",fontSize:13,fontWeight:800,color:"#14532d",padding:"6px 4px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border,background:"#c8e6c9"}},sub+"pt");
+                  return h("td",{key:rt.id,style:{textAlign:"center",fontSize:13,fontWeight:800,color:"#14532d",padding:"6px 4px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border,background:isActive?"#a8d5ab":"#c8e6c9"}},sub+"pt");
                 }
                 const limit=catLimits[group.id]||0;
                 const used=groupSum(editBuffer,group);
@@ -808,7 +811,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
               h("td",{style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap"}},f.label),
               matrixTypes.map(rt=>{
                 const isEditing=editingCol===rt.id;
-                if(!isEditing)return h("td",{key:rt.id,style:{textAlign:"center",fontSize:15,fontWeight:600,color:C.text,padding:"4px",borderBottom:"1px solid "+C.border}},data[rt.id].weights[f.id]);
+                if(!isEditing)return h("td",{key:rt.id,style:{textAlign:"center",fontSize:15,fontWeight:600,color:C.text,padding:"4px",borderBottom:"1px solid "+C.border,background:rt.id===activeRace?"#e6f1fb":"transparent"}},data[rt.id].weights[f.id]);
                 return h("td",{key:rt.id,style:{textAlign:"center",padding:"3px",borderBottom:"1px solid "+C.border,background:"rgba(201,168,76,0.06)"}},
                   h("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",gap:3}},
                     h("button",{onClick:()=>bump(f.id,-1),style:{width:22,height:24,fontSize:14,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"–"),
@@ -825,7 +828,7 @@ function selectSpecialist(preset){setActiveSpecialist(preset.id);setWeights({...
 const [justSaved,setJustSaved]=useState(false);
 function selectGiddyUpForRace(id){setActiveRace(id);if(id==='custom'){setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}else{setActiveSpecialist('giddyup');setAngleMode('giddyup');setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...PRESETS[id]});}}
 function selectMyDNAForRace(id){setActiveRace(id);setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}
-const [compareOpen,setCompareOpen]=useState(false);
+const [compareOpen,setCompareOpen]=useState(true);
 function raceTypeButton(rt,keyPrefix,onClick,isActive){
   return h("button",{key:keyPrefix+rt.id,onClick:()=>onClick(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:isActive?"2px solid "+rt.color:"1.5px solid "+C.border,background:isActive?rt.color+"18":"#fff",cursor:"pointer"}},
     h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
@@ -875,7 +878,7 @@ return h("div",{style:{paddingTop:14}},
       h("div",{style:{fontSize:13,fontWeight:800,color:C.navy}},"Set and Compare Race Angles"),
       h("span",{style:{fontSize:12,color:C.muted,fontWeight:700}},compareOpen?"Hide ▲":"Show ▼")),
     compareOpen&&h("div",{style:{marginTop:12}},
-      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode}))),
+      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace}))),
   h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:8}},"Instructions for Setting your Angles"),
     h("ol",{style:{margin:0,paddingLeft:18,fontSize:13,color:C.text,lineHeight:1.7}},
