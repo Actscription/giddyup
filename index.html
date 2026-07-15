@@ -802,7 +802,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
                     h("button",{onClick:()=>bumpCat(group.id,-1),style:{width:20,height:22,fontSize:13,lineHeight:1,padding:0,border:"1px solid #14532d",borderRadius:4,background:"#fff",cursor:"pointer",color:"#14532d"}},"–"),
                     h("input",{type:"number",inputMode:"numeric",value:limit,onChange:e=>typeCat(group.id,e.target.value),style:{width:34,textAlign:"center",fontSize:13,fontWeight:800,border:"1px solid #14532d",borderRadius:4,padding:"2px 0",color:"#14532d",background:"#fff"}}),
                     h("button",{onClick:()=>bumpCat(group.id,1),style:{width:20,height:22,fontSize:13,lineHeight:1,padding:0,border:"1px solid #14532d",borderRadius:4,background:"#fff",cursor:"pointer",color:"#14532d"}},"+")),
-                  h("div",{style:{fontSize:9,fontWeight:700,color:over?"#ef4444":"#14532d",marginTop:1}},used+" used"+(over?" — over!":"")));
+                  h("div",{style:{fontSize:12,fontWeight:800,color:over?"#ef4444":"#14532d",marginTop:2}},used+" used"+(over?" — over!":"")));
               })),
             group.factors.map(f=>h("tr",{key:f.id},
               h("td",{style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap"}},f.label),
@@ -815,14 +815,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
                     h("input",{type:"number",inputMode:"numeric",value:editBuffer[f.id],onChange:e=>typeVal(f.id,e.target.value),style:{width:38,textAlign:"center",fontSize:15,fontWeight:700,border:"1px solid "+C.gold,borderRadius:4,padding:"3px 0",color:C.navy}}),
                     h("button",{onClick:()=>bump(f.id,1),style:{width:22,height:24,fontSize:14,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"+")));
               })))
-          ]))),
-    h("div",{style:{marginTop:12,padding:"10px 12px",background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10}},
-      h("div",{style:{fontSize:12,fontWeight:800,color:C.navy,marginBottom:6}},"Instructions for Setting your Angles"),
-      h("ol",{style:{margin:0,paddingLeft:18,fontSize:12,color:C.text,lineHeight:1.6}},
-        h("li",null,"Click the header in each column to edit it."),
-        h("li",null,"Use + or – to raise or lower a number, or tap the box and enter a number manually."),
-        h("li",null,h("span",{style:{color:"#ef4444",fontWeight:800}},"First set these."),"  Core Factors, Race Conditions, and Deep Dive (shown in green) are each independently editable and set the limit for that category. Factors below are capped at that limit — try to go over and you'll see a warning, and the category turns red until it's fixed."),
-        h("li",null,"Tap Save once the total reads 100 pts.")))));
+          ])))));
 }
 function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles}){const [openGroups,setOpenGroups]=useState({core:false,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount>0;
 function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...PRESETS[raceTypeId]});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
@@ -882,7 +875,14 @@ return h("div",{style:{paddingTop:14}},
       h("div",{style:{fontSize:13,fontWeight:800,color:C.navy}},"Set and Compare Race Angles"),
       h("span",{style:{fontSize:12,color:C.muted,fontWeight:700}},compareOpen?"Hide ▲":"Show ▼")),
     compareOpen&&h("div",{style:{marginTop:12}},
-      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode}))));}
+      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode}))),
+  h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
+    h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:8}},"Instructions for Setting your Angles"),
+    h("ol",{style:{margin:0,paddingLeft:18,fontSize:13,color:C.text,lineHeight:1.7}},
+      h("li",null,"Click the header in each column to edit it."),
+      h("li",null,"Use + or – to raise or lower a number, or tap the box and enter a number manually."),
+      h("li",null,h("span",{style:{color:"#ef4444",fontWeight:800}},"First set these."),"  Core Factors, Race Conditions, and Deep Dive (shown in green) are each independently editable and set the limit for that category. Factors below are capped at that limit — try to go over and you'll see a warning, and the category turns red until it's fixed."),
+      h("li",null,"Tap Save once the total reads 100 pts."))));}
 function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}){
   const [nowStr,setNowStr]=useState("");
   useEffect(()=>{
