@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a2535">
+<title>New Horse Player? Start Here — GiddyUp</title>
+<style>
+  :root{
+    --navy:#1a2535; --navy2:#2d3f55; --gold:#c9a84c; --goldLight:#f0d080;
+    --cream:#f5f0e8; --paper:#fffdf8; --border:#e2ddd0; --text:#1a2535; --muted:#6b7280;
+    --win:#1e783c; --place:#c41e28; --show:#1e3aaa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Georgia,'Times New Roman',serif;background:linear-gradient(160deg,var(--cream) 0%,#faf7f0 50%,#f3ede0 100%);color:var(--text);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding-bottom:60px}
+
+  /* Header */
+  header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:28px 20px 22px;text-align:center;position:relative}
+  header .word{font-size:15px;letter-spacing:1px;color:rgba(255,255,255,0.55);text-transform:uppercase;margin-bottom:6px}
+  header .word b{color:var(--gold)}
+  header h1{margin:0 0 8px;font-size:24px;color:#fff;line-height:1.3;font-weight:900}
+  header h1 span{color:var(--gold)}
+  header p{margin:0;font-size:13px;color:rgba(255,255,255,0.75);font-style:italic;max-width:380px;margin:0 auto}
+  .backlink{display:inline-block;margin-top:16px;font-size:12px;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,0.5);border-radius:20px;padding:6px 16px}
+
+  /* Tabs */
+  .tabbar{position:sticky;top:0;z-index:50;display:flex;gap:0;overflow-x:auto;background:var(--paper);border-bottom:2px solid var(--gold);padding:0 8px;scrollbar-width:none}
+  .tabbar::-webkit-scrollbar{display:none}
+  .tabbtn{flex:0 0 auto;padding:14px 14px 12px;font-size:12.5px;font-weight:700;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:inherit}
+  .tabbtn.active{color:var(--navy);border-bottom-color:var(--gold)}
+
+  .panel{padding:22px 18px 8px}
+  .panel h2{font-size:19px;font-weight:900;color:var(--navy);margin:0 0 4px}
+  .panel .sub{font-size:12.5px;color:var(--muted);margin:0 0 18px;line-height:1.5}
+
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+  .card h3{font-size:15px;margin:0 0 6px;color:var(--navy);font-weight:800}
+  .card p{font-size:13.5px;line-height:1.6;margin:0;color:var(--text)}
+  .card p+p{margin-top:8px}
+
+  .betrow{display:flex;align-items:center;gap:12px}
+  .betchip{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff}
+
+  .example{background:rgba(201,168,76,0.10);border:1.5px dashed var(--gold);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px;color:var(--navy)}
+  .example b{color:var(--navy)}
+
+  /* Tote board */
+  .tote{background:#0a0f0a;border-radius:16px;padding:22px 18px;text-align:center;box-shadow:inset 0 0 30px rgba(0,0,0,0.6);margin-bottom:16px}
+  .tote .label{font-family:Georgia,serif;font-size:10px;letter-spacing:3px;color:#7a9e7a;text-transform:uppercase;margin-bottom:10px}
+  .tote .odds-display{font-family:'Courier New',monospace;font-size:42px;font-weight:700;color:#ffb020;text-shadow:0 0 12px rgba(255,176,32,0.7);letter-spacing:2px}
+  .tote .payout{font-family:'Courier New',monospace;font-size:15px;color:#7ee787;margin-top:8px;letter-spacing:1px}
+  .oddsgrid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .oddsbtn{flex:1 0 30%;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;font-family:'Courier New',monospace}
+  .oddsbtn.active{border-color:var(--gold);background:rgba(201,168,76,0.15);color:var(--navy)}
+
+  .steplist{counter-reset:step}
+  .step{display:flex;gap:12px;margin-bottom:14px}
+  .step .num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--navy);color:var(--gold);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .step .txt{font-size:13.5px;line-height:1.55;padding-top:2px}
+
+  .quote{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:14px;padding:20px 18px;color:#fff;text-align:center;margin:16px 0}
+  .quote .q{font-size:16px;font-style:italic;font-weight:700;color:var(--gold);line-height:1.4}
+
+  .cta{display:block;text-align:center;padding:14px;background:linear-gradient(135deg,var(--gold),var(--goldLight));border-radius:12px;color:var(--navy);font-weight:900;font-size:15px;text-decoration:none;margin-top:6px}
+  .qrbox{background:#fff;border:2px solid var(--gold);border-radius:14px;padding:18px;text-align:center;margin-bottom:16px}
+  .qrbox .qr{width:140px;height:140px;margin:0 auto 10px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:11px;font-weight:700;line-height:1.4}
+
+  .footer-note{text-align:center;font-size:11px;color:var(--muted);padding:24px 20px 0}
+
+  .taglabel{display:inline-block;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="word">Giddy<b>Up</b></div>
+    <h1>New Horse Player? <span>Start Here.</span></h1>
+    <p>&ldquo;We do the numbers. You enjoy the race.&rdquo;</p>
+    <a class="backlink" href="index.html">&larr; Back to the App</a>
+  </header>
+
+  <div class="tabbar" id="tabbar"></div>
+  <div class="panel" id="panel"></div>
+
+  <div class="footer-note">Evergreen Park &middot; GiddyUp Silks &middot; Have a question? Come find us at the table.</div>
+</div>
+
+<script>
+const TABS = [
+  {id:"bets", label:"Bet Types"},
+  {id:"odds", label:"Odds"},
+  {id:"wicket", label:"At the Wicket"},
+  {id:"yours", label:"Make It Yours"},
+  {id:"start", label:"Get Started"},
+  {id:"tourney", label:"Tournament"}
+];
+
+function chip(color, text){
+  return `<div class="betchip" style="background:${color}">${text}</div>`;
+}
+
+const RENDER = {
+  bets(){
+    return `
+      <div class="taglabel">The Basics</div>
+      <h2>Bet Types</h2>
+      <p class="sub">Start simple. Every bet below is built on picking a horse — the only thing that changes is how exact you have to be.</p>
+
+      <div class="card"><div class="betrow">${chip('#1e783c','W')}<div><h3>Win</h3><p>Your horse has to finish 1st. Simplest bet on the board.</p></div></div></div>
+      <div class="card"><div class="betrow">${chip('#1e3aaa','P')}<div><h3>Place</h3><p>Your horse finishes 1st or 2nd. Lower payout, easier to hit.</p></div></div></div>
+      <div class="card"><div class="betrow">${chip('#c41e28','S')}<div><h3>Show</h3><p>Your horse finishes 1st, 2nd, or 3rd. The safest of the three.</p></div></div></div>
+
+      <div class="card">
+        <h3>🎯 Exacta</h3>
+        <p>Pick the 1st and 2nd place finishers, in the exact order. Harder to hit, bigger payout.</p>
+      </div>
+      <div class="card">
+        <h3>🎯 Trifecta</h3>
+        <p>Pick 1st, 2nd, and 3rd, in exact order. Even bigger payout, even harder to hit.</p>
+      </div>
+      <div class="card">
+        <h3>🎯 Superfecta</h3>
+        <p>Pick 1st through 4th, in exact order. The big swing bet.</p>
+        <div class="example"><b>Boxing tip:</b> A "box" covers every order of finish for your horses. Box 3 horses in a Trifecta and you win if they finish 1-2-3 in <i>any</i> order — costs more, but removes the guesswork on order.</div>
+      </div>
+    `;
+  },
+
+  odds(){
+    return `
+      <div class="taglabel">Understanding</div>
+      <h2>How Odds Work</h2>
+      <p class="sub">Odds are just the crowd's opinion, priced in dollars. Tap a number below to see what a $2 win bet actually pays.</p>
+
+      <div class="tote">
+        <div class="label">$2 Win Payout</div>
+        <div class="odds-display" id="oddsDisplay">5-1</div>
+        <div class="payout" id="payoutDisplay">PAYS $12.00</div>
+      </div>
+
+      <div class="oddsgrid" id="oddsGrid"></div>
+
+      <div class="card">
+        <h3>What the number means</h3>
+        <p>5-1 means for every $1 you bet, you profit $5 if you win — plus you get your original $1 back. So a $2 bet at 5-1 returns $12 total: $10 profit + your $2 stake.</p>
+      </div>
+      <div class="card">
+        <h3>Favorites vs. longshots</h3>
+        <p>Low odds (like 2-5) mean the crowd expects that horse to win — small payout. High odds (like 20-1) mean the crowd doesn't — big payout if it does.</p>
+      </div>
+      <div class="card">
+        <h3>Odds keep moving</h3>
+        <p>Morning line odds are just a starting guess. The real odds shift right up until post time as more money comes in on each horse — your actual payout isn't locked until the gates open.</p>
+      </div>
+    `;
+  },
+
+  wicket(){
+    return `
+      <div class="taglabel">Etiquette</div>
+      <h2>At the Wicket</h2>
+      <p class="sub">There's a line behind you. Knowing your bet before you step up keeps things moving for everyone — including you.</p>
+
+      <div class="card">
+        <h3>Know before you go</h3>
+        <p>Decide your race number, bet type, dollar amount, and horse number(s) <i>before</i> you're standing at the window.</p>
+        <div class="example"><b>Say it like this:</b> "Race 3, $2 Exacta, 4-7."</div>
+      </div>
+
+      <div class="steplist">
+        <div class="step"><div class="num">1</div><div class="txt">Track (if the venue runs more than one)</div></div>
+        <div class="step"><div class="num">2</div><div class="txt">Race number</div></div>
+        <div class="step"><div class="num">3</div><div class="txt">Dollar amount</div></div>
+        <div class="step"><div class="num">4</div><div class="txt">Bet type</div></div>
+        <div class="step"><div class="num">5</div><div class="txt">Horse number(s)</div></div>
+      </div>
+
+      <div class="card">
+        <h3>A few more things</h3>
+        <p>Have cash ready — some wickets and terminals prefer it. Step aside to check your ticket and count change instead of doing it at the window. And know whether you're at a live teller or a self-serve terminal before you're in line — the process is a little different for each.</p>
+      </div>
+    `;
+  },
+
+  yours(){
+    return `
+      <div class="taglabel">The Philosophy</div>
+      <h2>Make It Yours</h2>
+      <p class="sub">This is the part that actually makes racing fun.</p>
+
+      <div class="card">
+        <h3>Pick your own winner</h3>
+        <p>Don't just copy someone else's bet. The thrill of racing is in making the call yourself and watching it play out — win or lose, it's yours.</p>
+      </div>
+
+      <div class="card">
+        <h3>Nobody bats 1.000</h3>
+        <p>Everyone's an expert when they're on a winning streak. Funny how quiet they get on a losing one. Never pay someone for a "lock" — build your own process instead.</p>
+      </div>
+
+      <div class="quote">
+        <div class="q">"Build your own process.<br>That's what makes it yours — win or lose."</div>
+      </div>
+
+      <div class="card">
+        <h3>Where GiddyUp fits in</h3>
+        <p>GiddyUp isn't here to make the pick for you. It does the homework — the numbers, the angles, the rankings — so your pick is an informed one. You're still in the saddle.</p>
+      </div>
+    `;
+  },
+
+  start(){
+    return `
+      <div class="taglabel">Get Started</div>
+      <h2>Sign Up for GiddyUp</h2>
+      <p class="sub">Takes about 30 seconds. Do it yourself, on your own phone — you'll want to get comfortable using it on your own.</p>
+
+      <div class="qrbox">
+        <div class="qr">QR CODE<br>GOES HERE</div>
+        <div style="font-size:12px;color:var(--muted)">Scan to sign up</div>
+      </div>
+
+      <div class="steplist">
+        <div class="step"><div class="num">1</div><div class="txt">Scan the code above with your phone's camera</div></div>
+        <div class="step"><div class="num">2</div><div class="txt">Create your account and pick a Racing Name</div></div>
+        <div class="step"><div class="num">3</div><div class="txt">Open the Rankings tab to see today's card, ranked for you</div></div>
+        <div class="step"><div class="num">4</div><div class="txt">Adjust the Angle sliders any time to make the rankings your own</div></div>
+      </div>
+
+      <a class="cta" href="index.html">Open GiddyUp →</a>
+    `;
+  },
+
+  tourney(){
+    return `
+      <div class="taglabel">Coming Up</div>
+      <h2>Handicapping Tournament</h2>
+      <p class="sub">We're gauging interest in a GiddyUp handicapping tournament at Evergreen Park.</p>
+
+      <div class="card">
+        <h3>🏆 Interested?</h3>
+        <p>Ask us at the table — we've got a sign-up sheet for names and emails. No commitment, just letting us know you'd want in.</p>
+      </div>
+      <div class="card">
+        <h3>What to expect (rough idea)</h3>
+        <p>Pick your card, score against the field, see how you stack up. Details are still being worked out — signing up for interest just gets you first word when it's ready.</p>
+      </div>
+    `;
+  }
+};
+
+const ODDS_OPTIONS = ["1-5","2-5","1-1","2-1","3-1","5-1","8-1","10-1","20-1"];
+function payoutFor(oddsStr){
+  const [num,den] = oddsStr.split("-").map(Number);
+  const profit = 2 * (num/den);
+  return "PAYS $" + (profit + 2).toFixed(2);
+}
+
+let currentTab = "bets";
+let currentOdds = "5-1";
+
+function renderTabbar(){
+  const bar = document.getElementById("tabbar");
+  bar.innerHTML = TABS.map(t =>
+    `<button class="tabbtn ${t.id===currentTab?'active':''}" data-tab="${t.id}">${t.label}</button>`
+  ).join("");
+  bar.querySelectorAll(".tabbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      currentTab = btn.dataset.tab;
+      renderTabbar();
+      renderPanel();
+      window.scrollTo({top:0,behavior:"smooth"});
+    });
+  });
+}
+
+function renderPanel(){
+  const panel = document.getElementById("panel");
+  panel.innerHTML = RENDER[currentTab]();
+  if(currentTab === "odds"){
+    const grid = document.getElementById("oddsGrid");
+    grid.innerHTML = ODDS_OPTIONS.map(o =>
+      `<button class="oddsbtn ${o===currentOdds?'active':''}" data-odds="${o}">${o}</button>`
+    ).join("");
+    updateTote();
+    grid.querySelectorAll(".oddsbtn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        currentOdds = btn.dataset.odds;
+        grid.querySelectorAll(".oddsbtn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        updateTote();
+      });
+    });
+  }
+}
+
+function updateTote(){
+  document.getElementById("oddsDisplay").textContent = currentOdds;
+  document.getElementById("payoutDisplay").textContent = payoutFor(currentOdds);
+}
+
+renderTabbar();
+renderPanel();
+</script>
+</body>
+</html>
