@@ -86,6 +86,7 @@ const RACE_TYPES=[
   {id:"sprint",label:"Sprint",icon:"⚡",color:"#c96b4a"},
   {id:"route",label:"Route",icon:"🛤",color:"#4a6b9e"},
 ];
+const RACE_TYPE_ROWS=[["stakes","allowance","claiming","maiden"],["custom","sprint","route"]];
 const FC={speed:"#4a7ec9",form:"#c97a4a",jockey:"#c9a84c",trainer:"#4a9e6e",distance:"#9e4a4a",track:"#7a9e4a",post:"#9e4a9e",class:"#4a9e9e",days:"#b87333",weight:"#6b7280",workouts:"#e07070",equipment:"#70b0c0",pedigree:"#a87ab5",style:"#d4a07a",combo:"#7ab5a8",bias:"#b5a87a",earnings:"#2e8b57"};
 const SILK_COLORS={
   1:{bg:"#c41e28",fg:"#ffffff"},2:{bg:"#ffffff",fg:"#1a1a1a"},3:{bg:"#1e3aaa",fg:"#ffffff"},
@@ -715,6 +716,15 @@ function selectGiddyUpForRace(id){setActiveRace(id);if(id==='custom'){setActiveS
 function selectMyDNAForRace(id){setActiveRace(id);setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}
 const [compareOpen,setCompareOpen]=useState(false);
 function onEditRaceType(id){selectMyDNAForRace(id);setCompareOpen(false);}
+function raceTypeButton(rt,keyPrefix,onClick,isActive){
+  return h("button",{key:keyPrefix+rt.id,onClick:()=>onClick(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:isActive?"2px solid "+rt.color:"1.5px solid "+C.border,background:isActive?rt.color+"18":"#fff",cursor:"pointer"}},
+    h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
+    h("div",{style:{fontSize:8,fontWeight:700,color:isActive?rt.color:"#64748b",textTransform:"uppercase"}},rt.label));
+}
+function raceTypeRows(keyPrefix,onClick,isActiveFn){
+  return RACE_TYPE_ROWS.map((row,ri)=>h("div",{key:keyPrefix+"row"+ri,style:{display:"flex",gap:4,marginBottom:ri<RACE_TYPE_ROWS.length-1?4:0}},
+    row.map(id=>RACE_TYPES.find(rt=>rt.id===id)).map(rt=>raceTypeButton(rt,keyPrefix,onClick,isActiveFn(rt)))));
+}
 const [setAnglesOpen,setSetAnglesOpen]=useState(false);
 const uName=silksUser&&silksUser.username?silksUser.username:"My";
 const raceLabel=(RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0]).label;
@@ -741,16 +751,11 @@ return h("div",{style:{paddingTop:14}},
   h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:12}},"Choose Your Angles"),
     h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🐴 GiddyUp Presets"),
-    h("div",{style:{display:"flex",gap:4,marginBottom:14}},
-      RACE_TYPES.map(rt=>h("button",{key:"gu-"+rt.id,onClick:()=>selectGiddyUpForRace(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:(activeRace===rt.id&&activeSpecialist==='giddyup')?"2px solid "+rt.color:"1.5px solid "+C.border,background:(activeRace===rt.id&&activeSpecialist==='giddyup')?rt.color+"18":"#fff",cursor:"pointer"}},
-        h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
-        h("div",{style:{fontSize:8,fontWeight:700,color:(activeRace===rt.id&&activeSpecialist==='giddyup')?rt.color:"#64748b",textTransform:"uppercase"}},rt.label)))),
+    h("div",{style:{marginBottom:14}},
+      raceTypeRows("gu-",selectGiddyUpForRace,rt=>activeRace===rt.id&&activeSpecialist==='giddyup')),
     h("div",{style:{background:"rgba(201,168,76,0.10)",borderRadius:10,padding:"8px 8px 10px",marginBottom:14}},
       h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"⭐ "+uName+"'s DNA"),
-      h("div",{style:{display:"flex",gap:4}},
-        RACE_TYPES.map(rt=>h("button",{key:"me-"+rt.id,onClick:()=>selectMyDNAForRace(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?"2px solid "+rt.color:"1.5px solid "+C.border,background:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?rt.color+"18":"#fff",cursor:"pointer"}},
-          h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
-          h("div",{style:{fontSize:8,fontWeight:700,color:(activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)?rt.color:"#64748b",textTransform:"uppercase"}},rt.label))))),
+      raceTypeRows("me-",selectMyDNAForRace,rt=>activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)),
     h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🎯 Specialist Presets"),
     h("div",{style:{display:"flex",gap:4}},
       SPECIALIST_PRESETS.map(p=>h("button",{key:p.id,onClick:()=>selectSpecialist(p),style:{flex:1,padding:"8px 2px",borderRadius:10,border:activeSpecialist===p.id?"2px solid "+C.gold:"1.5px solid "+C.border,background:activeSpecialist===p.id?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",textAlign:"center"}},
@@ -763,6 +768,7 @@ return h("div",{style:{paddingTop:14}},
     compareOpen&&h("div",{style:{marginTop:12}},
       h("div",{style:{fontSize:11,color:C.muted,marginBottom:10}},"Tap a column header to load that race type into the editor above."),
       h(AnglesMatrix,{silksUser,onEditRaceType}))),
+  h("div",{style:{height:1,background:C.border,margin:"2px 0 16px"}}),
   h("div",{style:{border:"1px solid rgba(201,168,76,0.35)",borderRadius:14,marginBottom:14,background:"rgba(201,168,76,0.04)",overflow:"hidden"}},
     h("div",{onClick:()=>setSetAnglesOpen(o=>!o),style:{padding:16,cursor:"pointer",display:"flex",alignItems:"center",gap:8}},
       h("div",{style:{flex:1,textAlign:"center"}},
@@ -772,7 +778,8 @@ return h("div",{style:{paddingTop:14}},
       h("span",{style:{fontSize:14,color:C.gold,fontWeight:700,flexShrink:0}},setAnglesOpen?"▲":"▼")),
     setAnglesOpen&&h("div",{style:{padding:"0 16px 16px"}},
       h("div",{style:{marginBottom:angleMode==='custom'?12:0}},
-        h("button",{onClick:()=>{setAngleMode('custom');setActiveSpecialist(null);loadSlotFor(activeRace);},style:{width:"100%",padding:"12px 8px",borderRadius:12,border:angleMode==='custom'?"2px solid "+C.gold:"2px solid "+C.border,background:angleMode==='custom'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:angleMode==='custom'?C.gold:C.muted}},"⭐ "+uName+(hasSaved?" DNA":" Angles"))),
+        h("div",{style:{fontSize:11,color:C.muted,marginBottom:8,textAlign:"center"}},"Adjust the category budgets and factors below, then save your own weighting for "+raceLabel+" races."),
+        h("button",{onClick:()=>{setAngleMode('custom');setActiveSpecialist(null);loadSlotFor(activeRace);},style:{width:"100%",padding:"12px 8px",borderRadius:12,border:angleMode==='custom'?"2px solid "+C.gold:"2px solid "+C.border,background:angleMode==='custom'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:angleMode==='custom'?C.gold:C.muted}},angleMode==='custom'?"⭐ Editing "+uName+"'s "+raceLabel+(hasSaved?" DNA":" Angles"):"⭐ Customize "+raceLabel+" Angles")),
       angleMode==='custom'&&h("div",{style:{borderTop:"1px solid rgba(201,168,76,0.2)",paddingTop:12}},
         h("div",{style:{fontSize:12,fontWeight:700,color:isDirty?"#c2410c":"#4a9e6e",marginBottom:8}},
           !hasSaved?"⚠️ No saved "+raceLabel+" DNA yet — adjust your angles below, then Save":(isDirty?"⚠️ Unsaved changes — tap Save to keep these":"✅ Using your saved "+raceLabel+" DNA")),
@@ -1524,40 +1531,6 @@ useEffect(()=>{
     setShowSplash(true);
     try{localStorage.removeItem(SESSION_KEY);}catch(e){}
   }
-
-  // ── Swipe left → GiddyUp Play (ignores drags on inputs/sliders/buttons) ──
-  useEffect(()=>{
-    if(showSplash||!silksUser) return;
-    let sx=0,sy=0,st=0,armed=false;
-    function isInteractive(el){
-      while(el&&el!==document.body){
-        const tag=el.tagName;
-        if(tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA"||tag==="BUTTON"||el.isContentEditable) return true;
-        el=el.parentElement;
-      }
-      return false;
-    }
-    function onStart(e){
-      if(e.touches.length!==1){armed=false;return;}
-      if(isInteractive(e.target)){armed=false;return;}
-      sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();armed=true;
-    }
-    function onEnd(e){
-      if(!armed)return;
-      armed=false;
-      const t=e.changedTouches[0];
-      const dx=t.clientX-sx,dy=t.clientY-sy,dt=Date.now()-st;
-      if(dt<600&&dx<-70&&Math.abs(dx)>Math.abs(dy)*1.5){
-        window.location.href="https://giddyupsilks.app/play.html";
-      }
-    }
-    document.addEventListener("touchstart",onStart,{passive:true});
-    document.addEventListener("touchend",onEnd,{passive:true});
-    return ()=>{
-      document.removeEventListener("touchstart",onStart);
-      document.removeEventListener("touchend",onEnd);
-    };
-  },[showSplash,silksUser]);
 
 async function handleSaveAngles(raceType,currentWeights,currentLocks){
     if(!silksUser) return false;
