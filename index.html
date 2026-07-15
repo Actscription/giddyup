@@ -673,13 +673,19 @@ function TabHelp({title,steps}){
 }
 
 function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights}){
-  const matrixTypes=RACE_TYPES.filter(rt=>rt.id!=='custom');
+  const matrixTypes=RACE_TYPES;
+  const scrollRef=useRef(null);
   const [editingCol,setEditingCol]=useState(null);
   const [editBuffer,setEditBuffer]=useState(null);
   const [catLimits,setCatLimits]=useState(null);
   const [warning,setWarning]=useState("");
   const [justSavedCol,setJustSavedCol]=useState(null);
   const [saving,setSaving]=useState(false);
+  useEffect(()=>{
+    if(!scrollRef.current||!activeRace)return;
+    const el=scrollRef.current.querySelector('[data-col="'+activeRace+'"]');
+    if(el)el.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
+  },[activeRace]);
   function resolved(raceId){
     const saved=silksUser&&silksUser.customAngles&&silksUser.customAngles[raceId];
     if(saved&&saved.weights){const filled=fillMissingFactors(saved.weights,saved.locks||{});return{weights:filled.weights,isCustom:true};}
@@ -776,7 +782,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
       h("div",{style:{display:"flex",gap:6,flexShrink:0}},
         h("button",{onClick:cancelEdit,disabled:saving,style:{padding:"6px 10px",fontSize:12,borderRadius:8,border:"1px solid "+C.border,background:"#fff",cursor:"pointer",color:C.muted}},"Cancel"),
         h("button",{onClick:saveEdit,disabled:saving||!canSave,style:{padding:"6px 14px",fontSize:12,fontWeight:700,borderRadius:8,border:"none",cursor:canSave?"pointer":"not-allowed",opacity:canSave||justSavedCol===editingCol?1:0.5,background:justSavedCol===editingCol?"#4a9e6e":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",color:justSavedCol===editingCol?"#fff":C.gold}},saving?"Saving…":justSavedCol===editingCol?"Saved ✓":"Save"))),
-    h("div",{style:{overflowX:"auto"}},
+    h("div",{ref:scrollRef,style:{overflowX:"auto"}},
       h("table",{style:{borderCollapse:"collapse",width:"max-content",minWidth:"100%"}},
         h("thead",null,
           h("tr",null,
@@ -785,7 +791,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
               const isEditing=editingCol===rt.id;
               const isActive=!isEditing&&rt.id===activeRace;
               const total=isEditing?editTotal:Object.values(displayFor(rt.id)).reduce((a,b)=>a+b,0);
-              return h("th",{key:rt.id,onClick:()=>startEdit(rt.id),style:{textAlign:"center",fontSize:13,fontWeight:700,color:isActive?"#0c447c":C.text,padding:"7px 6px",borderBottom:isEditing?"2px solid "+C.gold:isActive?"2px solid #378ADD":"2px solid "+C.border,background:isEditing?"rgba(201,168,76,0.10)":isActive?"#e6f1fb":"transparent",minWidth:92,cursor:"pointer"}},
+              return h("th",{key:rt.id,"data-col":rt.id,onClick:()=>startEdit(rt.id),style:{textAlign:"center",fontSize:13,fontWeight:700,color:isActive?"#0c447c":C.text,padding:"7px 6px",borderBottom:isEditing?"2px solid "+C.gold:isActive?"2px solid #378ADD":"2px solid "+C.border,background:isEditing?"rgba(201,168,76,0.10)":isActive?"#e6f1fb":"transparent",minWidth:92,cursor:"pointer"}},
                 h("div",null,rt.label),
                 isActive?h("div",{style:{fontSize:9,fontWeight:800,color:"#0c447c",marginTop:1}},"ACTIVE"):null,
                 h("div",{style:{fontSize:11,fontWeight:700,color:total===100?"#4a9e6e":"#ef4444",marginTop:1}},total+"pt"));
