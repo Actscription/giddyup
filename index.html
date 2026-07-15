@@ -672,7 +672,7 @@ function TabHelp({title,steps}){
         h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},step)))));
 }
 
-function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace}){
+function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights}){
   const matrixTypes=RACE_TYPES.filter(rt=>rt.id!=='custom');
   const [editingCol,setEditingCol]=useState(null);
   const [editBuffer,setEditBuffer]=useState(null);
@@ -687,6 +687,10 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
   }
   const data={};
   matrixTypes.forEach(rt=>{data[rt.id]=resolved(rt.id);});
+  function displayFor(rtId){
+    if(rtId===activeRace&&weights)return weights;
+    return data[rtId].weights;
+  }
   function groupOf(fid){return FACTOR_GROUPS.find(g=>g.factors.some(f=>f.id===fid));}
   function groupSum(buf,group){return group.factors.reduce((s,f)=>s+(buf[f.id]||0),0);}
   function flash(msg){setWarning(msg);setTimeout(()=>setWarning(w=>w===msg?"":w),2200);}
@@ -780,7 +784,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
             matrixTypes.map(rt=>{
               const isEditing=editingCol===rt.id;
               const isActive=!isEditing&&rt.id===activeRace;
-              const total=isEditing?editTotal:Object.values(data[rt.id].weights).reduce((a,b)=>a+b,0);
+              const total=isEditing?editTotal:Object.values(displayFor(rt.id)).reduce((a,b)=>a+b,0);
               return h("th",{key:rt.id,onClick:()=>startEdit(rt.id),style:{textAlign:"center",fontSize:13,fontWeight:700,color:isActive?"#0c447c":C.text,padding:"7px 6px",borderBottom:isEditing?"2px solid "+C.gold:isActive?"2px solid #378ADD":"2px solid "+C.border,background:isEditing?"rgba(201,168,76,0.10)":isActive?"#e6f1fb":"transparent",minWidth:92,cursor:"pointer"}},
                 h("div",null,rt.label),
                 isActive?h("div",{style:{fontSize:9,fontWeight:800,color:"#0c447c",marginTop:1}},"ACTIVE"):null,
@@ -794,7 +798,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
                 const isEditing=editingCol===rt.id;
                 if(!isEditing){
                   const isActive=rt.id===activeRace;
-                  const sub=group.factors.reduce((s,f)=>s+(data[rt.id].weights[f.id]||0),0);
+                  const sub=group.factors.reduce((s,f)=>s+(displayFor(rt.id)[f.id]||0),0);
                   return h("td",{key:rt.id,style:{textAlign:"center",fontSize:13,fontWeight:800,color:"#14532d",padding:"6px 4px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border,background:isActive?"#a8d5ab":"#c8e6c9"}},sub+"pt");
                 }
                 const limit=catLimits[group.id]||0;
@@ -811,7 +815,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
               h("td",{style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap"}},f.label),
               matrixTypes.map(rt=>{
                 const isEditing=editingCol===rt.id;
-                if(!isEditing)return h("td",{key:rt.id,style:{textAlign:"center",fontSize:15,fontWeight:600,color:C.text,padding:"4px",borderBottom:"1px solid "+C.border,background:rt.id===activeRace?"#e6f1fb":"transparent"}},data[rt.id].weights[f.id]);
+                if(!isEditing)return h("td",{key:rt.id,style:{textAlign:"center",fontSize:15,fontWeight:600,color:C.text,padding:"4px",borderBottom:"1px solid "+C.border,background:rt.id===activeRace?"#e6f1fb":"transparent"}},displayFor(rt.id)[f.id]);
                 return h("td",{key:rt.id,style:{textAlign:"center",padding:"3px",borderBottom:"1px solid "+C.border,background:"rgba(201,168,76,0.06)"}},
                   h("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",gap:3}},
                     h("button",{onClick:()=>bump(f.id,-1),style:{width:22,height:24,fontSize:14,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"–"),
@@ -878,7 +882,7 @@ return h("div",{style:{paddingTop:14}},
       h("div",{style:{fontSize:13,fontWeight:800,color:C.navy}},"Set and Compare Race Angles"),
       h("span",{style:{fontSize:12,color:C.muted,fontWeight:700}},compareOpen?"Hide ▲":"Show ▼")),
     compareOpen&&h("div",{style:{marginTop:12}},
-      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace}))),
+      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights}))),
   h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:8}},"Instructions for Setting your Angles"),
     h("ol",{style:{margin:0,paddingLeft:18,fontSize:13,color:C.text,lineHeight:1.7}},
