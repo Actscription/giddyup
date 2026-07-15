@@ -716,26 +716,6 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
       return{...b,[fid]:Math.min(n,maxForThis)};
     });
   }
-  function bumpCat(gid,delta){
-    const group=FACTOR_GROUPS.find(g=>g.id===gid);
-    const usedByFactors=group.factors.reduce((s,f)=>s+(editBuffer[f.id]||0),0);
-    setCatBudgets(cb=>{
-      const others=FACTOR_GROUPS.filter(g=>g.id!==gid).reduce((s,g)=>s+(cb[g.id]||0),0);
-      const maxAllowed=100-others;
-      const next=Math.max(usedByFactors,Math.min(maxAllowed,(cb[gid]||0)+delta));
-      return{...cb,[gid]:next};
-    });
-  }
-  function typeCat(gid,raw){
-    const group=FACTOR_GROUPS.find(g=>g.id===gid);
-    const usedByFactors=group.factors.reduce((s,f)=>s+(editBuffer[f.id]||0),0);
-    const n=raw===""?0:Math.max(0,Math.round(Number(raw)||0));
-    setCatBudgets(cb=>{
-      const others=FACTOR_GROUPS.filter(g=>g.id!==gid).reduce((s,g)=>s+(cb[g.id]||0),0);
-      const maxAllowed=100-others;
-      return{...cb,[gid]:Math.max(usedByFactors,Math.min(n,maxAllowed))};
-    });
-  }
   function cancelEdit(){setEditingCol(null);setEditBuffer(null);setCatBudgets(null);}
   async function saveEdit(){
     if(!editingCol||saving||editTotal!==100)return;
@@ -781,21 +761,11 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
         h("tbody",null,
           FACTOR_GROUPS.map(group=>[
             h("tr",{key:group.id+"-h"},
-              h("td",{style:{position:"sticky",left:0,background:"#f8fafc",fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.4,padding:"4px 8px",borderRight:"1px solid "+C.border,borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},group.label),
+              h("td",{style:{position:"sticky",left:0,background:"#c8e6c9",fontSize:12,fontWeight:800,color:"#14532d",textTransform:"uppercase",letterSpacing:0.4,padding:"6px 8px",borderRight:"1px solid "+C.border,borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},group.label),
               matrixTypes.map(rt=>{
                 const isEditing=editingCol===rt.id;
-                if(!isEditing){
-                  const sub=group.factors.reduce((s,f)=>s+(data[rt.id].weights[f.id]||0),0);
-                  return h("td",{key:rt.id,style:{textAlign:"center",fontSize:12,fontWeight:700,color:C.muted,padding:"4px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},sub+"pt");
-                }
-                const used=group.factors.reduce((s,f)=>s+(editBuffer[f.id]||0),0);
-                const budget=catBudgets[group.id]||0;
-                return h("td",{key:rt.id,style:{textAlign:"center",padding:"3px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border,background:"rgba(201,168,76,0.10)"}},
-                  h("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",gap:3}},
-                    h("button",{onClick:()=>bumpCat(group.id,-1),style:{width:20,height:22,fontSize:13,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"–"),
-                    h("input",{type:"number",inputMode:"numeric",value:budget,onChange:e=>typeCat(group.id,e.target.value),style:{width:34,textAlign:"center",fontSize:13,fontWeight:800,border:"1px solid "+C.gold,borderRadius:4,padding:"2px 0",color:C.navy}}),
-                    h("button",{onClick:()=>bumpCat(group.id,1),style:{width:20,height:22,fontSize:13,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"+")),
-                  h("div",{style:{fontSize:9,fontWeight:700,color:C.muted,marginTop:1}},used+" used"));
+                const limit=isEditing?(catBudgets[group.id]||0):group.factors.reduce((s,f)=>s+(data[rt.id].weights[f.id]||0),0);
+                return h("td",{key:rt.id,style:{textAlign:"center",fontSize:13,fontWeight:800,color:"#14532d",padding:"6px 4px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border,background:"#c8e6c9"}},limit+"pt");
               })),
             group.factors.map(f=>h("tr",{key:f.id},
               h("td",{style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap"}},f.label),
@@ -809,7 +779,13 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
                     h("button",{onClick:()=>bump(f.id,1),style:{width:22,height:24,fontSize:14,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"+")));
               })))
           ]))),
-    h("div",{style:{fontSize:12,color:C.text,marginTop:10,padding:"0 8px",lineHeight:1.5}},"Set your Core Factors, Race Conditions, and Deep Dive limits first (the gold boxes on each category row) — then fine-tune the factors below. Each factor is capped at its category's limit, so you can't overshoot it.")));
+    h("div",{style:{marginTop:12,padding:"10px 12px",background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10}},
+      h("div",{style:{fontSize:12,fontWeight:800,color:C.navy,marginBottom:6}},"Instructions for Setting your Angles"),
+      h("ol",{style:{margin:0,paddingLeft:18,fontSize:12,color:C.text,lineHeight:1.6}},
+        h("li",null,"Click the header in each column to edit it."),
+        h("li",null,"Use + or – to raise or lower a number, or tap the box and enter a number manually."),
+        h("li",null,"Core Factors, Race Conditions, and Deep Dive (shown in green) are your fixed category limits — each factor is capped so you can't push it past its category's limit."),
+        h("li",null,"Tap Save once the total reads 100 pts.")))));
 }
 function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles}){const [openGroups,setOpenGroups]=useState({core:false,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount>0;
 function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...PRESETS[raceTypeId]});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
