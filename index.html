@@ -757,7 +757,8 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
         h("tbody",null,
           FACTOR_GROUPS.map(group=>[
             h("tr",{key:group.id+"-h"},
-              h("td",{colSpan:matrixTypes.length+1,style:{position:"sticky",left:0,background:"#c8e6c9",fontSize:12,fontWeight:800,color:"#14532d",textTransform:"uppercase",letterSpacing:0.4,padding:"6px 8px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},group.icon+" "+group.label)),
+              h("td",{style:{position:"sticky",left:0,background:"#c8e6c9",fontSize:12,fontWeight:800,color:"#14532d",textTransform:"uppercase",letterSpacing:0.4,padding:"6px 8px",borderRight:"1px solid "+C.border,borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},group.icon+" "+group.label),
+              matrixTypes.map(rt=>h("td",{key:rt.id,style:{background:"#c8e6c9",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}}))),
             group.factors.map(f=>h("tr",{key:f.id},
               h("td",{style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap"}},f.label),
               matrixTypes.map(rt=>{
