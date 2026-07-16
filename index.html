@@ -69,6 +69,11 @@ const DEFAULT_WEIGHTS=ranksToWeights(DEFAULT_RANKS);
 // Every race type starts from the same default rank order for now; go through the
 // Set and Compare Race Angles matrix per race type to customize each one's ranking.
 const PRESETS={custom:{...DEFAULT_WEIGHTS},stakes:{...DEFAULT_WEIGHTS},allowance:{...DEFAULT_WEIGHTS},claiming:{...DEFAULT_WEIGHTS},maiden:{...DEFAULT_WEIGHTS},sprint:{...DEFAULT_WEIGHTS},route:{...DEFAULT_WEIGHTS}};
+// Live GiddyUp Presets published by the admin (InTheMoney) via the Angles
+// matrix, loaded from Supabase at runtime. Falls back to the built-in
+// default (equal rank order) for any race type that hasn't been published yet.
+function presetWeightsFor(giddyupPresets,raceId){return(giddyupPresets&&giddyupPresets[raceId]&&giddyupPresets[raceId].weights)||PRESETS[raceId];}
+function presetRanksFor(giddyupPresets,raceId){return(giddyupPresets&&giddyupPresets[raceId]&&giddyupPresets[raceId].ranks)||DEFAULT_RANKS;}
 const EARNINGS_WEIGHT={custom:2,stakes:5,allowance:3,claiming:1,maiden:1,sprint:0,route:4};
 // Specialist Angles: single-factor presets for people who bet purely on one thing
 // (jockey stats, trainer stats, combo history, or earnings) rather than a blend.
@@ -310,7 +315,7 @@ function RaceDayCalendar({value,onChange}){
         h("span",null,"= race day published"))));
 }
 
-function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeights,setLocks,angleMode,silksUser}){
+function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeights,setLocks,angleMode,silksUser,giddyupPresets}){
   const [drag,setDrag]=useState(false);
   const [status,setStatus]=useState("idle");
   const [errorMsg,setErrorMsg]=useState("");
@@ -423,7 +428,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
      setHorses(allHorses);
       setActiveRace(detectedRaceType);
       if(angleMode!=='custom'){
-        setWeights({...PRESETS[detectedRaceType]});
+        setWeights({...presetWeightsFor(giddyupPresets,detectedRaceType)});
       } else {
         const all=(silksUser&&silksUser.customAngles)||{};
         const slot=all[detectedRaceType];
@@ -452,7 +457,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
     const rt=race.raceType||"custom";
     setActiveRace(rt);
     if(angleMode!=='custom'){
-      if(PRESETS[rt])setWeights({...PRESETS[rt]});
+      setWeights({...presetWeightsFor(giddyupPresets,rt)});
     } else {
       const all=(silksUser&&silksUser.customAngles)||{};
       const slot=all[rt];
@@ -675,14 +680,17 @@ function TabHelp({title,steps}){
         h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},step)))));
 }
 
-function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights}){
+function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights,giddyupPresets,setGiddyupPresets}){
   const matrixTypes=RACE_TYPES;
   const scrollRef=useRef(null);
   const [editingCol,setEditingCol]=useState(null);
   const [editRanks,setEditRanks]=useState(null);
   const [warning,setWarning]=useState("");
   const [justSavedCol,setJustSavedCol]=useState(null);
+  const [justPublishedCol,setJustPublishedCol]=useState(null);
   const [saving,setSaving]=useState(false);
+  const [publishing,setPublishing]=useState(false);
+  const isAdmin=silksUser&&GIDDYUP_ADMIN_USERNAMES.includes((silksUser.username||"").toLowerCase());
   useEffect(()=>{
     if(!scrollRef.current||!activeRace)return;
     const el=scrollRef.current.querySelector('[data-col="'+activeRace+'"]');
@@ -692,7 +700,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
     const saved=silksUser&&silksUser.customAngles&&silksUser.customAngles[raceId];
     if(saved&&saved.ranks)return{ranks:saved.ranks,isCustom:true};
     if(saved&&saved.weights)return{ranks:weightsToRanks(saved.weights),isCustom:true};
-    return{ranks:{...DEFAULT_RANKS},isCustom:false};
+    return{ranks:presetRanksFor(giddyupPresets,raceId),isCustom:false};
   }
   const data={};
   matrixTypes.forEach(rt=>{data[rt.id]=resolved(rt.id);});
@@ -729,6 +737,20 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
       setTimeout(()=>{setJustSavedCol(null);setEditingCol(null);setEditRanks(null);},1600);
     }
   }
+  async function publishPreset(){
+    if(!editingCol||publishing||!isAdmin)return;
+    setPublishing(true);
+    const weightsOut=ranksToWeights(editRanks);
+    const result=await GiddyUpAuth.publishGiddyUpPreset(editingCol,editRanks,weightsOut,silksUser.id);
+    setPublishing(false);
+    if(result.success){
+      setGiddyupPresets(p=>({...p,[editingCol]:{ranks:editRanks,weights:weightsOut}}));
+      setJustPublishedCol(editingCol);
+      setTimeout(()=>setJustPublishedCol(c=>c===editingCol?null:c),2200);
+    }else{
+      flash("Could not publish: "+result.error);
+    }
+  }
   const editLabel=editingCol?(RACE_TYPES.find(rt=>rt.id===editingCol)||{}).label:"";
   return h("div",null,
     h("div",{style:{fontSize:12,color:C.text,marginBottom:8,padding:"0 8px"}},"Tap a column header to edit its rankings. Rank 1 = most important, 17 = least important — every factor gets a unique number."),
@@ -736,12 +758,15 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
       h("div",null,
         h("div",{style:{fontSize:13,fontWeight:700,color:C.navy}},
           "Editing "+editLabel,
-          justSavedCol===editingCol?h("span",{style:{color:"#4a9e6e",marginLeft:6}},"✓ Saved"):null),
+          justSavedCol===editingCol?h("span",{style:{color:"#4a9e6e",marginLeft:6}},"✓ Saved"):null,
+          justPublishedCol===editingCol?h("span",{style:{color:"#4a9e6e",marginLeft:6}},"✓ Published live"):null),
         justSavedCol!==editingCol&&h("div",{style:{fontSize:12,fontWeight:700,color:"#4a9e6e",marginTop:2}},"Every factor is always ranked 1–17 — always valid, ready to save."),
+        isAdmin&&h("div",{style:{fontSize:11,color:C.muted,marginTop:2}},"Save keeps this as your own DNA. Publish makes it the live GiddyUp Preset for every user."),
         warning&&h("div",{style:{fontSize:12,fontWeight:700,color:"#ef4444",marginTop:2}},warning)),
-      h("div",{style:{display:"flex",gap:6,flexShrink:0}},
-        h("button",{onClick:cancelEdit,disabled:saving,style:{padding:"6px 10px",fontSize:12,borderRadius:8,border:"1px solid "+C.border,background:"#fff",cursor:"pointer",color:C.muted}},"Cancel"),
-        h("button",{onClick:saveEdit,disabled:saving,style:{padding:"6px 14px",fontSize:12,fontWeight:700,borderRadius:8,border:"none",cursor:saving?"not-allowed":"pointer",opacity:saving?0.5:1,background:justSavedCol===editingCol?"#4a9e6e":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",color:justSavedCol===editingCol?"#fff":C.gold}},saving?"Saving…":justSavedCol===editingCol?"Saved ✓":"Save"))),
+      h("div",{style:{display:"flex",gap:6,flexShrink:0,flexWrap:"wrap"}},
+        h("button",{onClick:cancelEdit,disabled:saving||publishing,style:{padding:"6px 10px",fontSize:12,borderRadius:8,border:"1px solid "+C.border,background:"#fff",cursor:"pointer",color:C.muted}},"Cancel"),
+        h("button",{onClick:saveEdit,disabled:saving||publishing,style:{padding:"6px 14px",fontSize:12,fontWeight:700,borderRadius:8,border:"none",cursor:saving?"not-allowed":"pointer",opacity:saving?0.5:1,background:justSavedCol===editingCol?"#4a9e6e":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",color:justSavedCol===editingCol?"#fff":C.gold}},saving?"Saving…":justSavedCol===editingCol?"Saved ✓":"Save"),
+        isAdmin&&h("button",{onClick:publishPreset,disabled:saving||publishing,style:{padding:"6px 14px",fontSize:12,fontWeight:700,borderRadius:8,border:"none",cursor:publishing?"not-allowed":"pointer",opacity:publishing?0.5:1,background:justPublishedCol===editingCol?"#4a9e6e":"#0c447c",color:"#fff"}},publishing?"Publishing…":justPublishedCol===editingCol?"Published ✓":"🐴 Publish as GiddyUp Preset"))),
     h("div",{ref:scrollRef,style:{overflowX:"auto"}},
       h("table",{style:{borderCollapse:"collapse",width:"max-content",minWidth:"100%"}},
         h("thead",null,
@@ -772,13 +797,13 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
               })))
           ])))));
 }
-function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles}){const [openGroups,setOpenGroups]=useState({core:false,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount>0;
-function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...PRESETS[raceTypeId]});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
+function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles,giddyupPresets,setGiddyupPresets}){const [openGroups,setOpenGroups]=useState({core:false,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount>0;
+function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...presetWeightsFor(giddyupPresets,raceTypeId)});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
 function change(id,v){setActiveSpecialist(null);const group=FACTOR_GROUPS.find(g=>g.factors.some(f=>f.id===id));const scopeIds=group.factors.map(f=>f.id);const ls=scopeIds.filter(fid=>fid!==id&&locks[fid]).reduce((s,fid)=>s+weights[fid],0);const groupBudget=scopeIds.reduce((s,fid)=>s+weights[fid],0);setWeights(w=>redistribute(w,locks,scopeIds,id,Math.max(0,Math.min(v,groupBudget-ls))));}function toggleLock(id){setLocks(l=>({...l,[id]:!l[id]}));}function lockAll(){if(allLocked)setLocks({});else setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}function setGroupBudget(groupId,rawValue){const group=FACTOR_GROUPS.find(g=>g.id===groupId);const ids=group.factors.map(f=>f.id);const lockedSum=ids.filter(id=>locks[id]).reduce((s,id)=>s+weights[id],0);const otherGroupsTotal=FACTOR_GROUPS.filter(g=>g.id!==groupId).reduce((s,g)=>s+g.factors.reduce((s2,f)=>s2+weights[f.id],0),0);const maxAllowed=100-otherGroupsTotal;const target=Math.max(lockedSum,Math.min(rawValue,maxAllowed));setActiveSpecialist(null);setWeights(w=>scaleGroupToBudget(w,locks,ids,target));}
 const [activeSpecialist,setActiveSpecialist]=useState('giddyup');
 function selectSpecialist(preset){setActiveSpecialist(preset.id);setWeights({...preset.weights});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
 const [justSaved,setJustSaved]=useState(false);
-function selectGiddyUpForRace(id){setActiveRace(id);if(id==='custom'){setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}else{setActiveSpecialist('giddyup');setAngleMode('giddyup');setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...PRESETS[id]});}}
+function selectGiddyUpForRace(id){setActiveRace(id);if(id==='custom'){setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}else{setActiveSpecialist('giddyup');setAngleMode('giddyup');setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...presetWeightsFor(giddyupPresets,id)});}}
 function selectMyDNAForRace(id){setActiveRace(id);setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}
 const [compareOpen,setCompareOpen]=useState(true);
 function raceTypeButton(rt,keyPrefix,onClick,isActive){
@@ -830,7 +855,7 @@ return h("div",{style:{paddingTop:14}},
       h("div",{style:{fontSize:13,fontWeight:800,color:C.navy}},"Set and Compare Race Angles"),
       h("span",{style:{fontSize:12,color:C.muted,fontWeight:700}},compareOpen?"Hide ▲":"Show ▼")),
     compareOpen&&h("div",{style:{marginTop:12}},
-      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights}))),
+      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights,giddyupPresets,setGiddyupPresets}))),
   h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:8}},"Instructions for Setting your Angles"),
     h("ol",{style:{margin:0,paddingLeft:18,fontSize:13,color:C.text,lineHeight:1.7}},
@@ -1554,6 +1579,12 @@ const [weights,setWeights]=useState({...PRESETS.custom});
   const [silksUser,setSilksUser]=useState(null);
   const [authMode,setAuthMode]=useState('login'); // 'login' | 'register'
   const [authChecked,setAuthChecked]=useState(false);
+  // ── Live GiddyUp Presets (admin-published, replaces hardcoded PRESETS) ──
+  const [giddyupPresets,setGiddyupPresets]=useState({});
+  useEffect(()=>{
+    if(!silksUser)return;
+    GiddyUpAuth.getGiddyUpPresets().then(setGiddyupPresets);
+  },[silksUser&&silksUser.id]);
 
 useEffect(()=>{
     (async()=>{
@@ -1672,8 +1703,8 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       h("div",{style:{display:"flex",gap:3,padding:"12px 0 4px"}},
         TABS.map(tab=>h("button",{key:tab.id,onClick:()=>setActiveTab(tab.id),style:{flex:1,padding:"10px 2px",borderRadius:10,border:"none",background:activeTab===tab.id?"#ffffff":"transparent",boxShadow:activeTab===tab.id?"0 2px 10px rgba(0,0,0,0.08)":"none",borderBottom:activeTab===tab.id?"3px solid "+C.gold:"3px solid transparent",color:activeTab===tab.id?C.text:C.muted,fontSize:10,fontWeight:700,cursor:"pointer"}},
           h("div",{style:{fontSize:16,marginBottom:2}},tab.label),h("div",null,tab.full)))),
-      activeTab==="upload"&&h(UploadTab,{races,setRaces,setActiveTab,setHorses:hs=>{setHorses(hs);setScratched({});},setActiveRace,setWeights,setLocks,angleMode,silksUser}),
-      activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles}),
+      activeTab==="upload"&&h(UploadTab,{races,setRaces,setActiveTab,setHorses:hs=>{setHorses(hs);setScratched({});},setActiveRace,setWeights,setLocks,angleMode,silksUser,giddyupPresets}),
+      activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles,giddyupPresets,setGiddyupPresets}),
       activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
       activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
       activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser,numRacesToday:races.length}),
