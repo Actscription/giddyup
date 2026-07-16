@@ -7,8 +7,8 @@
 <title>New Horse Player? Start Here — GiddyUp</title>
 <style>
   :root{
-    --navy:#1a2535; --navy2:#2d3f55; --gold:#c9a84c; --goldLight:#f0d080;
-    --cream:#f5f0e8; --paper:#fffdf8; --border:#e2ddd0; --text:#1a2535; --muted:#6b7280;
+    --navy:#1a2535; --navy2:#2d3f55; --gold:#c9a84c; --goldLight:#f0d080; --goldDark:#8a6d1f;
+    --cream:#f5f0e8; --paper:#fffdf8; --border:#e2ddd0; --text:#1a2535; --muted:#495164;
     --win:#1e783c; --place:#c41e28; --show:#1e3aaa;
   }
   *{box-sizing:border-box}
@@ -25,24 +25,25 @@
   .backlink{display:inline-block;margin-top:16px;font-size:12px;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,0.5);border-radius:20px;padding:6px 16px}
 
   /* Tabs */
-  .tabbar{position:sticky;top:0;z-index:50;display:flex;gap:0;overflow-x:auto;background:var(--paper);border-bottom:2px solid var(--gold);padding:0 8px;scrollbar-width:none}
-  .tabbar::-webkit-scrollbar{display:none}
-  .tabbtn{flex:0 0 auto;padding:14px 14px 12px;font-size:12.5px;font-weight:700;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:inherit}
-  .tabbtn.active{color:var(--navy);border-bottom-color:var(--gold)}
+  .tabbar{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:2px solid var(--gold)}
+  .tabrow{display:flex}
+  .tabrow.row2{border-top:1px solid var(--border)}
+  .tabbtn{flex:1;padding:13px 6px 11px;font-size:12px;font-weight:700;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-family:inherit;text-align:center}
+  .tabbtn.active{color:var(--navy);border-bottom-color:var(--gold);background:rgba(201,168,76,0.08)}
 
   .panel{padding:22px 18px 8px}
-  .panel h2{font-size:19px;font-weight:900;color:var(--navy);margin:0 0 4px}
-  .panel .sub{font-size:12.5px;color:var(--muted);margin:0 0 18px;line-height:1.5}
+  .panel h2{font-size:24px;font-weight:900;color:var(--navy);margin:0 0 8px;line-height:1.25}
+  .panel .sub{font-size:15px;color:var(--muted);margin:0 0 20px;line-height:1.55;font-weight:500}
 
   .card{background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px}
-  .card h3{font-size:15px;margin:0 0 6px;color:var(--navy);font-weight:800}
-  .card p{font-size:13.5px;line-height:1.6;margin:0;color:var(--text)}
+  .card h3{font-size:16px;margin:0 0 6px;color:var(--navy);font-weight:800}
+  .card p{font-size:14.5px;line-height:1.62;margin:0;color:var(--text)}
   .card p+p{margin-top:8px}
 
   .betrow{display:flex;align-items:center;gap:12px}
   .betchip{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff}
 
-  .example{background:rgba(201,168,76,0.10);border:1.5px dashed var(--gold);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px;color:var(--navy)}
+  .example{background:rgba(201,168,76,0.10);border:1.5px dashed var(--gold);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:14px;color:var(--navy);line-height:1.55}
   .example b{color:var(--navy)}
 
   /* Tote board */
@@ -57,7 +58,7 @@
   .steplist{counter-reset:step}
   .step{display:flex;gap:12px;margin-bottom:14px}
   .step .num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--navy);color:var(--gold);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
-  .step .txt{font-size:13.5px;line-height:1.55;padding-top:2px}
+  .step .txt{font-size:14.5px;line-height:1.6;padding-top:2px;color:var(--text)}
 
   .quote{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:14px;padding:20px 18px;color:#fff;text-align:center;margin:16px 0}
   .quote .q{font-size:16px;font-style:italic;font-weight:700;color:var(--gold);line-height:1.4}
@@ -68,7 +69,7 @@
 
   .footer-note{text-align:center;font-size:11px;color:var(--muted);padding:24px 20px 0}
 
-  .taglabel{display:inline-block;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  .taglabel{display:inline-block;font-size:13.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--goldDark);margin-bottom:12px}
 
   /* Rules */
   .rulecard{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:14px;padding:18px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
@@ -82,14 +83,14 @@
   .glossbadge{flex-shrink:0;width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--gold);font-size:10px;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center;line-height:1.3;padding:4px}
 
   /* Q&A */
-  .qlabel{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-  .qtext{font-size:15.5px;font-weight:900;color:var(--navy);margin-bottom:10px;line-height:1.35}
-  .alabel{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .qlabel{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--goldDark);margin-bottom:5px}
+  .qtext{font-size:16.5px;font-weight:900;color:var(--navy);margin-bottom:10px;line-height:1.4}
+  .alabel{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 
   .colorgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
-  .colorpill{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.02);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
+  .colorpill{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.02);border:1px solid var(--border);border-radius:8px;padding:7px 10px}
   .colorswatch{flex-shrink:0;width:20px;height:20px;border-radius:50%;border:1px solid rgba(0,0,0,0.15)}
-  .colorpill span{font-size:12px;font-weight:700;color:var(--text)}
+  .colorpill span{font-size:13px;font-weight:700;color:var(--text)}
 </style>
 </head>
 <body>
@@ -111,11 +112,10 @@
 const TABS = [
   {id:"intro", label:"Welcome"},
   {id:"bets", label:"Bets & Odds"},
+  {id:"wicket", label:"Buy Your Ticket"},
   {id:"basics", label:"Race Basics"},
-  {id:"wicket", label:"At the Wicket"},
   {id:"yours", label:"Make It Yours"},
-  {id:"start", label:"Get Started"},
-  {id:"tourney", label:"Tournament"}
+  {id:"start", label:"Get Started"}
 ];
 
 function chip(color, text){
@@ -127,8 +127,8 @@ const RENDER = {
   intro(){
     return `
       <div class="taglabel">Welcome</div>
-      <h2 style="font-size:28px;line-height:1.2;margin-bottom:8px">Three Rules Before You Start</h2>
-      <p class="sub">Everything else on this page is optional. These three aren't.</p>
+      <h2 style="font-size:28px;line-height:1.2;margin-bottom:10px">Three Rules Before You Start</h2>
+      <p style="font-size:17px;font-weight:800;color:var(--navy);line-height:1.5;margin:0 0 20px">Everything else on this page is optional.<br>These three aren't.</p>
 
       <div class="rulecard">
         <div class="rnum">1</div>
@@ -285,7 +285,7 @@ const RENDER = {
   wicket(){
     return `
       <div class="taglabel">Etiquette</div>
-      <h2>At the Wicket</h2>
+      <h2>Buy Your Ticket</h2>
       <p class="sub">There's a line behind you. Knowing your bet before you step up keeps things moving for everyone — including you.</p>
 
       <div class="card">
@@ -373,12 +373,8 @@ const RENDER = {
         <h3>🤖 Android (Chrome)</h3>
         <p>Tap the three-dot menu in the top right, tap "Add to Home screen" (or "Install app"), then confirm.</p>
       </div>
-    `;
-  },
 
-  tourney(){
-    return `
-      <div class="taglabel">Coming Up</div>
+      <div class="taglabel" style="margin-top:24px">Coming Up</div>
       <h2>Handicapping Tournament</h2>
       <p class="sub">We're gauging interest in a GiddyUp handicapping tournament at Evergreen Park.</p>
 
@@ -406,9 +402,13 @@ let currentOdds = "5-1";
 
 function renderTabbar(){
   const bar = document.getElementById("tabbar");
-  bar.innerHTML = TABS.map(t =>
-    `<button class="tabbtn ${t.id===currentTab?'active':''}" data-tab="${t.id}">${t.label}</button>`
-  ).join("");
+  const row1 = TABS.slice(0,3);
+  const row2 = TABS.slice(3,6);
+  const rowHtml = (row, extraClass) =>
+    `<div class="tabrow ${extraClass}">` +
+    row.map(t => `<button class="tabbtn ${t.id===currentTab?'active':''}" data-tab="${t.id}">${t.label}</button>`).join("") +
+    `</div>`;
+  bar.innerHTML = rowHtml(row1,"row1") + rowHtml(row2,"row2");
   bar.querySelectorAll(".tabbtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       currentTab = btn.dataset.tab;
