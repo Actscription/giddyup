@@ -803,7 +803,9 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
       h("table",{style:{borderCollapse:"collapse",width:"max-content",minWidth:"100%"}},
         h("thead",null,
           h("tr",null,
-            h("th",{style:{position:"sticky",left:0,zIndex:2,background:"#f8fafc",textAlign:"left",fontSize:13,fontWeight:700,color:C.text,padding:"7px 8px",borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,minWidth:118}},"Factor"),
+            h("th",{style:{position:"sticky",left:0,zIndex:2,background:"#f8fafc",textAlign:"left",fontSize:13,fontWeight:700,color:C.text,padding:"7px 8px",borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,minWidth:118}},
+              h("div",null,"Factor"),
+              h("div",{style:{fontSize:9,fontWeight:600,color:C.muted,textTransform:"none",marginTop:1}},"tap factor for definition")),
             matrixTypes.map(rt=>{
               const isEditing=editingCol===rt.id;
               const isActive=!isEditing&&rt.id===activeRace;
