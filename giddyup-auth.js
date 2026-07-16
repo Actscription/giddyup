@@ -204,6 +204,39 @@ const GiddyUpAuth = {
       .maybeSingle();
     if (error || !data || data.starts < minStarts) return null;
     return data;
+  },
+
+  // ── GIDDYUP GLOBAL PRESETS (admin-controlled, live for every user) ──
+  // One row per race type in the giddyup_presets table. Admin (Carm /
+  // InTheMoney) publishes a ranking (1-17 per factor) for a race type
+  // from the Angles matrix, and it becomes the live "GiddyUp Preset"
+  // for every user immediately — no code deploy needed. RLS restricts
+  // writes to the admin UUID; any authenticated user can read.
+
+  async publishGiddyUpPreset(raceType, ranks, weights, userId) {
+    const { data, error } = await giddyupSupabase
+      .from("giddyup_presets")
+      .upsert({
+        race_type: raceType,
+        ranks: ranks,
+        weights: weights,
+        updated_by: userId,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "race_type" })
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
+  async getGiddyUpPresets() {
+    const { data, error } = await giddyupSupabase
+      .from("giddyup_presets")
+      .select("*");
+    if (error || !data) return {};
+    const out = {};
+    data.forEach(row => { out[row.race_type] = { ranks: row.ranks, weights: row.weights }; });
+    return out;
   }
 
 };
