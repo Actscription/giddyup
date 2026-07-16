@@ -54,6 +54,37 @@ const FACTOR_GROUPS=[
   ]},
 ];
 const ALL_FACTORS=FACTOR_GROUPS.flatMap(g=>g.factors);
+// Glossary — full explanations shown when a user taps a factor name (vs. the
+// short "tip" above, which is just a label-line hint).
+const GLOSSARY={
+  speed:"How fast the horse has actually run, adjusted for track and distance, so runs at different tracks can be compared apples-to-apples. The single most reliable number for separating true class from hype — especially in Stakes and Allowance company where the field has already been sorted by ability.",
+  form:"How the horse has been running lately — usually its last 3-5 starts. Strong recent form suggests the horse is sharp and peaking; a string of flat efforts is a warning sign even if the horse won impressively months ago.",
+  jockey:"The rider's skill and recent win rate. A great horse can lose to poor decision-making in the saddle — a bad break, wrong position, mistimed move — so a proven rider is real insurance, especially in a competitive or crowded field.",
+  trainer:"The trainer's win percentage and how they campaign horses — especially their pattern with horses moving up or down in class, or returning from a layoff. Some trainers are known for a specific angle, like first-off-the-claim or blinkers-on, worth knowing.",
+  earnings:"Recent money earned per start compared to the rest of the field — a good proxy for how competitive the horse has actually been, not just how many races it's won. Padded earnings against weak fields count for less than earnings against real competition.",
+  distance:"How the horse has performed at this exact distance before, and whether today's trip suits its running style. Stretching a proven sprinter out to two turns, or cutting a router back to a sprint, is one of the most common reasons a good horse underperforms.",
+  track:"The horse's record on today's surface — dirt, turf, or synthetic — and track configuration. Some horses are proven on the turf or in the slop while others have never handled a particular surface well, regardless of their overall ability.",
+  post:"The advantage or disadvantage of the starting gate position. Inside posts can save ground but risk traffic trouble; outside posts avoid trouble but cover more ground — the ideal post depends on running style, field size, and today's track bias.",
+  class:"Whether the horse is stepping up or dropping down in claiming price or race grade. This is one of the loudest signals a trainer sends — a drop in class often means the barn wants an easier spot, while stepping up shows real confidence.",
+  days:"How long since the horse's last race. Too long off and a horse may be rusty; too many quick turnarounds and it may be feeling the effects of a hard campaign. The ideal spacing depends on the individual horse and trainer's pattern.",
+  weight:"The actual weight the horse carries today, including the jockey and equipment. A few extra pounds matters more over longer distances, and apprentice ('bug') riders can offer meaningful weight relief.",
+  workouts:"Recent workout times leading up to the race — a window into current fitness, especially for horses coming off a layoff or making their first start, where there's little or no race form to go on.",
+  equipment:"Changes like blinkers going on or off, or a first-time Lasix. Trainers make these changes deliberately to fix a specific issue — blinkers on often means 'we want this horse focused,' which is worth paying attention to.",
+  pedigree:"The horse's breeding, and what it suggests about stamina and surface preference — especially valuable for young or lightly-raced horses trying a new distance or surface for the first time, where there's no proven form to rely on.",
+  style:"Whether the horse is a front-runner, stalker, or closer. Matching running style to the shape of the race — how much pace is likely up front — is one of the most overlooked handicapping skills; a closer needs a fast pace to run into, a lone speed horse wants a slow one.",
+  combo:"How often this specific trainer-jockey pairing wins together, separate from either one's overall numbers. Some combinations just click — certain trainers consistently give their live horses to the same rider.",
+  bias:"Whether the track is playing favorably toward certain posts, running styles, or parts of the strip today — inside speed, outside closers, and so on. Bias can shift race to race depending on maintenance and weather, so it's the least stable factor here, but can be decisive on the right day.",
+};
+function FactorInfoModal({factor,onClose}){
+  if(!factor)return null;
+  return h("div",{onClick:onClose,style:{position:"fixed",inset:0,background:"rgba(15,23,42,0.55)",zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",padding:20}},
+    h("div",{onClick:e=>e.stopPropagation(),style:{background:"#fff",borderRadius:16,padding:"20px 20px 16px",maxWidth:380,width:"100%",boxShadow:"0 12px 40px rgba(0,0,0,0.3)"}},
+      h("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:10}},
+        h("span",{style:{fontSize:22}},factor.icon),
+        h("span",{style:{fontSize:16,fontWeight:800,color:C.navy}},factor.label)),
+      h("div",{style:{fontSize:13.5,color:"#334155",lineHeight:1.6,marginBottom:16}},GLOSSARY[factor.id]||factor.tip),
+      h("button",{onClick:onClose,style:{width:"100%",padding:"9px 0",borderRadius:10,border:"none",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",color:C.gold,fontWeight:700,fontSize:13,cursor:"pointer"}},"Got it")));
+}
 // Usernames allowed to publish the daily card (lowercase)
 const GIDDYUP_ADMIN_USERNAMES=["inthemoney"];
 // Rank-based Angle Points: user ranks each of the 17 factors 1 (most important) to 17
@@ -683,6 +714,7 @@ function TabHelp({title,steps}){
 function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights,giddyupPresets,setGiddyupPresets}){
   const matrixTypes=RACE_TYPES;
   const scrollRef=useRef(null);
+  const [infoFactor,setInfoFactor]=useState(null);
   const [editingCol,setEditingCol]=useState(null);
   const [editRanks,setEditRanks]=useState(null);
   const [warning,setWarning]=useState("");
@@ -785,7 +817,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
               h("td",{style:{position:"sticky",left:0,background:"#c8e6c9",fontSize:12,fontWeight:800,color:"#14532d",textTransform:"uppercase",letterSpacing:0.4,padding:"6px 8px",borderRight:"1px solid "+C.border,borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},group.icon+" "+group.label),
               matrixTypes.map(rt=>h("td",{key:rt.id,style:{background:"#c8e6c9",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}}))),
             group.factors.map(f=>h("tr",{key:f.id},
-              h("td",{style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap"}},f.label),
+              h("td",{onClick:()=>setInfoFactor(f),style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap",cursor:"pointer"}},f.label,h("span",{style:{color:C.gold,fontSize:11,marginLeft:4,fontWeight:800}},"ⓘ")),
               matrixTypes.map(rt=>{
                 const isEditing=editingCol===rt.id;
                 if(!isEditing)return h("td",{key:rt.id,style:{textAlign:"center",fontSize:15,fontWeight:600,color:C.text,padding:"4px",borderBottom:"1px solid "+C.border,background:rt.id===activeRace?"#e6f1fb":"transparent"}},"#"+displayFor(rt.id)[f.id]);
@@ -795,7 +827,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
                     h("input",{type:"number",inputMode:"numeric",min:1,max:17,value:editRanks[f.id],onChange:e=>typeVal(f.id,e.target.value),style:{width:38,textAlign:"center",fontSize:15,fontWeight:700,border:"1px solid "+C.gold,borderRadius:4,padding:"3px 0",color:C.navy}}),
                     h("button",{onClick:()=>bump(f.id,1),style:{width:22,height:24,fontSize:14,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"+")));
               })))
-          ])))));
+          ])))),h(FactorInfoModal,{factor:infoFactor,onClose:()=>setInfoFactor(null)}));
 }
 function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles,giddyupPresets,setGiddyupPresets}){const [openGroups,setOpenGroups]=useState({core:false,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount>0;
 function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...presetWeightsFor(giddyupPresets,raceTypeId)});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
