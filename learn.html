@@ -80,6 +80,16 @@
 
   .glossrow{display:flex;gap:12px;margin-bottom:10px}
   .glossbadge{flex-shrink:0;width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--gold);font-size:10px;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center;line-height:1.3;padding:4px}
+
+  /* Q&A */
+  .qlabel{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+  .qtext{font-size:15.5px;font-weight:900;color:var(--navy);margin-bottom:10px;line-height:1.35}
+  .alabel{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+
+  .colorgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+  .colorpill{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.02);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
+  .colorswatch{flex-shrink:0;width:20px;height:20px;border-radius:50%;border:1px solid rgba(0,0,0,0.15)}
+  .colorpill span{font-size:12px;font-weight:700;color:var(--text)}
 </style>
 </head>
 <body>
@@ -95,7 +105,6 @@
   <div class="tabbar" id="tabbar"></div>
   <div class="panel" id="panel"></div>
 
-  <div class="footer-note">Evergreen Park &middot; GiddyUp Silks &middot; Have a question? Come find us at the table.</div>
 </div>
 
 <script>
@@ -118,7 +127,7 @@ const RENDER = {
   intro(){
     return `
       <div class="taglabel">Welcome</div>
-      <h2>Three Rules Before You Start</h2>
+      <h2 style="font-size:28px;line-height:1.2;margin-bottom:8px">Three Rules Before You Start</h2>
       <p class="sub">Everything else on this page is optional. These three aren't.</p>
 
       <div class="rulecard">
@@ -136,14 +145,29 @@ const RENDER = {
 
       <div class="taglabel" style="margin-top:24px">How a Day Works</div>
       <h2>The Procedure</h2>
-      <p class="sub">Same five steps, every race.</p>
+      <p class="sub">Step 1 happens once. Then repeat steps 2–5 for every race.</p>
 
       <div class="steplist">
-        <div class="step"><div class="num">1</div><div class="txt">Buy a program and/or load giddyup.app on your phone</div></div>
-        <div class="step"><div class="num">2</div><div class="txt">Review Race 1</div></div>
+        <div class="step"><div class="num">1</div><div class="txt">Buy a program and/or load giddyup.app on your phone — just once, at the start of your day</div></div>
+        <div class="step"><div class="num">2</div><div class="txt">Review the race</div></div>
         <div class="step"><div class="num">3</div><div class="txt">Pick your winner</div></div>
         <div class="step"><div class="num">4</div><div class="txt">Buy your ticket</div></div>
         <div class="step"><div class="num">5</div><div class="txt">Cash in your winnings — hopefully!</div></div>
+      </div>
+      <div class="example"><b>Next race up?</b> Jump straight back to step 2. No need to buy another program or reload the app — you're set for the day.</div>
+
+      <div class="taglabel" style="margin-top:24px">Before You Bet</div>
+      <h2>Beginner Tips</h2>
+      <p class="sub">The habits that keep a day at the races fun, not costly.</p>
+
+      <div class="steplist">
+        <div class="step"><div class="num">1</div><div class="txt">Stick to Win, Place, and Show at first — see the Bets & Odds tab for what each means. Exacta, Trifecta, and Superfecta can wait.</div></div>
+        <div class="step"><div class="num">2</div><div class="txt">Never chase a loss. If a bet doesn't hit, don't bet bigger next race trying to win it back — that's exactly how a bad afternoon turns into a bad week.</div></div>
+        <div class="step"><div class="num">3</div><div class="txt">Start small — $2 bets, Win/Place/Show only, until you've got a feel for how races actually unfold.</div></div>
+        <div class="step"><div class="num">4</div><div class="txt">Trust the Rankings tab. GiddyUp's default ranking is a strong starting point — you don't need to touch Angles yet.</div></div>
+        <div class="step"><div class="num">5</div><div class="txt">It's okay to skip a race. You don't have to bet every single one just because you're at the track — some races just don't have a clear read, and passing is a real skill.</div></div>
+        <div class="step"><div class="num">6</div><div class="txt">Set a daily limit before you start, and stick to it no matter what. Until you've got a feel for things, $2 a race is plenty.</div></div>
+        <div class="step"><div class="num">7</div><div class="txt">Keep a diary. A quick note after each race — even just "liked the winner, ignored my own pick" — and patterns start showing up fast.</div></div>
       </div>
     `;
   },
@@ -200,42 +224,60 @@ const RENDER = {
   },
 
   basics(){
+    const colors = [
+      ["1","#c41e28","Red"],["2","#ffffff","White"],["3","#1e3aaa","Blue"],
+      ["4","#e6c81e","Yellow"],["5","#1e783c","Green"],["6","#1a1a1a","Black"],
+      ["7","#e6781e","Orange"],["8","#e66ea0","Pink"],["9","#1ec8c8","Turquoise"],
+      ["10","#7a1ea0","Purple"],["11","#9e9e9e","Gray"],["12","#9ed61e","Lime"]
+    ];
+    const colorHtml = colors.map(([n,hex,name])=>
+      `<div class="colorpill"><div class="colorswatch" style="background:${hex}"></div><span>#${n} ${name}</span></div>`
+    ).join("");
+
     return `
       <div class="taglabel">Glossary</div>
       <h2>Race Basics</h2>
       <p class="sub">A few things every newcomer eventually asks — might as well know them now.</p>
 
       <div class="card">
-        <div class="glossrow">
-          <div class="glossbadge">SILKS</div>
-          <div>
-            <h3>What jockey silks mean</h3>
-            <p>The colored shirt and cap a jockey wears are called "silks." They represent the horse's owner or stable, not the horse itself — the same owner's colors show up race after race. Handy for picking out "your" horse in a tight finish, but they're identification, not a ranking system.</p>
-          </div>
-        </div>
+        <div class="qlabel">Q</div>
+        <div class="qtext">What do the horse numbers mean?</div>
+        <div class="alabel">A</div>
+        <p>Nothing about ability. The number on a horse's saddle cloth is its post position, drawn at random before the race. It only tells you which starting gate the horse breaks from — don't read anything into a horse being #1 versus #9.</p>
       </div>
 
       <div class="card">
-        <div class="glossrow">
-          <div class="glossbadge">POST #</div>
-          <div>
-            <h3>Horse numbers are random</h3>
-            <p>The number on a horse's saddle cloth is its post position, drawn at random before the race. It only tells you which starting gate the horse breaks from — nothing about ability, class, or chances. Don't read anything into a horse being #1 versus #9.</p>
-          </div>
-        </div>
+        <div class="qlabel">Q</div>
+        <div class="qtext">What colors does each post position wear?</div>
+        <div class="alabel">A</div>
+        <p>Post positions follow a standard color code, so you can spot a horse by color from a distance, not just by number:</p>
+        <div class="colorgrid">${colorHtml}</div>
       </div>
 
       <div class="card">
-        <h3>What GiddyUp already did for you</h3>
-        <p>By the time you open the Rankings tab, every horse in the field has already been analyzed and ranked by past performance — weighted by whichever Angle profile you're using (Stakes, Allowance, Claiming, Maiden, or your own custom DNA). You're not starting from a blank program. You're starting from a ranked list and deciding if you agree.</p>
-      </div>
-
-      <div class="card">
-        <h3>Types of races</h3>
+        <div class="qlabel">Q</div>
+        <div class="qtext">What types of races are there?</div>
+        <div class="alabel">A</div>
         <p><b>Maiden</b> — horses that have never won. Thin form, less predictable.</p>
         <p><b>Claiming</b> — horses entered "for sale" at a set price; any licensed owner can claim them after the race. The most common class, wide range of ability.</p>
         <p><b>Allowance</b> — horses that have won before but aren't for sale (non-claiming) and haven't reached stakes company yet.</p>
         <p><b>Stakes</b> — the top level. Biggest purses, best horses, the marquee races on the card.</p>
+      </div>
+
+      <div class="card">
+        <div class="qlabel">Q</div>
+        <div class="qtext">What's a furlong, and what's a Sprint vs. a Route?</div>
+        <div class="alabel">A</div>
+        <p>A <b>furlong</b> is 1/8 of a mile (220 yards). Races are measured in furlongs up to about a mile, then in miles beyond that — a "6 furlong" race is 3/4 of a mile.</p>
+        <p><b>Sprint</b> — shorter races, roughly up to 7 furlongs. Early speed matters most; there's less time to make up ground.</p>
+        <p><b>Route</b> — longer races, one mile or more. Pace and stamina matter more — a horse held back early often has more left in the stretch.</p>
+      </div>
+
+      <div class="card">
+        <div class="qlabel">Q</div>
+        <div class="qtext">What has GiddyUp already done for me?</div>
+        <div class="alabel">A</div>
+        <p>By the time you open the Rankings tab, every horse in the field has already been analyzed and ranked by past performance — weighted by whichever Angle profile you're using (Stakes, Allowance, Claiming, Maiden, or your own custom DNA). You're not starting from a blank program. You're starting from a ranked list and deciding if you agree.</p>
       </div>
     `;
   },
