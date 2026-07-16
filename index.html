@@ -56,16 +56,19 @@ const FACTOR_GROUPS=[
 const ALL_FACTORS=FACTOR_GROUPS.flatMap(g=>g.factors);
 // Usernames allowed to publish the daily card (lowercase)
 const GIDDYUP_ADMIN_USERNAMES=["inthemoney"];
-const PRESETS={
-  custom:{speed:5,form:13,jockey:13,trainer:13,distance:6,track:6,post:6,class:5,days:5,weight:4,workouts:4,equipment:3,pedigree:3,style:3,combo:3,bias:2,earnings:8},
-  stakes:{speed:10,form:18,jockey:6,trainer:13,distance:13,track:15,post:7,class:0,days:0,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:3,bias:0,earnings:15},
-  allowance:{speed:9,form:16,jockey:12,trainer:12,distance:12,track:12,post:10,class:3,days:2,weight:0,workouts:0,equipment:0,pedigree:0,style:0,combo:2,bias:0,earnings:10},
-  claiming:{speed:9,form:12,jockey:19,trainer:10,distance:10,track:10,post:13,class:5,days:2,weight:0,workouts:0,equipment:2,pedigree:0,style:0,combo:2,bias:0,earnings:6},
-  maiden:{speed:7,form:8,jockey:19,trainer:19,distance:11,track:9,post:13,class:0,days:2,weight:0,workouts:5,equipment:0,pedigree:3,style:0,combo:1,bias:0,earnings:3},
-  sprint:{speed:12,form:14,jockey:14,trainer:10,distance:10,track:10,post:15,class:0,days:2,weight:0,workouts:3,equipment:0,pedigree:0,style:5,combo:2,bias:3,earnings:0},
-  route:{speed:10,form:14,jockey:10,trainer:12,distance:15,track:10,post:5,class:2,days:2,weight:0,workouts:0,equipment:0,pedigree:3,style:6,combo:2,bias:0,earnings:9},
-};
-Object.keys(PRESETS).forEach(k=>{const s=Object.values(PRESETS[k]).reduce((a,b)=>a+b,0);if(s!==100)PRESETS[k].speed+=(100-s);});
+// Rank-based Angle Points: user ranks each of the 17 factors 1 (most important) to 17
+// (least important), and this table converts rank -> points. Sums to exactly 100.
+const RANK_POINTS=[11,10,10,9,8,8,7,7,6,5,5,4,3,3,2,1,1];
+const DEFAULT_RANKS=Object.fromEntries(ALL_FACTORS.map((f,i)=>[f.id,i+1]));
+function ranksToWeights(ranksMap){const w={};ALL_FACTORS.forEach(f=>{const r=Math.max(1,Math.min(17,ranksMap[f.id]||17));w[f.id]=RANK_POINTS[r-1];});return w;}
+function weightsToRanks(weights){const sorted=[...ALL_FACTORS].sort((a,b)=>(weights[b.id]||0)-(weights[a.id]||0));const r={};sorted.forEach((f,i)=>{r[f.id]=i+1;});return r;}
+function orderFromRanks(ranksMap){const arr=new Array(17);ALL_FACTORS.forEach(f=>{arr[Math.max(1,Math.min(17,ranksMap[f.id]||17))-1]=f.id;});return arr;}
+function ranksFromOrder(order){const r={};order.forEach((fid,i)=>{r[fid]=i+1;});return r;}
+function setRank(ranksMap,factorId,newRank){newRank=Math.max(1,Math.min(17,Math.round(Number(newRank))||1));const order=orderFromRanks(ranksMap);const oldIdx=order.indexOf(factorId);if(oldIdx===-1)return ranksMap;order.splice(oldIdx,1);order.splice(newRank-1,0,factorId);return ranksFromOrder(order);}
+const DEFAULT_WEIGHTS=ranksToWeights(DEFAULT_RANKS);
+// Every race type starts from the same default rank order for now; go through the
+// Set and Compare Race Angles matrix per race type to customize each one's ranking.
+const PRESETS={custom:{...DEFAULT_WEIGHTS},stakes:{...DEFAULT_WEIGHTS},allowance:{...DEFAULT_WEIGHTS},claiming:{...DEFAULT_WEIGHTS},maiden:{...DEFAULT_WEIGHTS},sprint:{...DEFAULT_WEIGHTS},route:{...DEFAULT_WEIGHTS}};
 const EARNINGS_WEIGHT={custom:2,stakes:5,allowance:3,claiming:1,maiden:1,sprint:0,route:4};
 // Specialist Angles: single-factor presets for people who bet purely on one thing
 // (jockey stats, trainer stats, combo history, or earnings) rather than a blend.
@@ -676,8 +679,7 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
   const matrixTypes=RACE_TYPES;
   const scrollRef=useRef(null);
   const [editingCol,setEditingCol]=useState(null);
-  const [editBuffer,setEditBuffer]=useState(null);
-  const [catLimits,setCatLimits]=useState(null);
+  const [editRanks,setEditRanks]=useState(null);
   const [warning,setWarning]=useState("");
   const [justSavedCol,setJustSavedCol]=useState(null);
   const [saving,setSaving]=useState(false);
@@ -688,100 +690,58 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
   },[activeRace]);
   function resolved(raceId){
     const saved=silksUser&&silksUser.customAngles&&silksUser.customAngles[raceId];
-    if(saved&&saved.weights){const filled=fillMissingFactors(saved.weights,saved.locks||{});return{weights:filled.weights,isCustom:true};}
-    return{weights:{...PRESETS[raceId]},isCustom:false};
+    if(saved&&saved.ranks)return{ranks:saved.ranks,isCustom:true};
+    if(saved&&saved.weights)return{ranks:weightsToRanks(saved.weights),isCustom:true};
+    return{ranks:{...DEFAULT_RANKS},isCustom:false};
   }
   const data={};
   matrixTypes.forEach(rt=>{data[rt.id]=resolved(rt.id);});
   function displayFor(rtId){
-    if(rtId===activeRace&&weights)return weights;
-    return data[rtId].weights;
+    if(rtId===editingCol&&editRanks)return editRanks;
+    return data[rtId].ranks;
   }
-  function groupOf(fid){return FACTOR_GROUPS.find(g=>g.factors.some(f=>f.id===fid));}
-  function groupSum(buf,group){return group.factors.reduce((s,f)=>s+(buf[f.id]||0),0);}
   function flash(msg){setWarning(msg);setTimeout(()=>setWarning(w=>w===msg?"":w),2200);}
   function startEdit(id){
     if(justSavedCol)return;
-    if(editingCol===id){setEditingCol(null);setEditBuffer(null);setCatLimits(null);setWarning("");return;}
-    const w={...data[id].weights};
-    setEditingCol(id);setEditBuffer(w);setWarning("");
-    const initLimits={};
-    FACTOR_GROUPS.forEach(g=>{initLimits[g.id]=groupSum(w,g);});
-    setCatLimits(initLimits);
+    if(editingCol===id){setEditingCol(null);setEditRanks(null);setWarning("");return;}
+    setEditingCol(id);setEditRanks({...data[id].ranks});setWarning("");
   }
   function bump(fid,delta){
-    const group=groupOf(fid);
-    setEditBuffer(b=>{
-      const othersInGroup=group.factors.filter(f=>f.id!==fid).reduce((s,f)=>s+(b[f.id]||0),0);
-      const limit=catLimits?(catLimits[group.id]||0):100;
-      const maxForThis=Math.max(0,limit-othersInGroup);
-      const wanted=(b[fid]||0)+delta;
-      if(delta>0&&wanted>maxForThis)flash(group.label+" limit reached ("+limit+"pt) — free up points elsewhere in this category first.");
-      const next=Math.max(0,Math.min(maxForThis,wanted));
-      return{...b,[fid]:next};
-    });
+    setEditRanks(r=>setRank(r,fid,(r[fid]||1)+delta));
   }
   function typeVal(fid,raw){
-    const group=groupOf(fid);
-    const n=raw===""?0:Math.max(0,Math.round(Number(raw)||0));
-    setEditBuffer(b=>{
-      const othersInGroup=group.factors.filter(f=>f.id!==fid).reduce((s,f)=>s+(b[f.id]||0),0);
-      const limit=catLimits?(catLimits[group.id]||0):100;
-      const maxForThis=Math.max(0,limit-othersInGroup);
-      if(n>maxForThis)flash(group.label+" limit reached ("+limit+"pt) — free up points elsewhere in this category first.");
-      return{...b,[fid]:Math.min(n,maxForThis)};
-    });
+    if(raw==="")return;
+    const n=Math.round(Number(raw));
+    if(!n||n<1||n>17){flash("Enter a rank from 1 to 17.");return;}
+    setEditRanks(r=>setRank(r,fid,n));
   }
-  function bumpCat(gid,delta){
-    setCatLimits(cb=>{
-      const others=FACTOR_GROUPS.filter(g=>g.id!==gid).reduce((s,g)=>s+(cb[g.id]||0),0);
-      const maxAllowed=100-others;
-      const next=Math.max(0,Math.min(maxAllowed,(cb[gid]||0)+delta));
-      return{...cb,[gid]:next};
-    });
-  }
-  function typeCat(gid,raw){
-    const n=raw===""?0:Math.max(0,Math.round(Number(raw)||0));
-    setCatLimits(cb=>{
-      const others=FACTOR_GROUPS.filter(g=>g.id!==gid).reduce((s,g)=>s+(cb[g.id]||0),0);
-      const maxAllowed=100-others;
-      return{...cb,[gid]:Math.min(n,maxAllowed)};
-    });
-  }
-  function cancelEdit(){setEditingCol(null);setEditBuffer(null);setCatLimits(null);setWarning("");}
+  function cancelEdit(){setEditingCol(null);setEditRanks(null);setWarning("");}
   async function saveEdit(){
-    if(!editingCol||saving||editTotal!==100||anyOverLimit)return;
+    if(!editingCol||saving)return;
     setSaving(true);
+    const weightsOut=ranksToWeights(editRanks);
     const zeroLocks=Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false]));
-    const ok=await onSaveAngles(editingCol,editBuffer,zeroLocks);
+    const ok=await onSaveAngles(editingCol,weightsOut,zeroLocks,editRanks);
     setSaving(false);
     if(ok){
-      setActiveRace(editingCol);setAngleMode('custom');setWeights({...editBuffer});setLocks(zeroLocks);
+      setActiveRace(editingCol);setAngleMode('custom');setWeights({...weightsOut});setLocks(zeroLocks);
       setJustSavedCol(editingCol);
-      setTimeout(()=>{setJustSavedCol(null);setEditingCol(null);setEditBuffer(null);setCatLimits(null);},1600);
+      setTimeout(()=>{setJustSavedCol(null);setEditingCol(null);setEditRanks(null);},1600);
     }
   }
-  const editTotal=editBuffer?Object.values(editBuffer).reduce((a,b)=>a+b,0):0;
   const editLabel=editingCol?(RACE_TYPES.find(rt=>rt.id===editingCol)||{}).label:"";
-  const overBy=editTotal-100;
-  const statusText=editTotal===100?"✓ 100 pts allocated":overBy>0?"Over 100 — remove "+overBy+"pt"+(overBy===1?"":"s")+" to save":(100-editTotal)+"pt"+(100-editTotal===1?"":"s")+" left to allocate";
-  const statusColor=editTotal===100?"#4a9e6e":"#ef4444";
-  const overGroups=editBuffer&&catLimits?FACTOR_GROUPS.filter(g=>groupSum(editBuffer,g)>(catLimits[g.id]||0)):[];
-  const anyOverLimit=overGroups.length>0;
-  const canSave=editTotal===100&&!anyOverLimit;
   return h("div",null,
-    h("div",{style:{fontSize:12,color:C.text,marginBottom:8,padding:"0 8px"}},"Tap a column header to edit its numbers."),
+    h("div",{style:{fontSize:12,color:C.text,marginBottom:8,padding:"0 8px"}},"Tap a column header to edit its rankings. Rank 1 = most important, 17 = least important — every factor gets a unique number."),
     editingCol&&h("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,background:"rgba(201,168,76,0.10)",border:"1.5px solid "+C.gold,borderRadius:10,padding:"8px 12px",marginBottom:8,marginLeft:8,marginRight:8,flexWrap:"wrap"}},
       h("div",null,
         h("div",{style:{fontSize:13,fontWeight:700,color:C.navy}},
           "Editing "+editLabel,
           justSavedCol===editingCol?h("span",{style:{color:"#4a9e6e",marginLeft:6}},"✓ Saved"):null),
-        justSavedCol!==editingCol&&h("div",{style:{fontSize:12,fontWeight:700,color:statusColor,marginTop:2}},statusText),
-        anyOverLimit&&h("div",{style:{fontSize:12,fontWeight:700,color:"#ef4444",marginTop:2}},overGroups.map(g=>g.label).join(", ")+" over its limit — lower a factor or raise the category limit."),
+        justSavedCol!==editingCol&&h("div",{style:{fontSize:12,fontWeight:700,color:"#4a9e6e",marginTop:2}},"Every factor is always ranked 1–17 — always valid, ready to save."),
         warning&&h("div",{style:{fontSize:12,fontWeight:700,color:"#ef4444",marginTop:2}},warning)),
       h("div",{style:{display:"flex",gap:6,flexShrink:0}},
         h("button",{onClick:cancelEdit,disabled:saving,style:{padding:"6px 10px",fontSize:12,borderRadius:8,border:"1px solid "+C.border,background:"#fff",cursor:"pointer",color:C.muted}},"Cancel"),
-        h("button",{onClick:saveEdit,disabled:saving||!canSave,style:{padding:"6px 14px",fontSize:12,fontWeight:700,borderRadius:8,border:"none",cursor:canSave?"pointer":"not-allowed",opacity:canSave||justSavedCol===editingCol?1:0.5,background:justSavedCol===editingCol?"#4a9e6e":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",color:justSavedCol===editingCol?"#fff":C.gold}},saving?"Saving…":justSavedCol===editingCol?"Saved ✓":"Save"))),
+        h("button",{onClick:saveEdit,disabled:saving,style:{padding:"6px 14px",fontSize:12,fontWeight:700,borderRadius:8,border:"none",cursor:saving?"not-allowed":"pointer",opacity:saving?0.5:1,background:justSavedCol===editingCol?"#4a9e6e":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",color:justSavedCol===editingCol?"#fff":C.gold}},saving?"Saving…":justSavedCol===editingCol?"Saved ✓":"Save"))),
     h("div",{ref:scrollRef,style:{overflowX:"auto"}},
       h("table",{style:{borderCollapse:"collapse",width:"max-content",minWidth:"100%"}},
         h("thead",null,
@@ -790,42 +750,23 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
             matrixTypes.map(rt=>{
               const isEditing=editingCol===rt.id;
               const isActive=!isEditing&&rt.id===activeRace;
-              const total=isEditing?editTotal:Object.values(displayFor(rt.id)).reduce((a,b)=>a+b,0);
               return h("th",{key:rt.id,"data-col":rt.id,onClick:()=>startEdit(rt.id),style:{textAlign:"center",fontSize:13,fontWeight:700,color:isActive?"#0c447c":C.text,padding:"7px 6px",borderBottom:isEditing?"2px solid "+C.gold:isActive?"2px solid #378ADD":"2px solid "+C.border,background:isEditing?"rgba(201,168,76,0.10)":isActive?"#e6f1fb":"transparent",minWidth:92,cursor:"pointer"}},
                 h("div",null,rt.label),
-                isActive?h("div",{style:{fontSize:9,fontWeight:800,color:"#0c447c",marginTop:1}},"ACTIVE"):null,
-                h("div",{style:{fontSize:11,fontWeight:700,color:total===100?"#4a9e6e":"#ef4444",marginTop:1}},total+"pt"));
+                isActive?h("div",{style:{fontSize:9,fontWeight:800,color:"#0c447c",marginTop:1}},"ACTIVE"):null);
             }))),
         h("tbody",null,
           FACTOR_GROUPS.map(group=>[
             h("tr",{key:group.id+"-h"},
-              h("td",{style:{position:"sticky",left:0,background:"#c8e6c9",fontSize:12,fontWeight:800,color:"#14532d",textTransform:"uppercase",letterSpacing:0.4,padding:"6px 8px",borderRight:"1px solid "+C.border,borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},group.label),
-              matrixTypes.map(rt=>{
-                const isEditing=editingCol===rt.id;
-                if(!isEditing){
-                  const isActive=rt.id===activeRace;
-                  const sub=group.factors.reduce((s,f)=>s+(displayFor(rt.id)[f.id]||0),0);
-                  return h("td",{key:rt.id,style:{textAlign:"center",fontSize:13,fontWeight:800,color:"#14532d",padding:"6px 4px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border,background:isActive?"#a8d5ab":"#c8e6c9"}},sub+"pt");
-                }
-                const limit=catLimits[group.id]||0;
-                const used=groupSum(editBuffer,group);
-                const over=used>limit;
-                return h("td",{key:rt.id,style:{textAlign:"center",padding:"4px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border,background:over?"#fde2e2":"#c8e6c9"}},
-                  h("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",gap:3}},
-                    h("button",{onClick:()=>bumpCat(group.id,-1),style:{width:20,height:22,fontSize:13,lineHeight:1,padding:0,border:"1px solid #14532d",borderRadius:4,background:"#fff",cursor:"pointer",color:"#14532d"}},"–"),
-                    h("input",{type:"number",inputMode:"numeric",value:limit,onChange:e=>typeCat(group.id,e.target.value),style:{width:34,textAlign:"center",fontSize:13,fontWeight:800,border:"1px solid #14532d",borderRadius:4,padding:"2px 0",color:"#14532d",background:"#fff"}}),
-                    h("button",{onClick:()=>bumpCat(group.id,1),style:{width:20,height:22,fontSize:13,lineHeight:1,padding:0,border:"1px solid #14532d",borderRadius:4,background:"#fff",cursor:"pointer",color:"#14532d"}},"+")),
-                  h("div",{style:{fontSize:12,fontWeight:800,color:over?"#ef4444":"#14532d",marginTop:2}},used+" used"+(over?" — over!":"")));
-              })),
+              h("td",{colSpan:matrixTypes.length+1,style:{position:"sticky",left:0,background:"#c8e6c9",fontSize:12,fontWeight:800,color:"#14532d",textTransform:"uppercase",letterSpacing:0.4,padding:"6px 8px",borderTop:"1px solid "+C.border,borderBottom:"1px solid "+C.border}},group.icon+" "+group.label)),
             group.factors.map(f=>h("tr",{key:f.id},
               h("td",{style:{position:"sticky",left:0,background:"#fff",fontSize:14,color:C.text,padding:"5px 8px 5px 16px",borderRight:"1px solid "+C.border,borderBottom:"1px solid "+C.border,whiteSpace:"nowrap"}},f.label),
               matrixTypes.map(rt=>{
                 const isEditing=editingCol===rt.id;
-                if(!isEditing)return h("td",{key:rt.id,style:{textAlign:"center",fontSize:15,fontWeight:600,color:C.text,padding:"4px",borderBottom:"1px solid "+C.border,background:rt.id===activeRace?"#e6f1fb":"transparent"}},displayFor(rt.id)[f.id]);
+                if(!isEditing)return h("td",{key:rt.id,style:{textAlign:"center",fontSize:15,fontWeight:600,color:C.text,padding:"4px",borderBottom:"1px solid "+C.border,background:rt.id===activeRace?"#e6f1fb":"transparent"}},"#"+displayFor(rt.id)[f.id]);
                 return h("td",{key:rt.id,style:{textAlign:"center",padding:"3px",borderBottom:"1px solid "+C.border,background:"rgba(201,168,76,0.06)"}},
                   h("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",gap:3}},
                     h("button",{onClick:()=>bump(f.id,-1),style:{width:22,height:24,fontSize:14,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"–"),
-                    h("input",{type:"number",inputMode:"numeric",value:editBuffer[f.id],onChange:e=>typeVal(f.id,e.target.value),style:{width:38,textAlign:"center",fontSize:15,fontWeight:700,border:"1px solid "+C.gold,borderRadius:4,padding:"3px 0",color:C.navy}}),
+                    h("input",{type:"number",inputMode:"numeric",min:1,max:17,value:editRanks[f.id],onChange:e=>typeVal(f.id,e.target.value),style:{width:38,textAlign:"center",fontSize:15,fontWeight:700,border:"1px solid "+C.gold,borderRadius:4,padding:"3px 0",color:C.navy}}),
                     h("button",{onClick:()=>bump(f.id,1),style:{width:22,height:24,fontSize:14,lineHeight:1,padding:0,border:"1px solid "+C.border,borderRadius:4,background:"#fff",cursor:"pointer",color:C.muted}},"+")));
               })))
           ])))));
@@ -863,8 +804,8 @@ return h("div",{style:{paddingTop:14}},
     "Tap a race type in the "+uName+"'s DNA row to load your own saved angles for that race — this also selects the race type.",
     "Or tap a Specialist preset (Jockey/Trainer/Combo/Earnings Only) for a single-factor focus, on top of whichever race type is active.",
     "Open Set and Compare Race Angles to see every race type side by side.",
-    "Tap a column header to edit that race type — use the +/– buttons or type a number directly in each box.",
-    "Keep an eye on the pts total at the top of the column — it should read 100 before you save.",
+    "Tap a column header to edit that race type — use the +/– buttons or type a number directly in each box (1 = most important, 17 = least important).",
+    "Every factor always holds a unique rank — type a number that's already taken and the other factors shift out of the way automatically.",
     "Tap Save to keep your changes as your own DNA for that race type.",
   ]}),
   h("div",{style:{background:"rgba(201,168,76,0.12)",border:"1.5px solid "+C.gold,borderRadius:12,padding:"10px 14px",marginBottom:12,textAlign:"center"}},
@@ -893,9 +834,9 @@ return h("div",{style:{paddingTop:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:8}},"Instructions for Setting your Angles"),
     h("ol",{style:{margin:0,paddingLeft:18,fontSize:13,color:C.text,lineHeight:1.7}},
       h("li",null,"Click the header in each column to edit it."),
-      h("li",null,"Use + or – to raise or lower a number, or tap the box and enter a number manually."),
-      h("li",null,h("span",{style:{color:"#ef4444",fontWeight:800}},"First set these."),"  Core Factors, Race Conditions, and Deep Dive (shown in green) are each independently editable and set the limit for that category. Factors below are capped at that limit — try to go over and you'll see a warning, and the category turns red until it's fixed."),
-      h("li",null,"Tap Save once the total reads 100 pts."))));}
+      h("li",null,"Use + or – to raise or lower a factor's rank, or tap the box and type a number from 1 (most important) to 17 (least important) directly."),
+      h("li",null,"Every factor always holds a unique rank — enter a number that's already taken and the rest shift down to make room, like reordering a list."),
+      h("li",null,"Tap Save once you're happy with the order — GiddyUp converts your ranking into points behind the scenes."))));}
 function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}){
   const [nowStr,setNowStr]=useState("");
   useEffect(()=>{
@@ -1643,9 +1584,9 @@ useEffect(()=>{
     try{localStorage.removeItem(SESSION_KEY);}catch(e){}
   }
 
-async function handleSaveAngles(raceType,currentWeights,currentLocks){
+async function handleSaveAngles(raceType,currentWeights,currentLocks,currentRanks){
     if(!silksUser) return false;
-    const merged={...(silksUser.customAngles||{}),[raceType]:{weights:currentWeights,locks:currentLocks}};
+    const merged={...(silksUser.customAngles||{}),[raceType]:{weights:currentWeights,locks:currentLocks,ranks:currentRanks}};
     const result=await GiddyUpAuth.saveCustomAngles(silksUser.id,merged);
     if(result.success){
       setSilksUser(u=>({...u,customAngles:merged}));
