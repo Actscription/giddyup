@@ -711,7 +711,7 @@ function TabHelp({title,steps}){
         h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},step)))));
 }
 
-function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights,giddyupPresets,setGiddyupPresets}){
+function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights,giddyupPresets,setGiddyupPresets,angleMode}){
   const matrixTypes=RACE_TYPES;
   const scrollRef=useRef(null);
   const [infoFactor,setInfoFactor]=useState(null);
@@ -729,6 +729,9 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
     if(el)el.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
   },[activeRace]);
   function resolved(raceId){
+    if(raceId===activeRace&&angleMode!=='custom'){
+      return{ranks:presetRanksFor(giddyupPresets,raceId),isCustom:false};
+    }
     const saved=silksUser&&silksUser.customAngles&&silksUser.customAngles[raceId];
     if(saved&&saved.ranks)return{ranks:saved.ranks,isCustom:true};
     if(saved&&saved.weights)return{ranks:weightsToRanks(saved.weights),isCustom:true};
@@ -889,7 +892,7 @@ return h("div",{style:{paddingTop:14}},
       h("div",{style:{fontSize:13,fontWeight:800,color:C.navy}},"Set and Compare Race Angles"),
       h("span",{style:{fontSize:12,color:C.muted,fontWeight:700}},compareOpen?"Hide ▲":"Show ▼")),
     compareOpen&&h("div",{style:{marginTop:12}},
-      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights,giddyupPresets,setGiddyupPresets}))),
+      h(AnglesMatrix,{silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,setAngleMode,activeRace,weights,giddyupPresets,setGiddyupPresets,angleMode}))),
   h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
     h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:8}},"Instructions for Setting your Angles"),
     h("ol",{style:{margin:0,paddingLeft:18,fontSize:13,color:C.text,lineHeight:1.7}},
