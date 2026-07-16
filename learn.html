@@ -69,6 +69,17 @@
   .footer-note{text-align:center;font-size:11px;color:var(--muted);padding:24px 20px 0}
 
   .taglabel{display:inline-block;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+
+  /* Rules */
+  .rulecard{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:14px;padding:18px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start}
+  .rulecard .rnum{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--navy);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .rulecard .rtext{color:#fff;font-size:14.5px;line-height:1.55;font-weight:600;padding-top:4px}
+  .rulecard.echo{background:rgba(26,37,53,0.06);border:1.5px dashed var(--navy2)}
+  .rulecard.echo .rtext{color:var(--navy);font-style:italic}
+  .rulecard.echo .rnum{background:var(--navy);color:var(--gold)}
+
+  .glossrow{display:flex;gap:12px;margin-bottom:10px}
+  .glossbadge{flex-shrink:0;width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--gold);font-size:10px;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center;line-height:1.3;padding:4px}
 </style>
 </head>
 <body>
@@ -89,8 +100,9 @@
 
 <script>
 const TABS = [
-  {id:"bets", label:"Bet Types"},
-  {id:"odds", label:"Odds"},
+  {id:"intro", label:"Welcome"},
+  {id:"bets", label:"Bets & Odds"},
+  {id:"basics", label:"Race Basics"},
   {id:"wicket", label:"At the Wicket"},
   {id:"yours", label:"Make It Yours"},
   {id:"start", label:"Get Started"},
@@ -102,10 +114,44 @@ function chip(color, text){
 }
 
 const RENDER = {
+
+  intro(){
+    return `
+      <div class="taglabel">Welcome</div>
+      <h2>Three Rules Before You Start</h2>
+      <p class="sub">Everything else on this page is optional. These three aren't.</p>
+
+      <div class="rulecard">
+        <div class="rnum">1</div>
+        <div class="rtext">Enjoy the races and enjoy the company you're with. You've already won.</div>
+      </div>
+      <div class="rulecard echo">
+        <div class="rnum">2</div>
+        <div class="rtext">Having an unlucky day? Reread Rule 1.</div>
+      </div>
+      <div class="rulecard echo">
+        <div class="rnum">3</div>
+        <div class="rtext">Having a lucky day? Reread Rule 1.</div>
+      </div>
+
+      <div class="taglabel" style="margin-top:24px">How a Day Works</div>
+      <h2>The Procedure</h2>
+      <p class="sub">Same five steps, every race.</p>
+
+      <div class="steplist">
+        <div class="step"><div class="num">1</div><div class="txt">Buy a program and/or load giddyup.app on your phone</div></div>
+        <div class="step"><div class="num">2</div><div class="txt">Review Race 1</div></div>
+        <div class="step"><div class="num">3</div><div class="txt">Pick your winner</div></div>
+        <div class="step"><div class="num">4</div><div class="txt">Buy your ticket</div></div>
+        <div class="step"><div class="num">5</div><div class="txt">Cash in your winnings — hopefully!</div></div>
+      </div>
+    `;
+  },
+
   bets(){
     return `
       <div class="taglabel">The Basics</div>
-      <h2>Bet Types</h2>
+      <h2>Bet Types & Odds</h2>
       <p class="sub">Start simple. Every bet below is built on picking a horse — the only thing that changes is how exact you have to be.</p>
 
       <div class="card"><div class="betrow">${chip('#1e783c','W')}<div><h3>Win</h3><p>Your horse has to finish 1st. Simplest bet on the board.</p></div></div></div>
@@ -125,12 +171,8 @@ const RENDER = {
         <p>Pick 1st through 4th, in exact order. The big swing bet.</p>
         <div class="example"><b>Boxing tip:</b> A "box" covers every order of finish for your horses. Box 3 horses in a Trifecta and you win if they finish 1-2-3 in <i>any</i> order — costs more, but removes the guesswork on order.</div>
       </div>
-    `;
-  },
 
-  odds(){
-    return `
-      <div class="taglabel">Understanding</div>
+      <div class="taglabel" style="margin-top:24px">Understanding</div>
       <h2>How Odds Work</h2>
       <p class="sub">Odds are just the crowd's opinion, priced in dollars. Tap a number below to see what a $2 win bet actually pays.</p>
 
@@ -153,6 +195,47 @@ const RENDER = {
       <div class="card">
         <h3>Odds keep moving</h3>
         <p>Morning line odds are just a starting guess. The real odds shift right up until post time as more money comes in on each horse — your actual payout isn't locked until the gates open.</p>
+      </div>
+    `;
+  },
+
+  basics(){
+    return `
+      <div class="taglabel">Glossary</div>
+      <h2>Race Basics</h2>
+      <p class="sub">A few things every newcomer eventually asks — might as well know them now.</p>
+
+      <div class="card">
+        <div class="glossrow">
+          <div class="glossbadge">SILKS</div>
+          <div>
+            <h3>What jockey silks mean</h3>
+            <p>The colored shirt and cap a jockey wears are called "silks." They represent the horse's owner or stable, not the horse itself — the same owner's colors show up race after race. Handy for picking out "your" horse in a tight finish, but they're identification, not a ranking system.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="glossrow">
+          <div class="glossbadge">POST #</div>
+          <div>
+            <h3>Horse numbers are random</h3>
+            <p>The number on a horse's saddle cloth is its post position, drawn at random before the race. It only tells you which starting gate the horse breaks from — nothing about ability, class, or chances. Don't read anything into a horse being #1 versus #9.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>What GiddyUp already did for you</h3>
+        <p>By the time you open the Rankings tab, every horse in the field has already been analyzed and ranked by past performance — weighted by whichever Angle profile you're using (Stakes, Allowance, Claiming, Maiden, or your own custom DNA). You're not starting from a blank program. You're starting from a ranked list and deciding if you agree.</p>
+      </div>
+
+      <div class="card">
+        <h3>Types of races</h3>
+        <p><b>Maiden</b> — horses that have never won. Thin form, less predictable.</p>
+        <p><b>Claiming</b> — horses entered "for sale" at a set price; any licensed owner can claim them after the race. The most common class, wide range of ability.</p>
+        <p><b>Allowance</b> — horses that have won before but aren't for sale (non-claiming) and haven't reached stakes company yet.</p>
+        <p><b>Stakes</b> — the top level. Biggest purses, best horses, the marquee races on the card.</p>
       </div>
     `;
   },
@@ -181,6 +264,11 @@ const RENDER = {
         <h3>A few more things</h3>
         <p>Have cash ready — some wickets and terminals prefer it. Step aside to check your ticket and count change instead of doing it at the window. And know whether you're at a live teller or a self-serve terminal before you're in line — the process is a little different for each.</p>
       </div>
+
+      <div class="card">
+        <h3>💰 Cashing in? Have your next bet ready too</h3>
+        <p>If you're cashing a winning ticket, decide your next race's picks before you get to the window. You can cash your winner and place your next bet in the same trip — saves you a second trip through the line.</p>
+      </div>
     `;
   },
 
@@ -205,8 +293,8 @@ const RENDER = {
       </div>
 
       <div class="card">
-        <h3>Where GiddyUp fits in</h3>
-        <p>GiddyUp isn't here to make the pick for you. It does the homework — the numbers, the angles, the rankings — so your pick is an informed one. You're still in the saddle.</p>
+        <h3>GiddyUp is a tool, not a crystal ball</h3>
+        <p>It hands you the analysis — the numbers, the angles, the rankings — so your pick is an informed one. But you still have to read the race: the paddock, the pace, a late jockey change, how the track's playing today. The numbers get you most of the way there. Your eyes at the track finish the job.</p>
       </div>
     `;
   },
@@ -230,6 +318,19 @@ const RENDER = {
       </div>
 
       <a class="cta" href="index.html">Open GiddyUp →</a>
+
+      <div class="taglabel" style="margin-top:24px">One-Tap Access</div>
+      <h2>Add GiddyUp to Your Home Screen</h2>
+      <p class="sub">Turns it into an app icon — no typing the address every time you're at the track.</p>
+
+      <div class="card">
+        <h3>📱 iPhone (Safari)</h3>
+        <p>Tap the Share icon (the square with the arrow) at the bottom of the screen, scroll down, tap "Add to Home Screen," then tap Add.</p>
+      </div>
+      <div class="card">
+        <h3>🤖 Android (Chrome)</h3>
+        <p>Tap the three-dot menu in the top right, tap "Add to Home screen" (or "Install app"), then confirm.</p>
+      </div>
     `;
   },
 
@@ -258,7 +359,7 @@ function payoutFor(oddsStr){
   return "PAYS $" + (profit + 2).toFixed(2);
 }
 
-let currentTab = "bets";
+let currentTab = "intro";
 let currentOdds = "5-1";
 
 function renderTabbar(){
@@ -279,7 +380,7 @@ function renderTabbar(){
 function renderPanel(){
   const panel = document.getElementById("panel");
   panel.innerHTML = RENDER[currentTab]();
-  if(currentTab === "odds"){
+  if(currentTab === "bets"){
     const grid = document.getElementById("oddsGrid");
     grid.innerHTML = ODDS_OPTIONS.map(o =>
       `<button class="oddsbtn ${o===currentOdds?'active':''}" data-odds="${o}">${o}</button>`
