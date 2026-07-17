@@ -113,10 +113,20 @@ const GiddyUpAuth = {
   // Get the total count of players who've signed up interest
   async getTournamentInterestCount() {
     const { count, error } = await giddyupSupabase
-      .from("tournament_interest")
+      .from("tournament_interest_public")
       .select("*", { count: "exact", head: true });
     if (error) return null;
     return count;
+  },
+
+  // Get the list of interested players — usernames only, newest first
+  async getTournamentInterestList() {
+    const { data, error } = await giddyupSupabase
+      .from("tournament_interest_public")
+      .select("username, created_at")
+      .order("created_at", { ascending: false });
+    if (error) return [];
+    return data;
   },
 
   // Listen for auth state changes (login/logout) — callback receives session or null
