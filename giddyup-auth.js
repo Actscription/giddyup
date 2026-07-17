@@ -67,6 +67,39 @@ const GiddyUpAuth = {
     return { success: true, data };
   },
 
+  // ── TOURNAMENT INTEREST ──────────────────────────────────────────
+  // Sign up (or update) interest in the handicapping tournament.
+  // One row per user — re-submitting updates the existing row.
+  async submitTournamentInterest(userId, username, realName, comment) {
+    const { data, error } = await giddyupSupabase
+      .from("tournament_interest")
+      .upsert({ user_id: userId, username, real_name: realName, comment }, { onConflict: "user_id" })
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
+  // Get the current user's own tournament interest row (null if not signed up)
+  async getTournamentInterest(userId) {
+    const { data, error } = await giddyupSupabase
+      .from("tournament_interest")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) return null;
+    return data;
+  },
+
+  // Get the total count of players who've signed up interest
+  async getTournamentInterestCount() {
+    const { count, error } = await giddyupSupabase
+      .from("tournament_interest")
+      .select("*", { count: "exact", head: true });
+    if (error) return null;
+    return count;
+  },
+
   // Listen for auth state changes (login/logout) — callback receives session or null
   onAuthChange(callback) {
     giddyupSupabase.auth.onAuthStateChange((_event, session) => {
