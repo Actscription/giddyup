@@ -550,6 +550,11 @@ input[type=file]{display:none;}
       <div id="tn-confirmed" style="display:none;font-size:13px;color:var(--green);font-weight:500;margin-bottom:10px;">✓ You're signed up — thanks! Update your comment any time.</div>
       <button class="btn btn-green" id="tn-submit-btn" onclick="submitTournamentInterest()">I'm Interested</button>
     </div>
+    <div class="card">
+      <div class="section-title" style="margin-bottom:10px;">Interested Horse Players</div>
+      <div id="tn-players-list"></div>
+      <div id="tn-players-empty" class="notice" style="display:none;">No one's signed up yet — be the first.</div>
+    </div>
   </div>
 </div>
 
@@ -1543,11 +1548,17 @@ async function loadTournamentScreen(){
   document.getElementById('tn-confirmed').style.display='none';
   const countEl = document.getElementById('tn-count');
   countEl.textContent = '…';
-  const [existing, count] = await Promise.all([
+  const listEl = document.getElementById('tn-players-list');
+  const emptyEl = document.getElementById('tn-players-empty');
+  listEl.innerHTML = '';
+  emptyEl.style.display = 'none';
+  const [existing, count, list] = await Promise.all([
     GiddyUpAuth.getTournamentInterest(CU.id),
-    GiddyUpAuth.getTournamentInterestCount()
+    GiddyUpAuth.getTournamentInterestCount(),
+    GiddyUpAuth.getTournamentInterestList()
   ]);
   countEl.textContent = (count===null) ? '—' : count;
+  renderTournamentPlayers(list);
   const btn = document.getElementById('tn-submit-btn');
   if(existing){
     document.getElementById('tn-comment').value = existing.comment || '';
@@ -1558,6 +1569,24 @@ async function loadTournamentScreen(){
     btn.textContent = "I'm Interested";
   }
 }
+function renderTournamentPlayers(list){
+  const listEl = document.getElementById('tn-players-list');
+  const emptyEl = document.getElementById('tn-players-empty');
+  if(!list || list.length===0){
+    listEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = list.map(p=>
+    `<div style="display:flex;align-items:center;gap:8px;padding:9px 4px;border-bottom:0.5px solid var(--border);font-size:14px;">🏇 <span style="font-weight:500;">${escapeHtml(p.username||'—')}</span></div>`
+  ).join('');
+}
+function escapeHtml(str){
+  const d=document.createElement('div');
+  d.textContent=str;
+  return d.innerHTML;
+}
 async function submitTournamentInterest(){
   if(!CU) return;
   showErr('tn-err','');
@@ -1566,8 +1595,12 @@ async function submitTournamentInterest(){
   if(!result.success){ showErr('tn-err', result.error); return; }
   document.getElementById('tn-confirmed').style.display='block';
   document.getElementById('tn-submit-btn').textContent = 'Update';
-  const count = await GiddyUpAuth.getTournamentInterestCount();
+  const [count, list] = await Promise.all([
+    GiddyUpAuth.getTournamentInterestCount(),
+    GiddyUpAuth.getTournamentInterestList()
+  ]);
   document.getElementById('tn-count').textContent = (count===null) ? '—' : count;
+  renderTournamentPlayers(list);
 }
 function displayName(user){
   if(!user) return '';
