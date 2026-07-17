@@ -1527,6 +1527,66 @@ function DiaryTab(){const [entries,setEntries]=useState([]),[note,setNote]=useSt
     "Build your diary over time to develop your own handicapping edge.",
   ]}),h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"center"}},h("div",{style:{fontSize:10,color:"#c9a84c88",letterSpacing:3,textTransform:"uppercase",marginBottom:6}},"📒 Your Racing Journal"),h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}},"A Day at the Races")),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},h("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:14,padding:"8px 12px",background:"#f8fafc",borderRadius:10}},h("div",{style:{fontSize:14}},"📅"),h("div",{style:{flex:1}},h("div",{style:{fontSize:11,fontWeight:700,color:C.text}},ts.date),h("div",{style:{fontSize:10,color:C.muted}},"⏰ "+ts.time))),h("input",{value:raceName,onChange:e=>setRaceName(e.target.value),placeholder:"Race or note title",style:{width:"100%",padding:"10px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:13,color:C.text,marginBottom:10,outline:"none",background:"#f8fafc"}}),h("div",{style:{display:"flex",gap:8,marginBottom:10}},h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{flex:1,padding:"12px 8px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:18}},"📸"),h("span",{style:{fontSize:12,fontWeight:700,color:C.gold}},"Take Photo")),h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{flex:1,padding:"12px 8px",background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:18}},"🖼"),h("span",{style:{fontSize:12,fontWeight:700,color:C.text}},"Library"))),image&&h("div",{style:{position:"relative",marginBottom:10}},h("img",{src:image,style:{width:"100%",maxHeight:200,borderRadius:10,objectFit:"cover"}}),h("button",{onClick:()=>setImage(null),style:{position:"absolute",top:8,right:8,background:"rgba(0,0,0,.6)",border:"none",borderRadius:20,color:"#fff",width:26,height:26,cursor:"pointer",fontSize:13}},"✕")),h("input",{ref:cameraRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("input",{ref:fileRef,type:"file",accept:"image/*",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("textarea",{value:note,onChange:e=>setNote(e.target.value),placeholder:"Your observations...",style:{width:"100%",padding:"10px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:13,color:C.text,minHeight:90,resize:"vertical",outline:"none",background:"#f8fafc",lineHeight:1.6}}),h("button",{onClick:save,disabled:!note&&!image,style:{width:"100%",marginTop:10,padding:"13px",background:(!note&&!image)?"#e2e8f0":"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:(!note&&!image)?C.muted:C.gold,fontSize:14,fontWeight:700,cursor:(!note&&!image)?"not-allowed":"pointer"}},saving?"Saving...":"💾 Save to My Day")),entries.length>0&&h(Fragment,null,h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:12}},"Today's Entries · "+entries.length),entries.map(entry=>h("div",{key:entry.id,style:{background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden",marginBottom:12}},h("div",{style:{padding:"10px 14px",borderBottom:"1px solid "+C.border,display:"flex",alignItems:"center",gap:10}},h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:14,color:C.text}},entry.raceName),h("div",{style:{fontSize:10,color:C.muted}},"📅 "+entry.date+" · ⏰ "+entry.time)),h("button",{onClick:()=>setEntries(e=>e.filter(en=>en.id!==entry.id)),style:{background:"#fee2e2",border:"none",borderRadius:8,padding:"4px 10px",fontSize:11,color:"#ef4444",cursor:"pointer"}},"Delete")),h("div",{style:{padding:"12px 14px"}},entry.image&&h("img",{src:entry.image,style:{width:"100%",maxHeight:180,borderRadius:10,objectFit:"cover",marginBottom:10}}),entry.note&&h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.7,marginBottom:10}},entry.note))))),entries.length===0&&h("div",{style:{textAlign:"center",padding:"30px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🏇"),h("div",{style:{fontWeight:700,fontSize:15,color:C.text}},"Your story starts here")));}
 
+// ── SETTINGS TAB ──────────────────────────────────────────────
+function SettingsTab({silksUser,setSilksUser,onLogout}){
+  const [username,setUsername]=useState(silksUser.username||"");
+  const [realName,setRealName]=useState(silksUser.realName||"");
+  const [city,setCity]=useState(silksUser.city||"");
+  const [newEmail,setNewEmail]=useState("");
+  const [saving,setSaving]=useState(false);
+  const [msg,setMsg]=useState("");
+  const [err,setErr]=useState("");
+  const [emailBusy,setEmailBusy]=useState(false);
+  const [emailMsg,setEmailMsg]=useState("");
+  const [emailErr,setEmailErr]=useState("");
+
+  async function saveProfile(){
+    setErr("");setMsg("");
+    if(!username||!city){setErr("Username and city can't be empty.");return;}
+    setSaving(true);
+    const result=await GiddyUpAuth.updateProfile(silksUser.id,{username,city,real_name:realName});
+    setSaving(false);
+    if(!result.success){setErr(result.error);return;}
+    setSilksUser(u=>({...u,username,city,realName}));
+    setMsg("Saved.");
+  }
+  async function changeEmail(){
+    setEmailErr("");setEmailMsg("");
+    if(!newEmail||!newEmail.includes("@")){setEmailErr("Enter a valid email address.");return;}
+    setEmailBusy(true);
+    const result=await GiddyUpAuth.updateEmail(newEmail.toLowerCase());
+    setEmailBusy(false);
+    if(!result.success){setEmailErr(result.error);return;}
+    setEmailMsg("Check "+newEmail+" for a confirmation link — your email won't change until you click it.");
+    setNewEmail("");
+  }
+  const fieldLabel=(t)=>h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},t);
+  const inputStyle={width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text};
+  return h("div",{style:{paddingTop:14}},
+    h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"center"}},
+      h("div",{style:{fontSize:10,color:"#c9a84c88",letterSpacing:3,textTransform:"uppercase",marginBottom:6}},"⚙ Account"),
+      h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}},"Settings")),
+    h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},
+      h("div",{style:{marginBottom:14}},fieldLabel("Racing Name"),
+        h("input",{value:username,onChange:e=>setUsername(e.target.value),maxLength:20,style:inputStyle})),
+      h("div",{style:{marginBottom:14}},fieldLabel("Real Name"),
+        h("input",{value:realName,onChange:e=>setRealName(e.target.value),style:inputStyle})),
+      h("div",{style:{marginBottom:14}},fieldLabel("City"),
+        h("input",{value:city,onChange:e=>setCity(e.target.value),style:inputStyle})),
+      err&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:12,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},err),
+      msg&&h("div",{style:{fontSize:12,color:"#166534",marginBottom:12,padding:"8px 12px",background:"#f0fdf4",borderRadius:8}},msg),
+      h("button",{onClick:saveProfile,disabled:saving,style:{width:"100%",padding:13,background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:800,cursor:saving?"not-allowed":"pointer",opacity:saving?0.6:1}},saving?"Saving...":"Save Changes")),
+    h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},
+      fieldLabel("Current Email"),
+      h("div",{style:{fontSize:15,color:C.text,marginBottom:14}},silksUser.email||"—"),
+      fieldLabel("New Email"),
+      h("input",{type:"email",value:newEmail,onChange:e=>setNewEmail(e.target.value),placeholder:"new@email.com",style:{...inputStyle,marginBottom:10}}),
+      emailErr&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:12,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},emailErr),
+      emailMsg&&h("div",{style:{fontSize:12,color:"#166534",marginBottom:12,padding:"8px 12px",background:"#f0fdf4",borderRadius:8}},emailMsg),
+      h("button",{onClick:changeEmail,disabled:emailBusy,style:{width:"100%",padding:13,background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,color:C.text,fontSize:14,fontWeight:700,cursor:emailBusy?"not-allowed":"pointer",opacity:emailBusy?0.6:1}},emailBusy?"Sending...":"Update Email")),
+    h("button",{onClick:onLogout,style:{width:"100%",padding:13,background:"#fee2e2",border:"none",borderRadius:12,color:"#dc2626",fontSize:14,fontWeight:700,cursor:"pointer"}},"Sign Out"));
+}
+
 // ── AUTH SCREEN (Supabase) ──────────────────────────────────────
 function AuthScreen({mode,setMode,onAuthed}){
   const [u,setU]=useState(''),[rn,setRn]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
@@ -1552,7 +1612,7 @@ function AuthScreen({mode,setMode,onAuthed}){
     setBusy(false);
     if(!result.success){setErr(result.error);return;}
     const profile=await GiddyUpAuth.getProfile(result.user.id);
-   onAuthed({id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
+   onAuthed({id:result.user.id,username:profile?profile.username:'',email:e,city:profile?profile.city:'',realName:profile?profile.real_name:'',customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
   }
 
   const isRegister=mode==='register';
@@ -1629,7 +1689,7 @@ useEffect(()=>{
       if(session&&session.user){
         const profile=await GiddyUpAuth.getProfile(session.user.id);
        const customAnglesAll=normalizeCustomAngles(profile&&profile.custom_angles);
-        setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',customAngles:customAnglesAll});
+        setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',realName:profile?profile.real_name:'',customAngles:customAnglesAll});
         if(customAnglesAll.custom){const filled=fillMissingFactors(customAnglesAll.custom.weights,customAnglesAll.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
       }
       setAuthChecked(true);
@@ -1735,7 +1795,8 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
         h("div",{style:{display:"flex",alignItems:"center",gap:8}},
           scratchCount>0&&h("div",{style:{background:"rgba(239,68,68,0.2)",border:"1px solid rgba(239,68,68,0.4)",borderRadius:20,padding:"3px 10px",fontSize:10,color:"#ef4444",fontWeight:700}},"🚫 "+scratchCount),
           horses.length>0&&h("div",{style:{background:"rgba(74,158,110,.2)",border:"1px solid rgba(74,158,110,.4)",borderRadius:20,padding:"3px 10px",fontSize:10,color:"#4a9e6e",fontWeight:700}},horses.length+" horses"),
-          h("div",{style:{background:"rgba(201,168,76,.15)",border:"1px solid rgba(201,168,76,.3)",borderRadius:20,padding:"4px 12px",fontSize:11,color:C.gold,fontWeight:700}},activeRaceData.icon+" "+activeRaceData.label)))),
+          h("div",{style:{background:"rgba(201,168,76,.15)",border:"1px solid rgba(201,168,76,.3)",borderRadius:20,padding:"4px 12px",fontSize:11,color:C.gold,fontWeight:700}},activeRaceData.icon+" "+activeRaceData.label),
+          h("div",{onClick:()=>setActiveTab("settings"),style:{width:30,height:30,borderRadius:15,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:activeTab==="settings"?"rgba(201,168,76,.25)":"rgba(255,255,255,.08)",border:"1px solid "+(activeTab==="settings"?"rgba(201,168,76,.5)":"rgba(255,255,255,.15)"),fontSize:15}},"⚙")))),
     h("div",{style:{maxWidth:520,margin:"0 auto",padding:"0 16px 100px"}},
       h("div",{style:{display:"flex",gap:3,padding:"12px 0 4px"}},
         TABS.map(tab=>h("button",{key:tab.id,onClick:()=>setActiveTab(tab.id),style:{flex:1,padding:"10px 2px",borderRadius:10,border:"none",background:activeTab===tab.id?"#ffffff":"transparent",boxShadow:activeTab===tab.id?"0 2px 10px rgba(0,0,0,0.08)":"none",borderBottom:activeTab===tab.id?"3px solid "+C.gold:"3px solid transparent",color:activeTab===tab.id?C.text:C.muted,fontSize:10,fontWeight:700,cursor:"pointer"}},
@@ -1745,7 +1806,8 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
       activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
       activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser,numRacesToday:races.length}),
-      activeTab==="diary"&&h(DiaryTab,null)));}
+      activeTab==="diary"&&h(DiaryTab,null),
+      activeTab==="settings"&&h(SettingsTab,{silksUser,setSilksUser,onLogout:handleSilksLogout})));}
 ReactDOM.render(h(GiddyUp,null),document.getElementById("root"));
 </script>
 </body>
