@@ -67,6 +67,25 @@ const GiddyUpAuth = {
     return { success: true, data };
   },
 
+  // Update the current user's editable profile fields (username, city, real_name)
+  async updateProfile(userId, updates) {
+    const { data, error } = await giddyupSupabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", userId)
+      .select()
+      .single();
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
+  // Change the account email — Supabase sends a confirmation link to the new address
+  async updateEmail(newEmail) {
+    const { data, error } = await giddyupSupabase.auth.updateUser({ email: newEmail });
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
   // ── TOURNAMENT INTEREST ──────────────────────────────────────────
   // Sign up (or update) interest in the handicapping tournament.
   // One row per user — re-submitting updates the existing row.
