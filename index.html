@@ -522,39 +522,38 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
 
 return h("div",{style:{paddingTop:14}},
     h(HowToUse,null),
-    h("div",{style:{background:"#fff",border:"1.5px solid "+C.border,borderRadius:14,overflow:"hidden",marginBottom:14}},
-      // ── STEP 1 — Load Today's Card (published by GiddyUp) ──
-      h("div",{style:{padding:"14px 14px 12px"}},
-        h(StepLabel,{n:"1",tag:"FASTEST"}),
-        h("div",{style:{display:"flex",alignItems:"center",margin:"8px 0 8px"}},
-          h("span",{style:{fontSize:13,fontWeight:800,color:C.text}},"📅 Choose Your Race Day"),
+    h("div",{style:{display:"flex",flexDirection:"column",gap:10,marginBottom:14}},
+      // 1 — Load Today's Card (published by GiddyUp)
+      h("div",{style:{background:"#fff",border:"1.5px solid "+C.border,borderRadius:14,padding:"12px 14px"}},
+        h("div",{style:{display:"flex",alignItems:"center",marginBottom:8}},
+          h("span",{style:{fontSize:14,fontWeight:800,color:C.text}},"📅 Choose Your Race Day"),
           loadDate!==new Date().toLocaleDateString("en-CA")&&h("button",{onClick:()=>setLoadDate(new Date().toLocaleDateString("en-CA")),style:{marginLeft:"auto",background:"transparent",border:"none",color:C.gold,fontSize:12,fontWeight:700,cursor:"pointer",textDecoration:"underline"}},"back to today")),
         h(RaceDayCalendar,{value:loadDate,onChange:setLoadDate}),
-        h("div",{style:{fontSize:12.5,marginTop:7,fontWeight:700,color:loadDate===new Date().toLocaleDateString("en-CA")?"#5b6472":"#2e7d4f"}},loadDate===new Date().toLocaleDateString("en-CA")?"Today is selected — or tap the date above to pick a different race day":"✓ Ready to load the card for "+loadDate)),
-      h("div",{style:{height:1,background:C.border,margin:"0 14px"}}),
-      h("button",{onClick:loadTodayCard,style:{width:"100%",padding:"14px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+        h("div",{style:{fontSize:13,marginTop:7,fontWeight:700,color:loadDate===new Date().toLocaleDateString("en-CA")?"#5b6472":"#2e7d4f"}},loadDate===new Date().toLocaleDateString("en-CA")?"Today is selected — or tap the date above to pick a different race day":"✓ Ready to load the card for "+loadDate)),
+      h("button",{onClick:loadTodayCard,style:{width:"100%",padding:"16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"2px solid "+C.gold,borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+        h("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",background:C.gold,color:C.navy,fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},"1"),
         h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.2)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}},"⚡"),
         h("div",{style:{textAlign:"left"}},
           h("div",{style:{fontSize:16,fontWeight:900,color:C.gold}},loadDate===new Date().toLocaleDateString("en-CA")?"Load Today's Card":"Load Card — "+loadDate),
           h("div",{style:{fontSize:12.5,fontWeight:600,color:"#f2e5bd",marginTop:2}},"Instant — GiddyUp already did the numbers")),
         h("div",{style:{marginLeft:"auto",color:C.gold,fontSize:18}},"→")),
 
-      h("div",{style:{height:1,background:C.border}}),
+      h(OptionDivider,null),
 
-      // ── STEP 2 — Upload a file from device ──
-      h("div",{style:{padding:"12px 14px 0"}},h(StepLabel,{n:"2"})),
-      h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{width:"100%",padding:"12px 14px 16px",background:"#fff",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+      // 2 — Upload a file from device
+      h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{width:"100%",padding:"16px",background:"#fff",border:"1.5px solid "+C.border,borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+        h("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:"#a07830",fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},"2"),
         h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.08)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}},"🖼📄"),
         h("div",{style:{textAlign:"left"}},
           h("div",{style:{fontSize:16,fontWeight:900,color:C.text}},"Upload Photo or PDF"),
           h("div",{style:{fontSize:12.5,fontWeight:600,color:"#475569",marginTop:2}},"A race file saved on your phone or computer")),
         h("div",{style:{marginLeft:"auto",color:C.muted,fontSize:18}},"→")),
 
-      h("div",{style:{height:1,background:C.border}}),
+      h(OptionDivider,null),
 
-      // ── STEP 3 — Take a photo of the program ──
-      h("div",{style:{padding:"12px 14px 0",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")"}},h(StepLabel,{n:"3",dark:true})),
-      h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{width:"100%",padding:"8px 14px 16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+      // 3 — Take a photo of the program
+      h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{width:"100%",padding:"16px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+        h("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",background:"rgba(201,168,76,0.3)",color:C.gold,fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},"3"),
         h("div",{style:{width:42,height:42,background:"rgba(201,168,76,0.2)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}},"📸"),
         h("div",{style:{textAlign:"left"}},
           h("div",{style:{fontSize:16,fontWeight:900,color:C.gold}},"TAKE A PHOTO of the Program"),
@@ -662,21 +661,30 @@ return h("div",{style:{paddingTop:14}},
 }
 
 function HowToUse(){
-  return h("div",{style:{marginBottom:12,padding:"2px 2px 4px"}},
-    h("div",{style:{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:0.6,marginBottom:3}},"📋 GETTING STARTED"),
-    h("div",{style:{fontSize:19,fontWeight:900,color:C.text,marginBottom:3}},"3 Ways to Load Your Races"),
-    h("div",{style:{fontSize:13,color:"#5b6472",fontWeight:600}},"Pick whichever's fastest for you — GiddyUp analyzes it the same either way."));
+  const [open,setOpen]=useState(false);
+  const methods=[
+    {n:"1",title:"⚡ Load Today's Card — easiest",body:"GiddyUp has already analyzed today's races. One tap and every race is ready — hit View on any race to see the rankings. No files, no waiting."},
+    {n:"2",title:"🖼📄 Upload Photo or PDF",body:"Have a race file on your phone or computer? Tap Upload Photo or PDF and pick it. Extra pages for the same race (speed ratings, page 2)? Tap + to add them, then Analyze."},
+    {n:"3",title:"📸 Take a Photo",body:"At the track with a paper program? Point your camera at the race page and snap it. Add more pages with +, then tap Analyze."},
+  ];
+  return h("div",{style:{marginBottom:14,background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden"}},
+    h("div",{onClick:()=>setOpen(!open),style:{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",cursor:"pointer",background:open?"rgba(201,168,76,0.06)":"#fff"}},
+      h("div",{style:{fontSize:18}},"📋"),
+      h("div",{style:{flex:1,fontWeight:800,fontSize:14,color:C.text}},"3 Ways to Load Your Races"),
+      h("div",{style:{color:C.muted,fontSize:12,fontWeight:700}},open?"Hide ▲":"Show ▼")),
+    open&&h("div",{style:{padding:"4px 16px 18px"}},
+      methods.map((m,i)=>h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",marginBottom:i<methods.length-1?14:0}},
+        h("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:C.gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}},m.n),
+        h("div",null,
+          h("div",{style:{fontSize:13,fontWeight:800,color:C.text,marginBottom:2}},m.title),
+          h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},m.body))))));
 }
 
-// Small consistent "STEP n" eyebrow used above each option in the load-races card.
-// dark:true switches the label colors for use on the navy-background steps.
-function StepLabel({n,tag,dark}){
-  const labelColor=dark?"#f2e5bd":"#a07830";
-  const circleBg=dark?"rgba(201,168,76,0.3)":"rgba(201,168,76,0.15)";
-  const circleColor=dark?C.gold:"#a07830";
-  return h("div",{style:{display:"flex",alignItems:"center",gap:8}},
-    h("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",background:circleBg,color:circleColor,fontSize:12,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}},n),
-    h("span",{style:{fontSize:11,fontWeight:800,color:labelColor,letterSpacing:0.6}},"STEP "+n+(tag?"  ·  "+tag:"")));
+// Plain horizontal divider between the three load options, with real breathing
+// room above and below so each option reads as a clearly separate choice.
+function OptionDivider(){
+  return h("div",{style:{padding:"6px 4px"}},
+    h("div",{style:{height:1,background:C.border}}));
 }
 
 function ScoreExplainer(){
