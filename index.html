@@ -680,11 +680,14 @@ function HowToUse(){
           h("div",{style:{fontSize:13,color:"#475569",lineHeight:1.5}},m.body))))));
 }
 
-// Plain horizontal divider between the three load options, with real breathing
-// room above and below so each option reads as a clearly separate choice.
+// Clearly visible "OR" divider between the three load options — darker/thicker
+// than a hairline so it doesn't blend into the page background, and the "OR"
+// label makes it plain these are alternative choices, not sequential steps.
 function OptionDivider(){
-  return h("div",{style:{padding:"6px 4px"}},
-    h("div",{style:{height:1,background:C.border}}));
+  return h("div",{style:{display:"flex",alignItems:"center",padding:"2px 2px"}},
+    h("div",{style:{flex:1,height:2,background:"#cbd5e1"}}),
+    h("div",{style:{padding:"0 10px",fontSize:11,fontWeight:800,color:C.muted,letterSpacing:0.6}},"OR"),
+    h("div",{style:{flex:1,height:2,background:"#cbd5e1"}}));
 }
 
 function ScoreExplainer(){
