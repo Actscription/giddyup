@@ -126,6 +126,37 @@ const RACE_TYPES=[
   {id:"route",label:"Route",icon:"🛤",color:"#4a6b9e"},
 ];
 const RACE_TYPE_ROWS=[["stakes","allowance","claiming","maiden"],["custom","sprint","route"]];
+function raceTypeButton(rt,keyPrefix,onClick,isActive){
+  return h("button",{key:keyPrefix+rt.id,onClick:()=>onClick(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:isActive?"2px solid "+rt.color:"1.5px solid "+C.border,background:isActive?rt.color+"18":"#fff",cursor:"pointer"}},
+    h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
+    h("div",{style:{fontSize:8,fontWeight:700,color:isActive?rt.color:"#64748b",textTransform:"uppercase"}},rt.label));
+}
+function raceTypeRows(keyPrefix,onClick,isActiveFn){
+  return RACE_TYPE_ROWS.map((row,ri)=>h("div",{key:keyPrefix+"row"+ri,style:{display:"flex",gap:4,marginBottom:ri<RACE_TYPE_ROWS.length-1?4:0}},
+    row.map(id=>RACE_TYPES.find(rt=>rt.id===id)).map(rt=>raceTypeButton(rt,keyPrefix,onClick,isActiveFn(rt)))));
+}
+function AnglesPickerSheet({open,onClose,silksUser,activeRace,angleMode,activeSpecialist,giddyupPresets,onSelectGiddyUp,onSelectMyDNA,onSelectSpecialist}){
+  if(!open)return null;
+  const uName=silksUser&&silksUser.username?silksUser.username:"My";
+  function pick(fn,id){return function(){fn(id);onClose();};}
+  return h("div",{onClick:onClose,style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}},
+    h("div",{onClick:e=>e.stopPropagation(),style:{width:"100%",maxWidth:480,background:"#fff",borderRadius:"18px 18px 0 0",padding:"14px 16px 24px",maxHeight:"78vh",overflowY:"auto"}},
+      h("div",{style:{width:36,height:4,background:"#e2e8f0",borderRadius:2,margin:"0 auto 12px"}}),
+      h("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}},
+        h("div",{style:{fontSize:15,fontWeight:800,color:C.navy}},"Choose Your Angles"),
+        h("button",{onClick:onClose,"aria-label":"Close",style:{border:"none",background:"none",fontSize:18,color:C.muted,cursor:"pointer",padding:4}},"✕")),
+      h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🐴 GiddyUp Presets"),
+      h("div",{style:{marginBottom:14}},
+        raceTypeRows("rk-gu-",id=>pick(onSelectGiddyUp,id)(),rt=>activeRace===rt.id&&activeSpecialist==='giddyup')),
+      h("div",{style:{background:"rgba(201,168,76,0.10)",borderRadius:10,padding:"8px 8px 10px",marginBottom:14}},
+        h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"⭐ "+uName+"'s DNA"),
+        raceTypeRows("rk-me-",id=>pick(onSelectMyDNA,id)(),rt=>activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)),
+      h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🎯 Specialist Presets"),
+      h("div",{style:{display:"flex",gap:4}},
+        SPECIALIST_PRESETS.map(p=>h("button",{key:p.id,onClick:()=>pick(onSelectSpecialist,p)(),style:{flex:1,padding:"8px 2px",borderRadius:10,border:activeSpecialist===p.id?"2px solid "+C.gold:"1.5px solid "+C.border,background:activeSpecialist===p.id?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",textAlign:"center"}},
+          h("div",{style:{fontSize:14,marginBottom:1}},p.icon),
+          h("div",{style:{fontSize:8,fontWeight:700,color:activeSpecialist===p.id?C.gold:"#64748b"}},p.label))))));
+}
 const FC={speed:"#4a7ec9",form:"#c97a4a",jockey:"#c9a84c",trainer:"#4a9e6e",distance:"#9e4a4a",track:"#7a9e4a",post:"#9e4a9e",class:"#4a9e9e",days:"#b87333",weight:"#6b7280",workouts:"#e07070",equipment:"#70b0c0",pedigree:"#a87ab5",style:"#d4a07a",combo:"#7ab5a8",bias:"#b5a87a",earnings:"#2e8b57"};
 const SILK_COLORS={
   1:{bg:"#c41e28",fg:"#ffffff"},2:{bg:"#ffffff",fg:"#1a1a1a"},3:{bg:"#1e3aaa",fg:"#ffffff"},
@@ -859,15 +890,6 @@ const [justSaved,setJustSaved]=useState(false);
 function selectGiddyUpForRace(id){setActiveRace(id);if(id==='custom'){setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}else{setActiveSpecialist('giddyup');setAngleMode('giddyup');setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...presetWeightsFor(giddyupPresets,id)});}}
 function selectMyDNAForRace(id){setActiveRace(id);setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}
 const [compareOpen,setCompareOpen]=useState(true);
-function raceTypeButton(rt,keyPrefix,onClick,isActive){
-  return h("button",{key:keyPrefix+rt.id,onClick:()=>onClick(rt.id),style:{flex:1,padding:"8px 2px",borderRadius:10,border:isActive?"2px solid "+rt.color:"1.5px solid "+C.border,background:isActive?rt.color+"18":"#fff",cursor:"pointer"}},
-    h("div",{style:{fontSize:14,marginBottom:1}},rt.icon),
-    h("div",{style:{fontSize:8,fontWeight:700,color:isActive?rt.color:"#64748b",textTransform:"uppercase"}},rt.label));
-}
-function raceTypeRows(keyPrefix,onClick,isActiveFn){
-  return RACE_TYPE_ROWS.map((row,ri)=>h("div",{key:keyPrefix+"row"+ri,style:{display:"flex",gap:4,marginBottom:ri<RACE_TYPE_ROWS.length-1?4:0}},
-    row.map(id=>RACE_TYPES.find(rt=>rt.id===id)).map(rt=>raceTypeButton(rt,keyPrefix,onClick,isActiveFn(rt)))));
-}
 const [setAnglesOpen,setSetAnglesOpen]=useState(false);
 const uName=silksUser&&silksUser.username?silksUser.username:"My";
 const raceLabel=(RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0]).label;
@@ -916,7 +938,16 @@ return h("div",{style:{paddingTop:14}},
       h("li",null,"Use + or – to raise or lower a factor's rank, or tap the box and type a number from 1 (most important) to 17 (least important) directly."),
       h("li",null,"Every factor always holds a unique rank — enter a number that's already taken and the rest shift down to make room, like reordering a list."),
       h("li",null,"Tap Save once you're happy with the order — GiddyUp converts your ranking into points behind the scenes."))));}
-function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}){
+function RankingsTab({scores,weights,setWeights,locks,setLocks,activeRaceData,activeRace,setActiveRace,angleMode,setAngleMode,silksUser,giddyupPresets,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}){
+  const [pickerOpen,setPickerOpen]=useState(false);
+  const [activeSpecialist,setActiveSpecialist]=useState(()=>angleMode==='giddyup'?'giddyup':null);
+  function loadSlotForRanking(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...presetWeightsFor(giddyupPresets,raceTypeId)});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
+  function selectGiddyUpForRanking(id){setActiveRace(id);if(id==='custom'){setActiveSpecialist(null);setAngleMode('custom');loadSlotForRanking(id);}else{setActiveSpecialist('giddyup');setAngleMode('giddyup');setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...presetWeightsFor(giddyupPresets,id)});}}
+  function selectMyDNAForRanking(id){setActiveRace(id);setActiveSpecialist(null);setAngleMode('custom');loadSlotForRanking(id);}
+  function selectSpecialistForRanking(preset){setActiveSpecialist(preset.id);setWeights({...preset.weights});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
+  const rankingRaceLabel=(RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0]).label;
+  const rankingSpecialistMatch=SPECIALIST_PRESETS.find(p=>p.id===activeSpecialist);
+  const anglesPickerLabel=activeSpecialist==='giddyup'?"🐴 "+rankingRaceLabel+" preset":rankingSpecialistMatch?rankingSpecialistMatch.icon+" "+rankingSpecialistMatch.label:angleMode==='custom'?"⭐ My "+rankingRaceLabel+" DNA":"🐴 "+rankingRaceLabel+" preset";
   const [nowStr,setNowStr]=useState("");
   useEffect(()=>{
     const fmt=()=>setNowStr(new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}));
@@ -980,6 +1011,10 @@ function RankingsTab({scores,weights,activeRaceData,activeRace,setActiveTab,race
       "To adjust your Angles or choose a custom preset angle, tap Angles.",
     ]}),
     actionHorse&&h(HorseActionModal,{horse:actionHorse,isScratched:!!scratched[actionHorse.number],onSave:handleAction,onClose:()=>setActionHorse(null)}),
+    h("button",{onClick:()=>setPickerOpen(true),style:{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:"rgba(201,168,76,0.08)",border:"1.5px solid rgba(201,168,76,0.4)",borderRadius:12,marginBottom:12,cursor:"pointer"}},
+      h("span",{style:{fontSize:12.5,fontWeight:800,color:C.navy}},"Angles: "+anglesPickerLabel),
+      h("span",{style:{fontSize:12,color:C.muted,fontWeight:700}},"Change ▾")),
+    h(AnglesPickerSheet,{open:pickerOpen,onClose:()=>setPickerOpen(false),silksUser,activeRace,angleMode,activeSpecialist,giddyupPresets,onSelectGiddyUp:selectGiddyUpForRanking,onSelectMyDNA:selectMyDNAForRanking,onSelectSpecialist:selectSpecialistForRanking}),
     raceName&&(function(){
       var dateLabel="";
       if(raceMeta&&raceMeta.date){try{var p=raceMeta.date.split("-");var d=new Date(+p[0],+p[1]-1,+p[2]);dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}catch(err){dateLabel=raceMeta.date;}}
@@ -1819,7 +1854,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
           h("div",{style:{fontSize:16,marginBottom:2}},tab.label),h("div",null,tab.full)))),
       activeTab==="upload"&&h(UploadTab,{races,setRaces,setActiveTab,setHorses:hs=>{setHorses(hs);setScratched({});},setActiveRace,setWeights,setLocks,angleMode,silksUser,giddyupPresets}),
       activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles,giddyupPresets,setGiddyupPresets}),
-      activeTab==="rankings"&&h(RankingsTab,{scores,weights,activeRaceData,activeRace,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
+      activeTab==="rankings"&&h(RankingsTab,{scores,weights,setWeights,locks,setLocks,activeRaceData,activeRace,setActiveRace,angleMode,setAngleMode,silksUser,giddyupPresets,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
       activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
       activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser,numRacesToday:races.length}),
       activeTab==="diary"&&h(DiaryTab,null),
