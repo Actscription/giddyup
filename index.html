@@ -1571,7 +1571,7 @@ function PlayTab({scores,raceName,myOrder,raceNumber,silksUser,numRacesToday}){
     )
   );
 }
-function DiaryTab(){const [entries,setEntries]=useState([]),[note,setNote]=useState(""),[image,setImage]=useState(null),[raceName,setRaceName]=useState(""),[saving,setSaving]=useState(false);const fileRef=useRef(),cameraRef=useRef();function handleImg(file){if(!file)return;const r=new FileReader();r.onload=e=>setImage(e.target.result);r.readAsDataURL(file);}function nowStr(){const d=new Date();return{date:d.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),time:d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true})};}function save(){if(!note&&!image)return;setSaving(true);const ts=nowStr();setTimeout(()=>{setEntries(e=>[{id:Date.now(),raceName:raceName||"Paddock Note",note,image,date:ts.date,time:ts.time},...e]);setNote("");setImage(null);setRaceName("");setSaving(false);},400);}const ts=nowStr();return h("div",{style:{paddingTop:14}},h(TabHelp,{title:"How to Use — Diary",steps:[
+function DiaryTab({silksUser}){const diaryKey="giddyup_silks_diary_"+((silksUser&&silksUser.id)||"guest");const [entries,setEntries]=useState(()=>{try{const saved=localStorage.getItem(diaryKey);if(saved)return JSON.parse(saved);}catch(ex){}return [];}),[note,setNote]=useState(""),[image,setImage]=useState(null),[raceName,setRaceName]=useState(""),[saving,setSaving]=useState(false);const fileRef=useRef(),cameraRef=useRef();useEffect(()=>{try{localStorage.setItem(diaryKey,JSON.stringify(entries));}catch(ex){}},[entries,diaryKey]);function handleImg(file){if(!file)return;const r=new FileReader();r.onload=e=>setImage(e.target.result);r.readAsDataURL(file);}function nowStr(){const d=new Date();return{date:d.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),time:d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true})};}function save(){if(!note&&!image)return;setSaving(true);const ts=nowStr();setTimeout(()=>{setEntries(e=>[{id:Date.now(),raceName:raceName||"Paddock Note",note,image,date:ts.date,time:ts.time},...e]);setNote("");setImage(null);setRaceName("");setSaving(false);},400);}const ts=nowStr();return h("div",{style:{paddingTop:14}},h(TabHelp,{title:"How to Use — Diary",steps:[
     "Add a race title or note name to identify the entry.",
     "Take a photo or choose from your library — winning tickets, programs, anything.",
     "Write your observations before or after the race.",
@@ -1858,7 +1858,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       activeTab==="rankings"&&h(RankingsTab,{scores,weights,setWeights,locks,setLocks,activeRaceData,activeRace,setActiveRace,angleMode,setAngleMode,silksUser,giddyupPresets,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
       activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
       activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser,numRacesToday:races.length}),
-      activeTab==="diary"&&h(DiaryTab,null),
+      activeTab==="diary"&&h(DiaryTab,{silksUser}),
       activeTab==="settings"&&h(SettingsTab,{silksUser,setSilksUser,onLogout:handleSilksLogout})));}
 ReactDOM.render(h(GiddyUp,null),document.getElementById("root"));
 </script>
