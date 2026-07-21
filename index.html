@@ -1800,7 +1800,7 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks,currentRank
   const raceName=activeRaceObj?activeRaceObj.label:"";
   const raceMeta=activeRaceObj?{track:activeRaceObj.track||"",post:activeRaceObj.postTime||"",date:activeRaceObj.raceDate||"",distance:activeRaceObj.raceDistance||"",conditions:activeRaceObj.raceConditions||""}:null;
   const scratchCount=Object.values(scratched).filter(Boolean).length;
-  const TABS=[{id:"upload",label:"📷",full:"Upload"},{id:"rankings",label:"🏇",full:"Rankings"},{id:"angles",label:"🎯",full:"Angles"},{id:"giddyup",label:"🐴",full:"GiddyUp"},{id:"play",label:"🎫",full:"Play"},{id:"diary",label:"📒",full:"Diary"}];
+  const TABS=[{id:"upload",label:"📷",full:"Upload"},{id:"rankings",label:"🏇",full:"Rankings"},{id:"angles",label:"🎯",full:"Angles"},{id:"giddyup",label:"🐴",full:"Bets"},{id:"play",label:"🎫",full:"GiddyUp"},{id:"diary",label:"📒",full:"Diary"}];
 
   // Wait for auth check before rendering anything (avoids flash of login screen)
   if(!authChecked)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
