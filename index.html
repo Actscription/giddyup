@@ -881,50 +881,17 @@ function AnglesMatrix({silksUser,onSaveAngles,setWeights,setLocks,setActiveRace,
               })))
           ])))),h(FactorInfoModal,{factor:infoFactor,onClose:()=>setInfoFactor(null)}));
 }
-function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles,giddyupPresets,setGiddyupPresets}){const [openGroups,setOpenGroups]=useState({core:false,race:false,deep:false});const total=Object.values(weights).reduce((a,b)=>a+b,0),lockedCount=Object.values(locks).filter(Boolean).length,allLocked=lockedCount>0;
-function loadSlotFor(raceTypeId){const all=(silksUser&&silksUser.customAngles)||{};const slot=all[raceTypeId];if(slot){const filled=fillMissingFactors(slot.weights,slot.locks);setWeights(filled.weights);setLocks(filled.locks);}else{setWeights({...presetWeightsFor(giddyupPresets,raceTypeId)});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,false])));}}
-function change(id,v){setActiveSpecialist(null);const group=FACTOR_GROUPS.find(g=>g.factors.some(f=>f.id===id));const scopeIds=group.factors.map(f=>f.id);const ls=scopeIds.filter(fid=>fid!==id&&locks[fid]).reduce((s,fid)=>s+weights[fid],0);const groupBudget=scopeIds.reduce((s,fid)=>s+weights[fid],0);setWeights(w=>redistribute(w,locks,scopeIds,id,Math.max(0,Math.min(v,groupBudget-ls))));}function toggleLock(id){setLocks(l=>({...l,[id]:!l[id]}));}function lockAll(){if(allLocked)setLocks({});else setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}function setGroupBudget(groupId,rawValue){const group=FACTOR_GROUPS.find(g=>g.id===groupId);const ids=group.factors.map(f=>f.id);const lockedSum=ids.filter(id=>locks[id]).reduce((s,id)=>s+weights[id],0);const otherGroupsTotal=FACTOR_GROUPS.filter(g=>g.id!==groupId).reduce((s,g)=>s+g.factors.reduce((s2,f)=>s2+weights[f.id],0),0);const maxAllowed=100-otherGroupsTotal;const target=Math.max(lockedSum,Math.min(rawValue,maxAllowed));setActiveSpecialist(null);setWeights(w=>scaleGroupToBudget(w,locks,ids,target));}
-const [activeSpecialist,setActiveSpecialist]=useState('giddyup');
-function selectSpecialist(preset){setActiveSpecialist(preset.id);setWeights({...preset.weights});setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));}
+function AnglesTab({weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles,giddyupPresets,setGiddyupPresets}){
 const [justSaved,setJustSaved]=useState(false);
-function selectGiddyUpForRace(id){setActiveRace(id);if(id==='custom'){setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}else{setActiveSpecialist('giddyup');setAngleMode('giddyup');setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));setWeights({...presetWeightsFor(giddyupPresets,id)});}}
-function selectMyDNAForRace(id){setActiveRace(id);setActiveSpecialist(null);setAngleMode('custom');loadSlotFor(id);}
 const [compareOpen,setCompareOpen]=useState(true);
 const [setAnglesOpen,setSetAnglesOpen]=useState(false);
-const uName=silksUser&&silksUser.username?silksUser.username:"My";
-const raceLabel=(RACE_TYPES.find(r=>r.id===activeRace)||RACE_TYPES[0]).label;
-const savedSlot=silksUser&&silksUser.customAngles&&silksUser.customAngles[activeRace];
-const hasSaved=!!savedSlot;
-const isDirty=!hasSaved||JSON.stringify(weights)!==JSON.stringify(savedSlot.weights)||JSON.stringify(locks)!==JSON.stringify(savedSlot.locks);
-const specialistMatch=SPECIALIST_PRESETS.find(p=>p.id===activeSpecialist);
-const currentSourceLabel=activeSpecialist==='giddyup'?"🐴 GiddyUp set to "+raceLabel+" preset":specialistMatch?specialistMatch.icon+" GiddyUp set to "+specialistMatch.label+" preset":angleMode==='custom'?"⭐ GiddyUp set to "+uName+"'s "+raceLabel+" DNA"+(hasSaved&&!isDirty?"":" (unsaved)"):"🐴 GiddyUp set to "+raceLabel+" preset (edited)";
 return h("div",{style:{paddingTop:14}},
   h(TabHelp,{title:"How to Use — Angles",steps:[
-    "Watch the \"GiddyUp set to...\" line below — it always tells you exactly which angles (a preset or your saved DNA) are currently running.",
-    "In Choose Your Angles: tap a race type in the GiddyUp Presets row for the balanced AI preset for that race.",
-    "Tap a race type in the "+uName+"'s DNA row to load your own saved angles for that race — this also selects the race type.",
-    "Or tap a Specialist preset (Jockey/Trainer/Combo/Earnings Only) for a single-factor focus, on top of whichever race type is active.",
-    "Open Set and Compare Race Angles to see every race type side by side.",
-    "Tap a column header to edit that race type — use the +/– buttons or type a number directly in each box (1 = most important, 17 = least important).",
+    "This page is for fine-tuning weights. Pick your preset or DNA on the Rankings tab — this page always edits whichever race type is currently active.",
+    "Tap a column header below to edit that race type — use the +/– buttons or type a number directly in each box (1 = most important, 17 = least important).",
     "Every factor always holds a unique rank — type a number that's already taken and the other factors shift out of the way automatically.",
     "Tap Save to keep your changes as your own DNA for that race type.",
   ]}),
-  h("div",{style:{background:"rgba(201,168,76,0.12)",border:"1.5px solid "+C.gold,borderRadius:12,padding:"10px 14px",marginBottom:12,textAlign:"center"}},
-    h("span",{style:{fontSize:12.5,fontWeight:800,color:C.navy}},currentSourceLabel)),
-  !horses||!horses.length?h("div",{onClick:()=>setActiveTab("upload"),style:{background:"rgba(201,168,76,0.08)",border:"1.5px dashed "+C.gold,borderRadius:14,padding:"12px 16px",marginBottom:16,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},h("div",{style:{fontSize:26}},"📷"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:13,color:C.gold}},"Upload a Race Program First")),h("div",{style:{color:C.gold,fontSize:16}},"→")):h("div",{style:{background:"rgba(201,168,76,0.08)",border:"2px solid rgba(201,168,76,0.4)",borderRadius:14,padding:"12px 16px",marginBottom:14}},h("div",{style:{display:"flex",alignItems:"center",gap:10}},h("div",{style:{fontSize:22}},"🤖"),h("div",{style:{flex:1}},h("div",{style:{fontWeight:800,fontSize:15,color:C.gold}},activeRace==="custom"?"Custom Race Type":activeRace.charAt(0).toUpperCase()+activeRace.slice(1)+" Race Detected"),h("div",{style:{fontSize:11,color:"#a07830",marginTop:2}},activeRace==="custom"?"Your own angle mix — set it up below":"Angles preset — adjust below if needed"))),h("div",{style:{fontSize:11,color:"#a07830",paddingTop:8,borderTop:"1px solid rgba(201,168,76,0.2)",marginTop:8}},"✅ "+(horses?horses.length:0)+" horses loaded")),
-  h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"14px 16px",marginBottom:14}},
-    h("div",{style:{fontSize:13,fontWeight:800,color:C.navy,marginBottom:12}},"Choose Your Angles"),
-    h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🐴 GiddyUp Presets"),
-    h("div",{style:{marginBottom:14}},
-      raceTypeRows("gu-",selectGiddyUpForRace,rt=>activeRace===rt.id&&activeSpecialist==='giddyup')),
-    h("div",{style:{background:"rgba(201,168,76,0.10)",borderRadius:10,padding:"8px 8px 10px",marginBottom:14}},
-      h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"⭐ "+uName+"'s DNA"),
-      raceTypeRows("me-",selectMyDNAForRace,rt=>activeRace===rt.id&&angleMode==='custom'&&!activeSpecialist)),
-    h("div",{style:{fontSize:10,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}},"🎯 Specialist Presets"),
-    h("div",{style:{display:"flex",gap:4}},
-      SPECIALIST_PRESETS.map(p=>h("button",{key:p.id,onClick:()=>selectSpecialist(p),style:{flex:1,padding:"8px 2px",borderRadius:10,border:activeSpecialist===p.id?"2px solid "+C.gold:"1.5px solid "+C.border,background:activeSpecialist===p.id?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",textAlign:"center"}},
-        h("div",{style:{fontSize:14,marginBottom:1}},p.icon),
-        h("div",{style:{fontSize:8,fontWeight:700,color:activeSpecialist===p.id?C.gold:"#64748b"}},p.label))))),
   h("div",{style:{background:"#fff",borderRadius:12,padding:"14px 6px",marginBottom:14}},
     h("div",{onClick:()=>setCompareOpen(o=>!o),style:{display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",padding:"0 8px"}},
       h("div",{style:{fontSize:13,fontWeight:800,color:C.navy}},"Set and Compare Race Angles"),
