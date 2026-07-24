@@ -437,6 +437,22 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
     setRaces(r=>r.map(rc=>rc.id===id?{...rc,label:newLabel}:rc));
   }
 
+  // ── MEET-RECORD BLEND ──
+  // Blends the jockey's/trainer's current-meet record printed on the card
+  // itself (jockeyMeet/trainerMeet, e.g. "(2-0-0-0) 0%") with circuit-wide
+  // historical stats from Supabase. PRIOR_STRENGTH is how many "pseudo-starts"
+  // of history count as equal weight to real meet starts — higher trusts
+  // history more and reacts slower to a hot/cold meet.
+  const MEET_BLEND_PRIOR_STRENGTH=12;
+
+  function blendedWinPct(currentWins,currentStarts,historicalWinPct){
+    const hWin=(typeof historicalWinPct==="number")?historicalWinPct:0;
+    const priorWins=MEET_BLEND_PRIOR_STRENGTH*(hWin/100);
+    const starts=currentStarts||0;
+    if(starts===0 && hWin===0)return 0;
+    return((currentWins||0)+priorWins)/(starts+MEET_BLEND_PRIOR_STRENGTH)*100;
+  }
+
   async function analyzeOne(race){
     if(!race||!race.pages||!race.pages.length)return;
     setAnalyzingId(race.id);
@@ -453,9 +469,10 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
           :{type:"image",source:{type:"base64",media_type:pg.mediaType,data:pg.base64}}
       );
       const isMulti=pageCount>1;
+      const meetRecordSchema=" Each horse's card also prints the trainer's and jockey's current-meet record right next to their names, formatted like '( 2-0-0-0 ) 0%' — that's (Starts-1st-2nd-3rd) then Win%. Extract this into each horse's object as jockeyMeet:{starts,wins,winPct} and trainerMeet:{starts,wins,winPct}, using the numbers exactly as printed (winPct as an integer, e.g. 17 not 0.17). If a horse's card doesn't show this line, omit jockeyMeet/trainerMeet for that horse rather than guessing.";
       const promptText=isMulti
-        ?"You have been given "+pageCount+" files for the same race. One is a horse racing past performances card (DRF, Equibase, or similar). The others may include supplementary data such as speed figure reports, handicapping sheets, or other race-related documents from any provider. Use ALL files together to build the most complete and accurate picture of each horse — where hard numbers exist in any file (speed figures, jockey win %, trainer win %, pace figures etc.) prefer those over estimates. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100."
-        :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100.";
+        ?"You have been given "+pageCount+" files for the same race. One is a horse racing past performances card (DRF, Equibase, or similar). The others may include supplementary data such as speed figure reports, handicapping sheets, or other race-related documents from any provider. Use ALL files together to build the most complete and accurate picture of each horse — where hard numbers exist in any file (speed figures, jockey win %, trainer win %, pace figures etc.) prefer those over estimates. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100."+meetRecordSchema
+        :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100."+meetRecordSchema;
       contentArr.push({type:"text",text:promptText});
 
       const response=await fetch("https://giddyup-proxy.kleskun.workers.dev",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:4000,messages:[{role:"user",content:contentArr}]})});
@@ -470,6 +487,8 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       const allHorses=(parsed.horses||[]).map((hh,idx)=>({
         ...hh,
         number:parseInt(hh.number)||(idx+1),
+        jockeyMeet:hh.jockeyMeet&&typeof hh.jockeyMeet.starts==="number"?hh.jockeyMeet:null,
+        trainerMeet:hh.trainerMeet&&typeof hh.trainerMeet.starts==="number"?hh.trainerMeet:null,
         earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0,...(hh.earnings||{})},
         stats:{speed:70,form:70,jockey:70,trainer:70,distance:70,track:70,post:70,class:70,days:70,weight:70,workouts:70,equipment:70,pedigree:70,style:70,combo:70,bias:70,...(hh.stats||{})}
       }));
@@ -483,9 +502,37 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
           GiddyUpAuth.getTrainerStats(hh.trainer)
         ]);
         if(combo){hh.stats.combo=Math.min(100,Math.round(50+combo.win_pct));hh.liveCombo=combo;}
-        if(jockeyStats){hh.stats.jockey=Math.min(100,Math.round(50+jockeyStats.win_pct));hh.liveJockey=jockeyStats;}
-        if(trainerStats){hh.stats.trainer=Math.min(100,Math.round(50+trainerStats.win_pct));hh.liveTrainer=trainerStats;}
+
+        if(hh.jockeyMeet && typeof hh.jockeyMeet.starts==="number"){
+          const blended=blendedWinPct(hh.jockeyMeet.wins,hh.jockeyMeet.starts,jockeyStats?jockeyStats.win_pct:0);
+          hh.stats.jockey=Math.min(100,Math.round(50+blended));
+          hh.liveJockey={...(jockeyStats||{}),win_pct:blended,meetStarts:hh.jockeyMeet.starts,meetWins:hh.jockeyMeet.wins,source:"blended"};
+        }else if(jockeyStats){
+          hh.stats.jockey=Math.min(100,Math.round(50+jockeyStats.win_pct));
+          hh.liveJockey=jockeyStats;
+        }
+
+        if(hh.trainerMeet && typeof hh.trainerMeet.starts==="number"){
+          const blended=blendedWinPct(hh.trainerMeet.wins,hh.trainerMeet.starts,trainerStats?trainerStats.win_pct:0);
+          hh.stats.trainer=Math.min(100,Math.round(50+blended));
+          hh.liveTrainer={...(trainerStats||{}),win_pct:blended,meetStarts:hh.trainerMeet.starts,meetWins:hh.trainerMeet.wins,source:"blended"};
+        }else if(trainerStats){
+          hh.stats.trainer=Math.min(100,Math.round(50+trainerStats.win_pct));
+          hh.liveTrainer=trainerStats;
+        }
       }));
+      console.log("── GiddyUp meet-record debug ──");
+      console.table(allHorses.map(hh=>({
+        horse:hh.name,
+        jockey:hh.jockey,
+        jockeyMeet:hh.jockeyMeet?(hh.jockeyMeet.wins+"-of-"+hh.jockeyMeet.starts+" ("+hh.jockeyMeet.winPct+"%)"):"— not extracted —",
+        jockeyBlendedScore:hh.stats.jockey,
+        jockeySource:(hh.liveJockey&&hh.liveJockey.source)||"historical-only",
+        trainer:hh.trainer,
+        trainerMeet:hh.trainerMeet?(hh.trainerMeet.wins+"-of-"+hh.trainerMeet.starts+" ("+hh.trainerMeet.winPct+"%)"):"— not extracted —",
+        trainerBlendedScore:hh.stats.trainer,
+        trainerSource:(hh.liveTrainer&&hh.liveTrainer.source)||"historical-only"
+      })));
      setHorses(allHorses);
       setActiveRace(detectedRaceType);
       if(angleMode!=='custom'){
