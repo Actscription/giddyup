@@ -548,6 +548,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       setActiveRace(detectedRaceType);
       if(angleMode!=='custom'){
         setWeights({...presetWeightsFor(giddyupPresets,detectedRaceType)});
+        setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
       } else {
         const all=(silksUser&&silksUser.customAngles)||{};
         const slot=all[detectedRaceType];
@@ -577,6 +578,7 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
     setActiveRace(rt);
     if(angleMode!=='custom'){
       setWeights({...presetWeightsFor(giddyupPresets,rt)});
+      setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
     } else {
       const all=(silksUser&&silksUser.customAngles)||{};
       const slot=all[rt];
@@ -1768,7 +1770,10 @@ useEffect(()=>{
         const profile=await GiddyUpAuth.getProfile(session.user.id);
        const customAnglesAll=normalizeCustomAngles(profile&&profile.custom_angles);
         setSilksUser({id:session.user.id,username:profile?profile.username:'',email:session.user.email,city:profile?profile.city:'',realName:profile?profile.real_name:'',customAngles:customAnglesAll});
-        if(customAnglesAll.custom){const filled=fillMissingFactors(customAnglesAll.custom.weights,customAnglesAll.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
+        // Login loads the user's saved DNA into silksUser so the Angles picker can
+        // offer it, but it must NOT change the active mode. angleMode stays 'giddyup'
+        // so every race opens on the GiddyUp preset for its detected type; the picker
+        // is the only thing that switches to DNA.
       }
       setAuthChecked(true);
     })();
@@ -1837,7 +1842,10 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
     setRaces([]);
     setHorses([]);
     setScratched({});
-    if(user.customAngles&&user.customAngles.custom){const filled=fillMissingFactors(user.customAngles.custom.weights,user.customAngles.custom.locks);setAngleMode('custom');setWeights(filled.weights);setLocks(filled.locks);}
+    // See note above: sign-in never sets angleMode. GiddyUp preset is the default.
+    setAngleMode('giddyup');
+    setWeights({...PRESETS.custom});
+    setLocks(Object.fromEntries(ALL_FACTORS.map(f=>[f.id,true])));
     setShowSplash(true);
   }});
 
