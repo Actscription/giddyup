@@ -169,6 +169,20 @@ const SILK_COLORS={
 };
 const C={gold:"#c9a84c",navy:"#1a2535",navy2:"#2d3f55",border:"#e2e8f0",muted:"#94a3b8",text:"#1a2535"};
 const GROUP_COLORS={core:C.gold,race:"#0f766e",deep:"#6d28d9"};
+// Gold intensity ramp for factor ranks: darker = better. Single hue so it survives
+// red/green colour deficiency, phone glare at the rail, and greyscale printing.
+const RANK_TINT={
+  1:{bg:"#efe0b0",bd:"1px solid #d9c179",fg:"#5c4a12",lbl:"#3d3108"},
+  2:{bg:"#faf3dd",bd:"1px solid #ece0bb",fg:"#7a6420",lbl:"#4a3c12"},
+  3:{bg:"#ffffff",bd:"1px solid #e8dcbd",fg:"#a07830",lbl:"#1e293b",stripe:"4px solid "+C.gold},
+  0:{bg:"#ffffff",bd:"1px solid #eef2f6",fg:"#94a3b8",lbl:"#1e293b"},
+  na:{bg:"#f8fafc",bd:"1px dashed #dfe6ee",fg:"#b0bcc9",lbl:"#94a3b8"}
+};
+function tintFor(rank){if(rank==null)return RANK_TINT.na;return RANK_TINT[rank]||RANK_TINT[0];}
+// A factor with identical values across the whole field separates nobody. It carries
+// no information, so it is marked N/A and its weight is redistributed rather than
+// handing every horse the same "#1".
+function fieldHasVariance(horses,factorId){if(horses.length<2)return true;const v0=horses[0].stats[factorId]||0;for(let i=1;i<horses.length;i++){if((horses[i].stats[factorId]||0)!==v0)return true;}return false;}
 function golfRank(horses,factorId){const sorted=[...horses].sort((a,b)=>(b.stats[factorId]||0)-(a.stats[factorId]||0));const ranks={};let i=0;while(i<sorted.length){const val=sorted[i].stats[factorId]||0;let j=i;while(j<sorted.length&&(sorted[j].stats[factorId]||0)===val)j++;for(let k=i;k<j;k++)ranks[sorted[k].number]=i+1;i=j;}return ranks;}
 // Confidence thresholds: starts needed to be "fully trusted" per tier.
 // CY/LY reach full confidence quickly (3 starts); Lifetime needs more (8) but
@@ -214,7 +228,7 @@ function computeEarningsRanks(horses){
   results.forEach(r=>{if(r.compositeEps===null)r.compositeEps=hasAnyData?median:0;});
   return results;
 }
-function computeScores(horses,weights,raceType,scratched){raceType=raceType||"custom";const active_horses=horses.filter(hr=>!scratched[hr.number]);if(!active_horses.length)return[];const ed=computeEarningsRanks(active_horses),se=[...ed].sort((a,b)=>b.compositeEps-a.compositeEps),er={},edByNum={};se.forEach((e,i)=>{er[e.number]=i+1;});ed.forEach(e=>{edByNum[e.number]=e;});const active=ALL_FACTORS.filter(f=>weights[f.id]>0),maps={};active.forEach(f=>{maps[f.id]=f.id==="earnings"?er:golfRank(active_horses,f.id);});const totalWeight=active.reduce((s,f)=>s+weights[f.id],0);return active_horses.map(horse=>{let total=0;const bd={};active.forEach(f=>{const rank=maps[f.id][horse.number]||1,prop=weights[f.id]/totalWeight,pts=rank*prop;const rawStat=f.id==="earnings"?edByNum[horse.number]:(horse.stats[f.id]!=null?horse.stats[f.id]:"-");bd[f.id]={rank,rawStat,pts:Math.round(pts*100)/100};total+=pts;});return{...horse,totalScore:Math.round(total*10),breakdown:bd};}).sort((a,b)=>a.totalScore-b.totalScore);}
+function computeScores(horses,weights,raceType,scratched){raceType=raceType||"custom";const active_horses=horses.filter(hr=>!scratched[hr.number]);if(!active_horses.length)return[];const ed=computeEarningsRanks(active_horses),se=[...ed].sort((a,b)=>b.compositeEps-a.compositeEps),er={},edByNum={};se.forEach((e,i)=>{er[e.number]=i+1;});ed.forEach(e=>{edByNum[e.number]=e;});const weighted=ALL_FACTORS.filter(f=>weights[f.id]>0),maps={},dead=[];weighted.forEach(f=>{const hasVar=f.id==="earnings"?(active_horses.length<2||ed.some(e=>e.compositeEps!==ed[0].compositeEps)):fieldHasVariance(active_horses,f.id);if(!hasVar){dead.push(f);return;}maps[f.id]=f.id==="earnings"?er:golfRank(active_horses,f.id);});let active=weighted.filter(f=>maps[f.id]);if(!active.length){active=weighted;dead.length=0;weighted.forEach(f=>{if(!maps[f.id])maps[f.id]=f.id==="earnings"?er:golfRank(active_horses,f.id);});}const totalWeight=active.reduce((s,f)=>s+weights[f.id],0),deadIds=dead.map(f=>f.id);return active_horses.map(horse=>{let total=0;const bd={};active.forEach(f=>{const rank=maps[f.id][horse.number]||1,prop=weights[f.id]/totalWeight,pts=rank*prop;const rawStat=f.id==="earnings"?edByNum[horse.number]:(horse.stats[f.id]!=null?horse.stats[f.id]:"-");bd[f.id]={rank,rawStat,pts:Math.round(pts*100)/100};total+=pts;});dead.forEach(f=>{const rawStat=f.id==="earnings"?edByNum[horse.number]:(horse.stats[f.id]!=null?horse.stats[f.id]:"-");bd[f.id]={rank:null,rawStat,pts:0,na:true};});return{...horse,totalScore:Math.round(total*10),breakdown:bd,deadFactors:deadIds};}).sort((a,b)=>a.totalScore-b.totalScore);}
 function redistribute(weights,locks,scopeIds,changedId,newVal){const unlocked=scopeIds.filter(id=>id!==changedId&&!locks[id]);if(!unlocked.length)return weights;const uTotal=unlocked.reduce((s,id)=>s+weights[id],0),next={...weights,[changedId]:newVal},delta=newVal-weights[changedId];if(uTotal===0){const each=Math.floor(-delta/unlocked.length);unlocked.forEach(id=>{next[id]=Math.max(0,weights[id]+each);});}else{unlocked.forEach(id=>{next[id]=Math.max(0,Math.round(weights[id]+(weights[id]/uTotal)*(-delta)));});}const scopeTarget=scopeIds.reduce((s,id)=>s+weights[id],0),scopeNow=scopeIds.reduce((s,id)=>s+next[id],0),diff=scopeTarget-scopeNow;if(diff!==0){const t=unlocked.find(id=>next[id]+diff>=0)||unlocked[0];if(t)next[t]=Math.max(0,next[t]+diff);}return next;}
 function scaleGroupToBudget(weights,locks,factorIds,targetTotal){const current=factorIds.reduce((s,id)=>s+weights[id],0);if(current===targetTotal)return weights;const next={...weights};const unlocked=factorIds.filter(id=>!locks[id]);const lockedSum=factorIds.filter(id=>locks[id]).reduce((s,id)=>s+weights[id],0);const availableForUnlocked=Math.max(0,targetTotal-lockedSum);if(!unlocked.length)return weights;const unlockedCurrentSum=unlocked.reduce((s,id)=>s+weights[id],0);let used=0;if(unlockedCurrentSum===0){const each=Math.floor(availableForUnlocked/unlocked.length);unlocked.forEach((id,i)=>{const v=i===unlocked.length-1?availableForUnlocked-used:each;next[id]=v;used+=v;});}else{unlocked.forEach((id,i)=>{if(i===unlocked.length-1){next[id]=Math.max(0,availableForUnlocked-used);}else{const v=Math.max(0,Math.round(weights[id]/unlockedCurrentSum*availableForUnlocked));next[id]=v;used+=v;}});}return next;}
 function fillMissingFactors(savedWeights,savedLocks){const w={...savedWeights},l={...savedLocks};ALL_FACTORS.forEach(f=>{if(typeof w[f.id]!=="number")w[f.id]=0;if(typeof l[f.id]!=="boolean")l[f.id]=false;});return{weights:w,locks:l};}
@@ -269,6 +283,7 @@ function HorseCard({horse,rank,weights,allScores,activeRace,onTap,dragHandle}){
 const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
   const ring=rank===0?"#c9a84c":rank===1?"#9ea8b0":rank===2?"#b87333":"transparent";
   const active=ALL_FACTORS.filter(f=>weights[f.id]>0);
+  const deadCount=(horse.deadFactors||[]).length;
   const minS=allScores[0]?allScores[0].totalScore:horse.totalScore,maxS=allScores[allScores.length-1]?allScores[allScores.length-1].totalScore:horse.totalScore;
   const barW=Math.max(15,100-((horse.totalScore-minS)/Math.max(1,maxS-minS))*80);
   return h("div",{style:{background:rank===0?"linear-gradient(135deg,#fffbf0,#fff8e6)":"#fff",border:rank===0?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10,cursor:"pointer"}},
@@ -286,6 +301,12 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
           h("div",{style:{width:barW+"%",height:"100%",background:"linear-gradient(90deg,"+bc+","+bc+"99)",borderRadius:4}}))),
       h("button",{onClick:e=>{e.stopPropagation();onTap&&onTap(horse);},style:{background:"rgba(201,168,76,0.18)",border:"1.5px solid rgba(201,168,76,0.55)",borderRadius:10,width:32,height:32,cursor:"pointer",fontSize:18,fontWeight:900,color:C.navy,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}},"⋯")),
     exp&&h("div",{style:{marginTop:12,paddingTop:12,borderTop:"1px solid "+C.border}},
+      h("div",{style:{display:"flex",alignItems:"center",flexWrap:"wrap",gap:10,marginBottom:8,fontSize:9,color:"#64748b",fontWeight:600}},
+        h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{width:11,height:11,borderRadius:3,background:RANK_TINT[1].bg,border:RANK_TINT[1].bd,display:"inline-block"}}),"Best in field"),
+        h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{width:11,height:11,borderRadius:3,background:RANK_TINT[2].bg,border:RANK_TINT[2].bd,display:"inline-block"}}),"2nd"),
+        h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{width:11,height:11,borderRadius:3,background:"#fff",border:"1px solid #e8dcbd",borderLeft:"3px solid "+C.gold,display:"inline-block"}}),"3rd")),
+      deadCount>0&&h("div",{style:{fontSize:9,color:"#a07830",marginBottom:8,fontWeight:600}},
+        deadCount+" factor"+(deadCount>1?"s":"")+" marked N/A — every horse scored the same, so no separation. Points redistributed across the rest."),
       h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}},
       ...active.map(f=>{
         const bd=horse.breakdown[f.id];if(!bd)return null;
@@ -293,17 +314,19 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
           const ed=bd.rawStat||{};
           const fmtTier=(eps,starts)=>eps==null?"–":"$"+Math.round(eps).toLocaleString()+"/st("+starts+")";
           const compDisplay="$"+Math.round(ed.compositeEps||0).toLocaleString()+"/st avg";
-          return h("div",{key:f.id,style:{background:FC[f.id]+"10",borderRadius:10,padding:"8px 10px"}},
+          const te=tintFor(bd.rank);
+          return h("div",{key:f.id,style:{background:te.bg,border:te.bd,borderLeft:te.stripe||te.bd,borderRadius:10,padding:"8px 10px"}},
             h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},
-              h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},f.label),
-              h("span",{style:{color:FC[f.id],fontSize:11,fontWeight:800}},"#"+bd.rank)),
+              h("span",{style:{color:te.lbl,fontSize:10,fontWeight:600}},f.label),
+              h("span",{style:{color:te.fg,fontSize:11,fontWeight:800}},bd.rank==null?"N/A":"#"+bd.rank)),
             h("div",{style:{display:"flex",justifyContent:"space-between"}},
-              h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},compDisplay),
-              h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},Math.round(bd.pts*100))),
-            h("div",{style:{color:"#000000",fontSize:9,marginTop:2}},
+              h("span",{style:{color:te.lbl,fontSize:10,fontWeight:600}},bd.na?"No data":compDisplay),
+              h("span",{style:{color:bd.na?te.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))),
+            !bd.na&&h("div",{style:{color:"#000000",fontSize:9,marginTop:2}},
               "CY "+fmtTier(ed.eps_cy,ed.starts_cy)+" · LY "+fmtTier(ed.eps_ly,ed.starts_ly)+" · Life "+fmtTier(ed.eps_car,ed.starts_car)));
         }
-        return h("div",{key:f.id,style:{background:FC[f.id]+"10",borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:FC[f.id],fontSize:11,fontWeight:800}},"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:"#1e293b",fontSize:10,fontWeight:600}},"Stat: "+bd.rawStat),h("span",{style:{color:C.text,fontSize:12,fontWeight:700}},Math.round(bd.pts*100))));
+        const tg=tintFor(bd.rank);
+        return h("div",{key:f.id,style:{background:tg.bg,border:tg.bd,borderLeft:tg.stripe||tg.bd,borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:tg.fg,fontSize:11,fontWeight:800}},bd.rank==null?"N/A":"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},bd.na?"No data in this field":"Stat: "+bd.rawStat),h("span",{style:{color:bd.na?tg.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))));
       }))));}
 function ScratchedCard({horse,onTap}){
   return h("div",{style:{background:"#f8fafc",border:"1px dashed #cbd5e1",borderRadius:14,padding:"12px 16px",marginBottom:8,opacity:0.65,cursor:"pointer"},onClick:()=>onTap(horse)},
