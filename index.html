@@ -317,7 +317,7 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
         h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{width:11,height:11,borderRadius:3,background:RANK_TINT[1].bg,border:RANK_TINT[1].bd,display:"inline-block"}}),"Best in field"),
         h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{width:11,height:11,borderRadius:3,background:RANK_TINT[2].bg,border:RANK_TINT[2].bd,display:"inline-block"}}),"2nd"),
         h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{width:11,height:11,borderRadius:3,background:"#fff",border:"1px solid #e8dcbd",borderLeft:"3px solid "+C.gold,display:"inline-block"}}),"3rd"),
-        h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{fontSize:9}},"🪙"),"Too close to call")),
+        h("span",{style:{display:"inline-flex",alignItems:"center",gap:4}},h("span",{style:{fontSize:13,fontWeight:900,color:C.navy,lineHeight:1}},"≈"),"Too close to call")),
       deadCount>0&&h("div",{style:{fontSize:9,color:"#a07830",marginBottom:8,fontWeight:600}},
         deadCount+" factor"+(deadCount>1?"s":"")+" marked N/A — every horse scored the same, so no separation. Points redistributed across the rest."),
       h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}},
@@ -331,7 +331,7 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
           return h("div",{key:f.id,style:{background:te.bg,border:te.bd,borderLeft:te.stripe||te.bd,borderRadius:10,padding:"8px 10px"}},
             h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},
               h("span",{style:{color:te.lbl,fontSize:10,fontWeight:600}},f.label),
-              h("span",{style:{color:te.fg,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:3}},bd.close&&h("span",{title:"Too close to call — gap to the leader is inside the noise",style:{fontSize:9}},"🪙"),bd.rank==null?"N/A":"#"+bd.rank)),
+              h("span",{style:{color:te.fg,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:3}},bd.close&&h("span",{title:"Too close to call — gap to the leader is inside the noise",style:{fontSize:13,fontWeight:900,color:C.navy,lineHeight:1}},"≈"),bd.rank==null?"N/A":"#"+bd.rank)),
             h("div",{style:{display:"flex",justifyContent:"space-between"}},
               h("span",{style:{color:te.lbl,fontSize:10,fontWeight:600}},bd.na?"No data":compDisplay),
               h("span",{style:{color:bd.na?te.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))),
@@ -339,7 +339,7 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
               "CY "+fmtTier(ed.eps_cy,ed.starts_cy)+" · LY "+fmtTier(ed.eps_ly,ed.starts_ly)+" · Life "+fmtTier(ed.eps_car,ed.starts_car)));
         }
         const tg=tintFor(bd.rank);
-        return h("div",{key:f.id,style:{background:tg.bg,border:tg.bd,borderLeft:tg.stripe||tg.bd,borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:tg.fg,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:3}},bd.close&&h("span",{title:"Too close to call — gap to the leader is inside the noise",style:{fontSize:9}},"🪙"),bd.rank==null?"N/A":"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},bd.na?"No data in this field":"Stat: "+bd.rawStat),h("span",{style:{color:bd.na?tg.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))));
+        return h("div",{key:f.id,style:{background:tg.bg,border:tg.bd,borderLeft:tg.stripe||tg.bd,borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:tg.fg,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:3}},bd.close&&h("span",{title:"Too close to call — gap to the leader is inside the noise",style:{fontSize:13,fontWeight:900,color:C.navy,lineHeight:1}},"≈"),bd.rank==null?"N/A":"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},bd.na?"No data in this field":"Stat: "+bd.rawStat),h("span",{style:{color:bd.na?tg.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))));
       }))));}
 function ScratchedCard({horse,onTap}){
   return h("div",{style:{background:"#f8fafc",border:"1px dashed #cbd5e1",borderRadius:14,padding:"12px 16px",marginBottom:8,opacity:0.65,cursor:"pointer"},onClick:()=>onTap(horse)},
