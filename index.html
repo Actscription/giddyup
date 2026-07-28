@@ -539,24 +539,60 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
         ]);
         if(combo){hh.stats.combo=Math.min(100,Math.round(50+combo.win_pct));hh.liveCombo=combo;}
 
-        if(hh.jockeyMeet && typeof hh.jockeyMeet.starts==="number"){
-          const blended=blendedWinPct(hh.jockeyMeet.wins,hh.jockeyMeet.starts,jockeyStats?jockeyStats.win_pct:0);
-          hh.stats.jockey=Math.min(100,Math.round(50+blended));
-          hh.liveJockey={...(jockeyStats||{}),win_pct:blended,meetStarts:hh.jockeyMeet.starts,meetWins:hh.jockeyMeet.wins,source:"blended"};
-        }else if(jockeyStats){
-          hh.stats.jockey=Math.min(100,Math.round(50+jockeyStats.win_pct));
-          hh.liveJockey=jockeyStats;
+        // JOCKEY — compute the raw blended win% and flag whether ANY real data
+        // exists (meet starts this meet, or enough circuit history). Horses
+        // with zero starts everywhere get filled in below via field average
+        // instead of being scored here.
+        const jockeyHasMeet=hh.jockeyMeet && typeof hh.jockeyMeet.starts==="number" && hh.jockeyMeet.starts>0;
+        hh._jockeyHasData=!!(jockeyHasMeet || jockeyStats);
+        hh._jockeyRawPct=blendedWinPct(jockeyHasMeet?hh.jockeyMeet.wins:0,jockeyHasMeet?hh.jockeyMeet.starts:0,jockeyStats?jockeyStats.win_pct:0);
+        if(hh._jockeyHasData){
+          hh.liveJockey=jockeyHasMeet
+            ?{...(jockeyStats||{}),win_pct:hh._jockeyRawPct,meetStarts:hh.jockeyMeet.starts,meetWins:hh.jockeyMeet.wins,source:"blended"}
+            :{...jockeyStats,source:"circuit"};
         }
 
-        if(hh.trainerMeet && typeof hh.trainerMeet.starts==="number"){
-          const blended=blendedWinPct(hh.trainerMeet.wins,hh.trainerMeet.starts,trainerStats?trainerStats.win_pct:0);
-          hh.stats.trainer=Math.min(100,Math.round(50+blended));
-          hh.liveTrainer={...(trainerStats||{}),win_pct:blended,meetStarts:hh.trainerMeet.starts,meetWins:hh.trainerMeet.wins,source:"blended"};
-        }else if(trainerStats){
-          hh.stats.trainer=Math.min(100,Math.round(50+trainerStats.win_pct));
-          hh.liveTrainer=trainerStats;
+        // TRAINER — same treatment as jockey above.
+        const trainerHasMeet=hh.trainerMeet && typeof hh.trainerMeet.starts==="number" && hh.trainerMeet.starts>0;
+        hh._trainerHasData=!!(trainerHasMeet || trainerStats);
+        hh._trainerRawPct=blendedWinPct(trainerHasMeet?hh.trainerMeet.wins:0,trainerHasMeet?hh.trainerMeet.starts:0,trainerStats?trainerStats.win_pct:0);
+        if(hh._trainerHasData){
+          hh.liveTrainer=trainerHasMeet
+            ?{...(trainerStats||{}),win_pct:hh._trainerRawPct,meetStarts:hh.trainerMeet.starts,meetWins:hh.trainerMeet.wins,source:"blended"}
+            :{...trainerStats,source:"circuit"};
         }
       }));
+
+      // ── FIELD-AVERAGE FALLBACK ──
+      // A horse with zero starts everywhere (no meet record, not found in
+      // circuit history — typically a shipper new to this circuit) does NOT
+      // get scored at the 50-point floor. That floor is mathematically
+      // unbeatable-from-below: every horse WITH real data scores >=50, so a
+      // hard-coded 50 guarantees the no-data horse ranks at or near the
+      // bottom on that factor every single time, regardless of how good the
+      // horse actually is. Instead, missing-data horses get the average
+      // win% of the other horses in THIS race who do have real data — i.e.
+      // "assume average connections" rather than "assume worst connections."
+      function fieldAverage(list,hasKey,pctKey){
+        const withData=list.filter(h=>h[hasKey]);
+        if(!withData.length)return 0;
+        return withData.reduce((s,h)=>s+h[pctKey],0)/withData.length;
+      }
+      const jockeyFieldAvg=fieldAverage(allHorses,"_jockeyHasData","_jockeyRawPct");
+      const trainerFieldAvg=fieldAverage(allHorses,"_trainerHasData","_trainerRawPct");
+
+      allHorses.forEach(hh=>{
+        const jPct=hh._jockeyHasData?hh._jockeyRawPct:jockeyFieldAvg;
+        hh.stats.jockey=Math.min(100,Math.round(50+jPct));
+        if(!hh._jockeyHasData){hh.liveJockey={win_pct:jPct,meetStarts:0,meetWins:0,source:"field-average"};}
+
+        const tPct=hh._trainerHasData?hh._trainerRawPct:trainerFieldAvg;
+        hh.stats.trainer=Math.min(100,Math.round(50+tPct));
+        if(!hh._trainerHasData){hh.liveTrainer={win_pct:tPct,meetStarts:0,meetWins:0,source:"field-average"};}
+
+        delete hh._jockeyHasData;delete hh._jockeyRawPct;
+        delete hh._trainerHasData;delete hh._trainerRawPct;
+      });
      setHorses(allHorses);
       setActiveRace(detectedRaceType);
       if(angleMode!=='custom'){
