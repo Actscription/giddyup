@@ -321,9 +321,11 @@ function buildRaceReport(horses,raceType){
     }
   });
   const conflicts=barnConflicts(horses);
-  const conflictedNums=new Set(conflicts.flatMap(c=>c.horses));
-  const soloFlags=flags.filter(f=>!conflictedNums.has(f.horse));
-  return[...soloFlags,...conflicts].sort((a,b)=>b.strength-a.strength).slice(0,3);
+  // Only conflicts and class flags compete for the same 3 slots by strength —
+  // a horse in a barn conflict can still surface its own class flag, since
+  // the two describe different things (jockey assignment vs. class history),
+  // not two versions of the same claim.
+  return[...flags,...conflicts].sort((a,b)=>b.strength-a.strength).slice(0,3);
 }
 
 function reportEntry(f,i,total){
