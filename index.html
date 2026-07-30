@@ -248,6 +248,104 @@ function normalizeCustomAngles(raw){if(!raw)return{};if(raw.weights)return{custo
 function oddsToDecimal(o){if(!o||o==="N/A")return 5;const p=o.toString().split("-");if(p.length===2)return parseInt(p[0])/parseInt(p[1])+1;return parseFloat(o)+1||5;}
 function getConf(gap){if(gap>=50)return{label:"High",bars:9,color:"#4a9e6e"};if(gap>=25)return{label:"Moderate",bars:6,color:"#c9a84c"};return{label:"Low",bars:3,color:"#ef4444"};}
 function buildBets(scores){if(scores.length<3)return null;const h=scores,gap=h[1].totalScore-h[0].totalScore,wv=h.map(horse=>({...horse,decimal:oddsToDecimal(horse.odds),valueScore:Math.round((oddsToDecimal(horse.odds)/horse.totalScore)*1000)})),sm=[...wv].filter(x=>x.number!==h[0].number).sort((a,b)=>b.valueScore-a.valueScore)[0],bomb=[...wv].filter(horse=>{const ri=h.findIndex(hr=>hr.number===horse.number);return oddsToDecimal(horse.odds)>=8&&horse.totalScore<=h[0].totalScore*1.45&&ri<h.length-1;}).sort((a,b)=>b.valueScore-a.valueScore)[0];return{win:h[0],show:[h[0],h[1],h[2]],exactaBox:[h[0],h[1],h[2]],trifectaStraight:[h[0],h[1],h[2]],superfecta:h.length>=4?[h[0],h[1],h[2],h[3]]:null,smartWin:sm,smartExacta:sm?[sm,h[0]]:null,bomb,highConf:gap>=40,tightRace:gap<20,gap};}
+// ── RACE REPORT ──
+// "We do the math, you read the race." These rules surface context the
+// numeric score can't express — class trajectory, cold connections, barn
+// intent — and where two signals genuinely disagree, both are shown rather
+// than silently resolved. Pure functions over already-loaded horse data
+// (pastStarts, jockeyMeet, trainer), so this is cheap enough to recompute
+// live at render time rather than freezing it at publish.
+const CLASS_RANK={"maiden claiming":1,"maiden":2,"claiming":3,"optional claiming":4,"allowance":5,"stakes":6};
+function classRankOf(rt){return CLASS_RANK[(rt||"").toLowerCase().trim()]||2;}
+function ordinal(n){const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+
+function classFlag(horse,todayRaceType){
+  const starts=horse.pastStarts||[];
+  if(!starts.length)return null;
+  const todayRank=classRankOf(todayRaceType);
+  const recent=starts.slice(0,2);
+  const avgRank=recent.reduce((s,p)=>s+classRankOf(p.raceType),0)/recent.length;
+  const bestRecentStakes=starts.filter(p=>classRankOf(p.raceType)>=5).sort((a,b)=>classRankOf(b.raceType)-classRankOf(a.raceType))[0];
+
+  if(bestRecentStakes&&todayRank<=3){
+    return{horse:horse.number,rule:"class_rise_stakes",polarity:"positive",strength:90,
+      text:"Ran "+ordinal(bestRecentStakes.finishPosition)+" in a "+(bestRecentStakes.purse?("$"+bestRecentStakes.purse+" "):"")+"stakes"+(bestRecentStakes.daysAgo?(" ("+Math.round(bestRecentStakes.daysAgo/30)+" months back)"):"")+" — tougher company than anything else in this field has seen."};
+  }
+  if(todayRank<avgRank){
+    const lastFinish=recent[0].finishPosition;
+    if(lastFinish&&lastFinish<=3){
+      return{horse:horse.number,rule:"class_drop_live",polarity:"positive",strength:70,
+        text:"Dropping in class off a "+ordinal(lastFinish)+"-place finish — a live class drop, not a desperation move."};
+    }
+    if(recent[0].daysAgo&&recent[0].daysAgo<21){
+      return{horse:horse.number,rule:"class_drop_caution",polarity:"caution",strength:40,
+        text:"Dropping in class off a beaten effort just "+recent[0].daysAgo+" days ago — worth checking for trouble in that trip before reading this as a positive move."};
+    }
+  }
+  return null;
+}
+
+function coldJockeyModifier(horse){
+  const jm=horse.jockeyMeet;
+  if(!jm||jm.starts<10||jm.wins>0)return null;
+  return "Caution: jockey "+horse.jockey+" is "+jm.wins+"-for-"+jm.starts+" this meet.";
+}
+
+// Same-trainer entries — pick by jockey win%, structured (not pre-formatted
+// text) so the render layer isn't parsing its own generated sentence apart.
+function barnConflicts(horses){
+  const byTrainer={};
+  horses.forEach(h=>{(byTrainer[h.trainer]=byTrainer[h.trainer]||[]).push(h);});
+  const conflicts=[];
+  Object.values(byTrainer).filter(g=>g.length>=2).forEach(group=>{
+    const withPct=group.map(h=>({
+      number:h.number,name:h.name,jockey:h.jockey,
+      jPct:h.jockeyMeet?h.jockeyMeet.winPct:(h.liveJockey?h.liveJockey.win_pct:0)
+    }));
+    const sorted=[...withPct].sort((a,b)=>b.jPct-a.jPct);
+    if(sorted[0].jPct===sorted[1].jPct)return;
+    conflicts.push({rule:"barn_entry",strength:60,trainer:group[0].trainer,
+      horses:group.map(h=>h.number),leader:sorted[0],others:sorted.slice(1)});
+  });
+  return conflicts;
+}
+
+function buildRaceReport(horses,raceType){
+  const flags=[];
+  horses.forEach(horse=>{
+    const cf=classFlag(horse,raceType);
+    if(cf){
+      const cold=coldJockeyModifier(horse);
+      if(cold)cf.caution=cold;
+      flags.push(cf);
+    }
+  });
+  const conflicts=barnConflicts(horses);
+  const conflictedNums=new Set(conflicts.flatMap(c=>c.horses));
+  const soloFlags=flags.filter(f=>!conflictedNums.has(f.horse));
+  return[...soloFlags,...conflicts].sort((a,b)=>b.strength-a.strength).slice(0,3);
+}
+
+function reportEntry(f,i,total){
+  if(f.rule==="barn_entry"){
+    return h("div",{key:i,style:{background:"#fdfaf3",border:"1px solid #e8d48a",borderRadius:10,padding:"10px 12px",marginBottom:i<total-1?10:0}},
+      h("div",{style:{display:"flex",alignItems:"center",gap:6,marginBottom:8}},
+        h("span",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:1,textTransform:"uppercase"}},"⚖ Barn signal")),
+      h("div",{style:{fontSize:12,color:C.muted,marginBottom:6}},"Trainer "+f.trainer+" runs "+(f.others.length+1)+" here"),
+      h("div",{style:{display:"flex",alignItems:"stretch",gap:8}},
+        [f.leader,...f.others].map((s,j)=>h(Fragment,{key:s.number},
+          j>0&&h("div",{style:{width:1,background:"#e8d48a",flexShrink:0}}),
+          h("div",{style:{flex:1,fontSize:12.5,color:C.navy,lineHeight:1.5}},
+            "#"+s.number+" "+s.name+" — "+s.jockey+" ("+s.jPct+"%)"+(j===0?" · higher %":""))
+        ))
+      )
+    );
+  }
+  return h("div",{key:i,style:{borderLeft:"3px solid "+(f.polarity==="caution"?"#f59e42":C.gold),paddingLeft:10,marginBottom:i<total-1?10:0}},
+    h("div",{style:{fontSize:13,color:C.navy,lineHeight:1.6}},f.text),
+    f.caution&&h("div",{style:{fontSize:12,color:"#c2410c",marginTop:4}},f.caution)
+  );
+}
 function shareContent(title,text){if(navigator.share)navigator.share({title,text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert("Copied!"));}
 const DEMO=[
   {number:5,name:"Commandperformance",jockey:"I. Ortiz Jr.",trainer:"Todd Pletcher",odds:"50-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:96,form:85,jockey:92,trainer:95,distance:80,track:85,post:75,class:90,days:75,weight:75,workouts:82,equipment:70,pedigree:85,style:75,combo:88,bias:70}},
@@ -507,8 +605,8 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
       const isMulti=pageCount>1;
       const meetRecordSchema=" Each horse's card also prints the trainer's and jockey's current-meet record right next to their names, formatted like '( 2-0-0-0 ) 0%' — that's (Starts-1st-2nd-3rd) then Win%. Extract this into each horse's object as jockeyMeet:{starts,wins,winPct} and trainerMeet:{starts,wins,winPct}, using the numbers exactly as printed (winPct as an integer, e.g. 17 not 0.17). If a horse's card doesn't show this line, omit jockeyMeet/trainerMeet for that horse rather than guessing.";
       const promptText=isMulti
-        ?"You have been given "+pageCount+" files for the same race. One is a horse racing past performances card (DRF, Equibase, or similar). The others may include supplementary data such as speed figure reports, handicapping sheets, or other race-related documents from any provider. Use ALL files together to build the most complete and accurate picture of each horse — where hard numbers exist in any file (speed figures, jockey win %, trainer win %, pace figures etc.) prefer those over estimates. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100."+meetRecordSchema
-        :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias}}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100."+meetRecordSchema;
+        ?"You have been given "+pageCount+" files for the same race. One is a horse racing past performances card (DRF, Equibase, or similar). The others may include supplementary data such as speed figure reports, handicapping sheets, or other race-related documents from any provider. Use ALL files together to build the most complete and accurate picture of each horse — where hard numbers exist in any file (speed figures, jockey win %, trainer win %, pace figures etc.) prefer those over estimates. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias},pastStarts:[{date,raceType,purse,finishPosition,daysAgo}]}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100. pastStarts is each past-performance line printed for the horse, most recent first — raceType is one of 'stakes','allowance','claiming','maiden claiming','maiden','optional claiming' based on the condition text printed (e.g. 'Stk - 3YOSpring - 11k' is stakes, 'Mcl 8000' is maiden claiming, 'Msw 6800' or 'Mdn 6800' is maiden). purse is the dollar amount printed for that condition if shown, else null. finishPosition is the horse's placing in that start as an integer. daysAgo is approximate days between that start's date and today, computed from the printed date. If no past performance lines are printed for a horse (first-time starter), return an empty array."+meetRecordSchema
+        :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias},pastStarts:[{date,raceType,purse,finishPosition,daysAgo}]}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100. pastStarts is each past-performance line printed for the horse, most recent first — raceType is one of 'stakes','allowance','claiming','maiden claiming','maiden','optional claiming' based on the condition text printed (e.g. 'Stk - 3YOSpring - 11k' is stakes, 'Mcl 8000' is maiden claiming, 'Msw 6800' or 'Mdn 6800' is maiden). purse is the dollar amount printed for that condition if shown, else null. finishPosition is the horse's placing in that start as an integer. daysAgo is approximate days between that start's date and today, computed from the printed date. If no past performance lines are printed for a horse (first-time starter), return an empty array."+meetRecordSchema;
       contentArr.push({type:"text",text:promptText});
 
       const response=await fetch("https://giddyup-proxy.kleskun.workers.dev",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:4000,messages:[{role:"user",content:contentArr}]})});
@@ -526,7 +624,8 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
         jockeyMeet:hh.jockeyMeet&&typeof hh.jockeyMeet.starts==="number"?hh.jockeyMeet:null,
         trainerMeet:hh.trainerMeet&&typeof hh.trainerMeet.starts==="number"?hh.trainerMeet:null,
         earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0,...(hh.earnings||{})},
-        stats:{speed:70,form:70,jockey:70,trainer:70,distance:70,track:70,post:70,class:70,days:70,weight:70,workouts:70,equipment:70,pedigree:70,style:70,combo:70,bias:70,...(hh.stats||{})}
+        stats:{speed:70,form:70,jockey:70,trainer:70,distance:70,track:70,post:70,class:70,days:70,weight:70,workouts:70,equipment:70,pedigree:70,style:70,combo:70,bias:70,...(hh.stats||{})},
+        pastStarts:Array.isArray(hh.pastStarts)?hh.pastStarts:[]
       }));
       if(!allHorses.length)throw new Error("No horses found.");
       setProgress("Found "+allHorses.length+" horses!");
@@ -1184,7 +1283,7 @@ function LearnToPlaySection(){
     )
   );
 }
-function GiddyUpTab({scores,setActiveTab,myOrder}){if(!scores.length)return h(Fragment,null,h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program")),h(LearnToPlaySection,null));const bets=buildBets(scores);if(!bets)return h(Fragment,null,h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses."),h(LearnToPlaySection,null));const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);
+function GiddyUpTab({scores,setActiveTab,myOrder,activeRace}){if(!scores.length)return h(Fragment,null,h("div",{style:{textAlign:"center",padding:"40px 20px",color:C.muted}},h("div",{style:{fontSize:40,marginBottom:12}},"🐴"),h("div",{style:{fontWeight:700,fontSize:16,color:C.text,marginBottom:8}},"No race loaded yet"),h("button",{onClick:()=>setActiveTab("upload"),style:{padding:"12px 24px",background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:14,fontWeight:700,cursor:"pointer"}},"📷 Upload Race Program")),h(LearnToPlaySection,null));const bets=buildBets(scores);if(!bets)return h(Fragment,null,h("div",{style:{padding:20,textAlign:"center",color:C.muted}},"Need at least 3 horses."),h(LearnToPlaySection,null));const{gap,tightRace,bomb,smartWin,smartExacta}=bets,top=scores[0],second=scores[1],third=scores[2],conf=getConf(gap);const report=buildRaceReport(scores,activeRace);
   function SL(text){return h("div",{style:{fontSize:11,fontWeight:700,color:C.text,letterSpacing:2,textTransform:"uppercase",margin:"20px 0 10px",borderBottom:"1px solid "+C.border,paddingBottom:6}},text);}function BC(icon,title,horses,note,highlight){
   const list=Array.isArray(horses)?horses:[horses];
   return h("div",{style:{background:highlight?"#fffbf0":"#fff",border:"1px solid "+(highlight?"#e8d48a":C.border),borderRadius:12,padding:"14px 16px",marginBottom:8}},
@@ -1208,7 +1307,7 @@ function GiddyUpTab({scores,setActiveTab,myOrder}){if(!scores.length)return h(Fr
     "Smart Money highlights value horses at long odds worth considering.",
     "The Bomb is a longshot with a real angle — it won't show up in every race, only when our algorithm finds a genuine value angle worth flagging.",
     "Always verify current odds at the window before betting.",
-  ]}),h(TicketBuilder,{scores,myOrder}),SL("Suggested Bets"),h("div",{style:{background:"#fff",border:"2px solid #e8d48a",borderRadius:14,padding:"14px 16px",marginBottom:10}},h("div",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"🐴 GiddyUp Silks Choice"),h("div",{style:{fontSize:22,fontWeight:900,color:C.navy,marginBottom:2}},"#"+top.number+" "+top.name),h("div",{style:{fontSize:12,color:C.muted,marginBottom:10}},top.odds+" · Score: "+top.totalScore+" · "+top.jockey),h("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:4}},h("span",{style:{fontSize:10,color:C.muted}},"Confidence:"),h("div",{style:{display:"flex",gap:2}},[...Array(10)].map((_,i)=>h("div",{key:i,style:{width:8,height:8,borderRadius:2,background:i<conf.bars?conf.color:"#e2e8f0"}}))),h("span",{style:{fontSize:10,color:conf.color,fontWeight:700}},conf.label))),SL("Win Bets"),BC("🥇","Best Bet — Win",top,"Scored "+top.totalScore+" — best in a field of "+scores.length+". "+(gap>=50?"Clear top choice, leads by "+gap+" points.":gap>=25?"Solid edge, "+gap+" points clear of #"+second.number+".":"Tight race — only "+gap+" points separate 1st and 2nd."),true),smartWin&&smartWin.number!==top.number&&BC("💎","Smart Money",smartWin,"#"+smartWin.number+" is "+smartWin.odds+" but scored "+smartWin.totalScore+" — only "+(smartWin.totalScore-top.totalScore)+" points off our top pick. Real value here."),SL("Exacta"),BC("📦","Box "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap<20?"Tight field — boxing gives you 6 combinations and covers all likely orders.":"Top 3 boxed. These three stand clear of the field."),SL("Trifecta"),BC("🎲","Straight "+top.number+"/"+second.number+"/"+third.number,[top,second,third],gap>=40?"High confidence — straight trifecta is the play.":"Competitive field — consider boxing rather than straight."),bets.superfecta&&scores.length>=4&&h(Fragment,null,SL("Superfecta"),BC("💎","Top 4 Box",bets.superfecta,"Top 4 in any order. Small bet, big potential payout.")),bomb&&h(Fragment,null,SL("The Bomb"),h("div",{style:{background:"#fff8f0",border:"2px solid #f59e42",borderRadius:14,padding:"14px 16px"}},h("div",{style:{fontSize:10,fontWeight:700,color:"#c2410c",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"💥 Longshot Alert"),h("div",{style:{fontSize:20,fontWeight:900,color:"#92400e",marginBottom:3}},"#"+bomb.number+" "+bomb.name),h("div",{style:{fontSize:12,color:"#a16207",marginBottom:4}},bomb.odds+" · Score: "+bomb.totalScore),h("div",{style:{fontSize:12,color:"#78350f",lineHeight:1.6}},"Within "+(bomb.totalScore-top.totalScore)+" points of our top pick. Algorithm found a real angle. Small wager only."))),h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px",marginTop:12,fontSize:11,color:C.muted,textAlign:"center"}},"Always check current odds. Bet responsibly."),h(LearnToPlaySection,null));}
+  ]}),h(TicketBuilder,{scores,myOrder}),SL("Suggested Bets"),h("div",{style:{background:"#fff",border:"2px solid #e8d48a",borderRadius:14,padding:"14px 16px",marginBottom:10}},h("div",{style:{fontSize:10,fontWeight:700,color:"#a07830",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"🐴 GiddyUp Silks Choice"),h("div",{style:{fontSize:22,fontWeight:900,color:C.navy,marginBottom:2}},"#"+top.number+" "+top.name),h("div",{style:{fontSize:12,color:C.muted,marginBottom:10}},top.odds+" · Score: "+top.totalScore+" · "+top.jockey),h("div",{style:{display:"flex",alignItems:"center",gap:6,marginTop:4}},h("span",{style:{fontSize:10,color:C.muted}},"Confidence:"),h("div",{style:{display:"flex",gap:2}},[...Array(10)].map((_,i)=>h("div",{key:i,style:{width:8,height:8,borderRadius:2,background:i<conf.bars?conf.color:"#e2e8f0"}}))),h("span",{style:{fontSize:10,color:conf.color,fontWeight:700}},conf.label))),SL("Win Bets"),BC("🥇","Best Bet — Win",top,"Scored "+top.totalScore+" — best in a field of "+scores.length+". "+(gap>=50?"Clear top choice, leads by "+gap+" points.":gap>=25?"Solid edge, "+gap+" points clear of #"+second.number+".":"Tight race — only "+gap+" points separate 1st and 2nd."),true),smartWin&&smartWin.number!==top.number&&BC("💎","Smart Money",smartWin,"#"+smartWin.number+" is "+smartWin.odds+" but scored "+smartWin.totalScore+" — only "+(smartWin.totalScore-top.totalScore)+" points off our top pick. Real value here."),report.length>0&&h(Fragment,null,SL("Race Report"),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10}},report.map((f,i)=>reportEntry(f,i,report.length)))),h("div",{style:{textAlign:"center",margin:"4px 0 10px"}},h("div",{style:{fontSize:12,color:C.muted}},"For Exacta, Trifecta, and Superfecta combos, use 🎟️ Build Your Ticket above.")),bomb&&h(Fragment,null,SL("The Bomb"),h("div",{style:{background:"#fff8f0",border:"2px solid #f59e42",borderRadius:14,padding:"14px 16px"}},h("div",{style:{fontSize:10,fontWeight:700,color:"#c2410c",letterSpacing:2,textTransform:"uppercase",marginBottom:6}},"💥 Longshot Alert"),h("div",{style:{fontSize:20,fontWeight:900,color:"#92400e",marginBottom:3}},"#"+bomb.number+" "+bomb.name),h("div",{style:{fontSize:12,color:"#a16207",marginBottom:4}},bomb.odds+" · Score: "+bomb.totalScore),h("div",{style:{fontSize:12,color:"#78350f",lineHeight:1.6}},"Within "+(bomb.totalScore-top.totalScore)+" points of our top pick. Algorithm found a real angle. Small wager only."))),h("div",{style:{background:"#f8fafc",border:"1px solid "+C.border,borderRadius:10,padding:"10px",marginTop:12,fontSize:11,color:C.muted,textAlign:"center"}},"Always check current odds. Bet responsibly."),h(LearnToPlaySection,null));}
 function TicketBuilder({scores,myOrder}){
   const[sel,setSel]=useState({1:[],2:[],3:[],4:[]});
   const[expanded,setExpanded]=useState(false);
@@ -1939,7 +2038,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       activeTab==="upload"&&h(UploadTab,{races,setRaces,setActiveTab,setHorses:hs=>{setHorses(hs);setScratched({});},setActiveRace,setWeights,setLocks,angleMode,silksUser,giddyupPresets}),
       activeTab==="angles"&&h(AnglesTab,{weights,setWeights,locks,setLocks,activeRace,setActiveRace,setActiveTab,horses,angleMode,setAngleMode,silksUser,onSaveAngles:handleSaveAngles,giddyupPresets,setGiddyupPresets}),
       activeTab==="rankings"&&h(RankingsTab,{scores,weights,setWeights,locks,setLocks,activeRaceData,activeRace,setActiveRace,angleMode,setAngleMode,silksUser,giddyupPresets,setActiveTab,raceName,raceMeta,horses,setHorses,scratched,setScratched,myOrder,setMyOrder}),
-      activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder}),
+      activeTab==="giddyup"&&h(GiddyUpTab,{scores,setActiveTab,myOrder,activeRace}),
       activeTab==="play"&&h(PlayTab,{scores,raceName,myOrder,raceNumber:activeRaceObj?activeRaceObj.raceNumber:null,silksUser,numRacesToday:races.length}),
       activeTab==="diary"&&h(DiaryTab,{silksUser}),
       activeTab==="settings"&&h(SettingsTab,{silksUser,setSilksUser,onLogout:handleSilksLogout})));}
