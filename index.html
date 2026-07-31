@@ -268,17 +268,17 @@ function classFlag(horse,todayRaceType){
   const bestRecentStakes=starts.filter(p=>classRankOf(p.raceType)>=5).sort((a,b)=>classRankOf(b.raceType)-classRankOf(a.raceType))[0];
 
   if(bestRecentStakes&&todayRank<=3){
-    return{horse:horse.number,rule:"class_rise_stakes",polarity:"positive",strength:90,
+    return{horse:horse.number,name:horse.name,rule:"class_rise_stakes",polarity:"positive",strength:90,
       text:"Ran "+ordinal(bestRecentStakes.finishPosition)+" in a "+(bestRecentStakes.purse?("$"+bestRecentStakes.purse+" "):"")+"stakes"+(bestRecentStakes.daysAgo?(" ("+Math.round(bestRecentStakes.daysAgo/30)+" months back)"):"")+" — tougher company than anything else in this field has seen."};
   }
   if(todayRank<avgRank){
     const lastFinish=recent[0].finishPosition;
     if(lastFinish&&lastFinish<=3){
-      return{horse:horse.number,rule:"class_drop_live",polarity:"positive",strength:70,
+      return{horse:horse.number,name:horse.name,rule:"class_drop_live",polarity:"positive",strength:70,
         text:"Dropping in class off a "+ordinal(lastFinish)+"-place finish — a live class drop, not a desperation move."};
     }
     if(recent[0].daysAgo&&recent[0].daysAgo<21){
-      return{horse:horse.number,rule:"class_drop_caution",polarity:"caution",strength:40,
+      return{horse:horse.number,name:horse.name,rule:"class_drop_caution",polarity:"caution",strength:40,
         text:"Dropping in class off a beaten effort just "+recent[0].daysAgo+" days ago — worth checking for trouble in that trip before reading this as a positive move."};
     }
   }
@@ -343,7 +343,11 @@ function reportEntry(f,i,total){
       )
     );
   }
+  const silk=SILK_COLORS[f.horse]||SILK_COLORS.default;
   return h("div",{key:i,style:{borderLeft:"3px solid "+(f.polarity==="caution"?"#f59e42":C.gold),paddingLeft:10,marginBottom:i<total-1?10:0}},
+    h("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:4}},
+      h("div",{style:{width:24,height:24,borderRadius:6,background:silk.bg,color:silk.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:11,border:"1px solid rgba(0,0,0,0.12)",flexShrink:0}},f.horse),
+      h("div",{style:{fontSize:13,fontWeight:700,color:C.navy}},f.name)),
     h("div",{style:{fontSize:13,color:C.navy,lineHeight:1.6}},f.text),
     f.caution&&h("div",{style:{fontSize:12,color:"#c2410c",marginTop:4}},f.caution)
   );
