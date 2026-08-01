@@ -358,12 +358,12 @@ function tellForHorse(horse,horses,raceType,raceMeta){
   }
   const st=horse.stats||{};
   const starts=horse.pastStarts||[];
-  if(st.workouts>=85)notes.push({strength:55,text:"Sharp recent workout pattern stands out — one of the strongest drills in the field heading into today."});
+  if(st.workouts>=75)notes.push({strength:55,text:"Sharp recent workout pattern stands out — one of the stronger drills in the field heading into today."});
   const styleVals=horses.map(h=>(h.stats||{}).style||0);
   const maxStyle=Math.max(...styleVals);
   if(st.style===maxStyle&&st.style>0&&(styleVals.filter(v=>v===maxStyle).length===1)&&(maxStyle-[...styleVals].sort((a,b)=>b-a)[1]>=15))
     notes.push({strength:60,text:"Looks like the only true pace in this field — if nothing else presses, this one could control the race from the front."});
-  if(st.combo>=85&&st.combo>(st.jockey||0)&&st.combo>(st.trainer||0))
+  if(st.combo>=75&&st.combo>(st.jockey||0)&&st.combo>(st.trainer||0))
     notes.push({strength:50,text:"This trainer/jockey combination has quietly outperformed what either name does alone."});
   const cold=coldJockeyModifier(horse);
   if(cold)notes.push({strength:45,text:cold});
@@ -384,15 +384,15 @@ function tellForHorse(horse,horses,raceType,raceMeta){
   // Pace collapse — several need-the-lead types entered, this one profiles
   // as a closer who could inherit the trip.
   const paceCount=horses.filter(h=>((h.stats||{}).style||0)>=70).length;
-  if(paceCount>=3&&st.style<55)
+  if(paceCount>=3&&st.style<60)
     notes.push({strength:50,text:"Several need-the-lead types are entered today — if they contest the pace early, a closer like this one could get the run of the race."});
 
   // Class without speed — faced tougher company than the raw figures show.
-  if((st.class||0)-(st.speed||0)>=20)
+  if((st.class||0)-(st.speed||0)>=15)
     notes.push({strength:45,text:"Been facing tougher company than the raw speed figures reflect — a class edge here more than a figure edge."});
 
   // Equipment rating well clear of the field.
-  if(st.equipment>=88)
+  if(st.equipment>=80)
     notes.push({strength:35,text:"Equipment setup rates as one of the strongest in the field today."});
 
   // Live longshot trainer pattern — low-win barn, but today's horse
@@ -421,11 +421,11 @@ function tellForHorse(horse,horses,raceType,raceMeta){
   // Hidden improving figures — speed figures trending up across recent
   // starts while the public prices off the last number alone.
   const figs=starts.slice(0,4).map(p=>p.speedFigure).filter(v=>v!=null).reverse();
-  if(figs.length>=3&&figs.every((v,i)=>i===0||v>=figs[i-1])&&(figs[figs.length-1]-figs[0])>=5)
+  if(figs.length>=3&&figs.every((v,i)=>i===0||v>=figs[i-1])&&(figs[figs.length-1]-figs[0])>=4)
     notes.push({strength:50,text:"Speed figures have been climbing steadily across recent starts — the improving trend matters more here than the last-out number alone."});
 
   // Rider loyalty — same jockey stays aboard through a bad finish.
-  if(starts[0]&&starts[1]&&starts[0].jockey&&starts[0].jockey===starts[1].jockey&&starts.slice(0,2).some(p=>p.finishPosition&&p.finishPosition>=5))
+  if(starts[0]&&starts[1]&&starts[0].jockey&&starts[0].jockey===starts[1].jockey&&starts.slice(0,2).some(p=>p.finishPosition&&p.finishPosition>=4))
     notes.push({strength:40,text:"Same jockey has stayed aboard through a rough finish recently — a sign of continued confidence from the rider."});
 
   // First-time Lasix.
@@ -434,7 +434,7 @@ function tellForHorse(horse,horses,raceType,raceMeta){
 
   // Hidden troubled trip — a bad-looking finish with a trip excuse attached.
   const troubleWords=["check","steadi","bump","box","clip","wide","block","stumbl"];
-  const troubled=starts.slice(0,3).find(p=>p.comment&&p.finishPosition&&p.finishPosition>=5&&troubleWords.some(w=>p.comment.toLowerCase().indexOf(w)>=0));
+  const troubled=starts.slice(0,3).find(p=>p.comment&&p.finishPosition&&p.finishPosition>=4&&troubleWords.some(w=>p.comment.toLowerCase().indexOf(w)>=0));
   if(troubled)
     notes.push({strength:55,text:"That "+ordinal(troubled.finishPosition)+"-place finish came with trouble in the trip ("+troubled.comment+") — likely a better performance than the raw result shows."});
 
