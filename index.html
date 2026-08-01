@@ -269,7 +269,7 @@ function classFlag(horse,todayRaceType){
 
   if(bestRecentStakes&&todayRank<=3){
     return{horse:horse.number,name:horse.name,rule:"class_rise_stakes",polarity:"positive",strength:90,
-      text:"Ran "+ordinal(bestRecentStakes.finishPosition)+" in a "+(bestRecentStakes.purse?("$"+bestRecentStakes.purse+" "):"")+"stakes"+(bestRecentStakes.daysAgo?(" ("+Math.round(bestRecentStakes.daysAgo/30)+" months back)"):"")+" — tougher company than anything else in this field has seen."};
+      text:"Ran "+ordinal(bestRecentStakes.finishPosition)+" in a "+(bestRecentStakes.purse?("$"+bestRecentStakes.purse+" "):"")+"stakes"+(bestRecentStakes.daysAgo?(" ("+Math.round(bestRecentStakes.daysAgo/30)+" month"+(Math.round(bestRecentStakes.daysAgo/30)===1?"":"s")+" back)"):"")+" — tougher company than anything else in this field has seen."};
   }
   if(todayRank<avgRank){
     const lastFinish=recent[0].finishPosition;
