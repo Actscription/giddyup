@@ -330,7 +330,23 @@ function buildRaceReport(horses,raceType){
 
 // Per-horse narrative tell — The Tell Report. Qualitative only, never
 // feeds Angle Points. Returns {text, hasTell} for one horse.
-function tellForHorse(horse,horses,raceType){
+function parseFurlongs(s){
+  if(!s)return null;
+  s=String(s).toLowerCase();
+  if(s.indexOf("mile")>=0||/\bm\b/.test(s)){
+    const whole=s.match(/(\d+)\s*(?:\d\/\d)?\s*m/);
+    const frac=s.match(/(\d+)\s*\/\s*(\d+)/);
+    let n=(whole?parseFloat(whole[1]):0)+(frac?parseFloat(frac[1])/parseFloat(frac[2]):0);
+    if(!n){const only=s.match(/([\d.]+)/);n=only?parseFloat(only[1]):0;}
+    return n?n*8:null;
+  }
+  const fm=s.match(/([\d.]+)\s*f/);
+  if(fm)return parseFloat(fm[1]);
+  const n=s.match(/([\d.]+)/);
+  return n?parseFloat(n[1]):null;
+}
+
+function tellForHorse(horse,horses,raceType,raceMeta){
   const notes=[];
   const cf=classFlag(horse,raceType);
   if(cf)notes.push({strength:cf.strength,text:cf.text});
@@ -341,6 +357,7 @@ function tellForHorse(horse,horses,raceType){
     if(mine>best)notes.push({strength:65,text:"Same trainer as "+barnMates.map(h=>"#"+h.number).join("/")+" — this one carries the stronger jockey, a subtle sign the barn likes this one's chances better."});
   }
   const st=horse.stats||{};
+  const starts=horse.pastStarts||[];
   if(st.workouts>=85)notes.push({strength:55,text:"Sharp recent workout pattern stands out — one of the strongest drills in the field heading into today."});
   const styleVals=horses.map(h=>(h.stats||{}).style||0);
   const maxStyle=Math.max(...styleVals);
@@ -350,14 +367,85 @@ function tellForHorse(horse,horses,raceType){
     notes.push({strength:50,text:"This trainer/jockey combination has quietly outperformed what either name does alone."});
   const cold=coldJockeyModifier(horse);
   if(cold)notes.push({strength:45,text:cold});
+
+  // Protected drop — ran allowance/optional claiming, never actually
+  // entered for a claiming tag.
+  const raceTypes=starts.map(p=>p.raceType);
+  if(raceTypes.some(t=>t==="allowance"||t==="optional claiming")&&!raceTypes.some(t=>t==="claiming"||t==="maiden claiming"))
+    notes.push({strength:55,text:"Has run in allowance or optional claiming company without ever being entered for a claiming tag — a protected horse, often spotted to win when it finally drops in."});
+
+  // Layoff cycle — second/third start back off a break, using the gaps
+  // between consecutive past starts.
+  if(starts[0]&&starts[1]&&(starts[1].daysAgo-starts[0].daysAgo)>=60)
+    notes.push({strength:45,text:"Second start back off a layoff — often the sharpest race in a trainer's typical form cycle."});
+  else if(starts[0]&&starts[1]&&starts[2]&&(starts[0].daysAgo-starts[1].daysAgo)<45&&(starts[1].daysAgo-starts[2].daysAgo)>=60)
+    notes.push({strength:40,text:"Third start off a layoff — some barns build deliberately toward this exact race."});
+
+  // Pace collapse — several need-the-lead types entered, this one profiles
+  // as a closer who could inherit the trip.
+  const paceCount=horses.filter(h=>((h.stats||{}).style||0)>=70).length;
+  if(paceCount>=3&&st.style<55)
+    notes.push({strength:50,text:"Several need-the-lead types are entered today — if they contest the pace early, a closer like this one could get the run of the race."});
+
+  // Class without speed — faced tougher company than the raw figures show.
+  if((st.class||0)-(st.speed||0)>=20)
+    notes.push({strength:45,text:"Been facing tougher company than the raw speed figures reflect — a class edge here more than a figure edge."});
+
+  // Equipment rating well clear of the field.
+  if(st.equipment>=88)
+    notes.push({strength:35,text:"Equipment setup rates as one of the strongest in the field today."});
+
+  // Live longshot trainer pattern — low-win barn, but today's horse
+  // matches their known live signature (class drop + sharp works).
+  if(horse.trainerMeet&&horse.trainerMeet.starts>=10&&horse.trainerMeet.winPct<15&&(st.class||0)>=70&&(st.workouts||0)>=75)
+    notes.push({strength:40,text:"This barn doesn't win often, but the class drop and sharp works here match their known live-longshot pattern — worth a look at a price."});
+
+  // Return to best distance — proven at today's trip, recent starts away
+  // from it.
+  const todayF=parseFurlongs(raceMeta&&raceMeta.distance);
+  if(todayF){
+    const goodAtToday=starts.some(p=>{const f=parseFurlongs(p.distance);return f&&Math.abs(f-todayF)<=0.5&&p.finishPosition&&p.finishPosition<=2;});
+    const recentAway=starts.length>=2&&starts.slice(0,2).every(p=>{const f=parseFurlongs(p.distance);return f&&Math.abs(f-todayF)>1.5;});
+    if(goodAtToday&&recentAway)
+      notes.push({strength:50,text:"Has won or run second at today's distance before, then drifted away from it in recent starts — a return to a proven trip."});
+  }
+
+  // Surface change — switching onto a surface it's already shown ability on.
+  const todaySurface=raceMeta&&raceMeta.surface;
+  if(todaySurface&&starts[0]&&starts[0].surface&&starts[0].surface.toLowerCase()!==todaySurface.toLowerCase()){
+    const provenOnToday=starts.some(p=>p.surface&&p.surface.toLowerCase()===todaySurface.toLowerCase()&&p.finishPosition&&p.finishPosition<=3);
+    if(provenOnToday)
+      notes.push({strength:45,text:"Switching to "+todaySurface+" today after running on "+starts[0].surface+" last out — has performed well on "+todaySurface+" before."});
+  }
+
+  // Hidden improving figures — speed figures trending up across recent
+  // starts while the public prices off the last number alone.
+  const figs=starts.slice(0,4).map(p=>p.speedFigure).filter(v=>v!=null).reverse();
+  if(figs.length>=3&&figs.every((v,i)=>i===0||v>=figs[i-1])&&(figs[figs.length-1]-figs[0])>=5)
+    notes.push({strength:50,text:"Speed figures have been climbing steadily across recent starts — the improving trend matters more here than the last-out number alone."});
+
+  // Rider loyalty — same jockey stays aboard through a bad finish.
+  if(starts[0]&&starts[1]&&starts[0].jockey&&starts[0].jockey===starts[1].jockey&&starts.slice(0,2).some(p=>p.finishPosition&&p.finishPosition>=5))
+    notes.push({strength:40,text:"Same jockey has stayed aboard through a rough finish recently — a sign of continued confidence from the rider."});
+
+  // First-time Lasix.
+  if(horse.firstLasix)
+    notes.push({strength:40,text:"First time on Lasix today — often brings a real physical improvement, especially in younger horses."});
+
+  // Hidden troubled trip — a bad-looking finish with a trip excuse attached.
+  const troubleWords=["check","steadi","bump","box","clip","wide","block","stumbl"];
+  const troubled=starts.slice(0,3).find(p=>p.comment&&p.finishPosition&&p.finishPosition>=5&&troubleWords.some(w=>p.comment.toLowerCase().indexOf(w)>=0));
+  if(troubled)
+    notes.push({strength:55,text:"That "+ordinal(troubled.finishPosition)+"-place finish came with trouble in the trip ("+troubled.comment+") — likely a better performance than the raw result shows."});
+
   if(!notes.length)return{text:"The numbers Tell the story here.",hasTell:false};
   notes.sort((a,b)=>b.strength-a.strength);
   return{text:notes.slice(0,2).map(n=>n.text).join(" "),hasTell:true};
 }
 
-function TellCard({horse,rank,horses,raceType}){
+function TellCard({horse,rank,horses,raceType,raceMeta}){
   const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
-  const tell=tellForHorse(horse,horses,raceType);
+  const tell=tellForHorse(horse,horses,raceType,raceMeta||{});
   const bio=[horse.age?horse.age+"yo":null,horse.bred||null].filter(Boolean).join(" · ");
   return h("div",{style:{background:rank===0?"linear-gradient(135deg,#fffbf0,#fff8e6)":"#fff",border:rank===0?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10}},
     h("div",{style:{display:"flex",alignItems:"center",gap:12,marginBottom:8}},
@@ -650,10 +738,10 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
           :{type:"image",source:{type:"base64",media_type:pg.mediaType,data:pg.base64}}
       );
       const isMulti=pageCount>1;
-      const meetRecordSchema=" Each horse's card also prints the trainer's and jockey's current-meet record right next to their names, formatted like '( 2-0-0-0 ) 0%' — that's (Starts-1st-2nd-3rd) then Win%. Extract this into each horse's object as jockeyMeet:{starts,wins,winPct} and trainerMeet:{starts,wins,winPct}, using the numbers exactly as printed (winPct as an integer, e.g. 17 not 0.17). If a horse's card doesn't show this line, omit jockeyMeet/trainerMeet for that horse rather than guessing. Each horse's card also prints age/sex and breeding info near the top of its entry (e.g. 'B. c. 3' or 'Ch. f. 4' followed by sire/dam/breeder or a state-bred designation). age is the horse's age as an integer parsed from that line (e.g. 3), or null if not printed. bred is the breeding location exactly as printed — usually a state or province abbreviation/name near the age line (e.g. 'Alberta-bred', 'KY', 'Ontario') — as a short string, or empty string if not printed. Do not guess age or bred from context; only extract what is explicitly printed.";
+      const meetRecordSchema=" Each horse's card also prints the trainer's and jockey's current-meet record right next to their names, formatted like '( 2-0-0-0 ) 0%' — that's (Starts-1st-2nd-3rd) then Win%. Extract this into each horse's object as jockeyMeet:{starts,wins,winPct} and trainerMeet:{starts,wins,winPct}, using the numbers exactly as printed (winPct as an integer, e.g. 17 not 0.17). If a horse's card doesn't show this line, omit jockeyMeet/trainerMeet for that horse rather than guessing. Each horse's card also prints age/sex and breeding info near the top of its entry (e.g. 'B. c. 3' or 'Ch. f. 4' followed by sire/dam/breeder or a state-bred designation). age is the horse's age as an integer parsed from that line (e.g. 3), or null if not printed. bred is the breeding location exactly as printed — usually a state or province abbreviation/name near the age line (e.g. 'Alberta-bred', 'KY', 'Ontario') — as a short string, or empty string if not printed. Do not guess age or bred from context; only extract what is explicitly printed. firstLasix is true only if the program explicitly marks this as the horse's first time racing on Lasix (often shown as 'L1' or noted in text near the horse's name on today's entry), otherwise false — do not infer this from a past-performance line. Each past-performance line also typically prints, for that specific past race: the distance run (e.g. '6f', '1 1/16m'), the surface (e.g. 'Dirt', 'Turf', 'Synthetic', 'AW'), the jockey who rode that day, and a speed figure (Beyer or track-specific number). Some programs also print a short trip/running-line comment for a past race (e.g. 'checked', 'steadied', '5 wide', 'bumped', 'boxed in', 'clipped heels'). Extract these into each pastStarts entry as distance, surface, jockey, speedFigure (a number, or null if not printed), and comment (the trip comment text as printed, or empty string if none). Extract only what is explicitly printed for that specific line — never infer or carry a value forward from a different start.";
       const promptText=isMulti
-        ?"You have been given "+pageCount+" files for the same race. One is a horse racing past performances card (DRF, Equibase, or similar). The others may include supplementary data such as speed figure reports, handicapping sheets, or other race-related documents from any provider. Use ALL files together to build the most complete and accurate picture of each horse — where hard numbers exist in any file (speed figures, jockey win %, trainer win %, pace figures etc.) prefer those over estimates. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,age,bred,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias},pastStarts:[{date,raceType,purse,finishPosition,daysAgo}]}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100. pastStarts is each past-performance line printed for the horse, most recent first — raceType is one of 'stakes','allowance','claiming','maiden claiming','maiden','optional claiming' based on the condition text printed (e.g. 'Stk - 3YOSpring - 11k' is stakes, 'Mcl 8000' is maiden claiming, 'Msw 6800' or 'Mdn 6800' is maiden). purse is the dollar amount printed for that condition if shown, else null. finishPosition is the horse's placing in that start as an integer. daysAgo is approximate days between that start's date and today, computed from the printed date. If no past performance lines are printed for a horse (first-time starter), return an empty array."+meetRecordSchema
-        :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,horses:[{number,name,jockey,trainer,odds,age,bred,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias},pastStarts:[{date,raceType,purse,finishPosition,daysAgo}]}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100. pastStarts is each past-performance line printed for the horse, most recent first — raceType is one of 'stakes','allowance','claiming','maiden claiming','maiden','optional claiming' based on the condition text printed (e.g. 'Stk - 3YOSpring - 11k' is stakes, 'Mcl 8000' is maiden claiming, 'Msw 6800' or 'Mdn 6800' is maiden). purse is the dollar amount printed for that condition if shown, else null. finishPosition is the horse's placing in that start as an integer. daysAgo is approximate days between that start's date and today, computed from the printed date. If no past performance lines are printed for a horse (first-time starter), return an empty array."+meetRecordSchema;
+        ?"You have been given "+pageCount+" files for the same race. One is a horse racing past performances card (DRF, Equibase, or similar). The others may include supplementary data such as speed figure reports, handicapping sheets, or other race-related documents from any provider. Use ALL files together to build the most complete and accurate picture of each horse — where hard numbers exist in any file (speed figures, jockey win %, trainer win %, pace figures etc.) prefer those over estimates. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,raceSurface:string,horses:[{number,name,jockey,trainer,odds,age,bred,firstLasix,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias},pastStarts:[{date,raceType,purse,finishPosition,daysAgo,distance,surface,jockey,speedFigure,comment}]}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceSurface is the racing surface exactly as printed (e.g. 'Dirt', 'Turf', 'Synthetic', 'All Weather') or empty string if not printed. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100. pastStarts is each past-performance line printed for the horse, most recent first — raceType is one of 'stakes','allowance','claiming','maiden claiming','maiden','optional claiming' based on the condition text printed (e.g. 'Stk - 3YOSpring - 11k' is stakes, 'Mcl 8000' is maiden claiming, 'Msw 6800' or 'Mdn 6800' is maiden). purse is the dollar amount printed for that condition if shown, else null. finishPosition is the horse's placing in that start as an integer. daysAgo is approximate days between that start's date and today, computed from the printed date. If no past performance lines are printed for a horse (first-time starter), return an empty array."+meetRecordSchema
+        :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,raceSurface:string,horses:[{number,name,jockey,trainer,odds,age,bred,firstLasix,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias},pastStarts:[{date,raceType,purse,finishPosition,daysAgo,distance,surface,jockey,speedFigure,comment}]}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceSurface is the racing surface exactly as printed (e.g. 'Dirt', 'Turf', 'Synthetic', 'All Weather') or empty string if not printed. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100. pastStarts is each past-performance line printed for the horse, most recent first — raceType is one of 'stakes','allowance','claiming','maiden claiming','maiden','optional claiming' based on the condition text printed (e.g. 'Stk - 3YOSpring - 11k' is stakes, 'Mcl 8000' is maiden claiming, 'Msw 6800' or 'Mdn 6800' is maiden). purse is the dollar amount printed for that condition if shown, else null. finishPosition is the horse's placing in that start as an integer. daysAgo is approximate days between that start's date and today, computed from the printed date. If no past performance lines are printed for a horse (first-time starter), return an empty array."+meetRecordSchema;
       contentArr.push({type:"text",text:promptText});
 
       const response=await fetch("https://giddyup-proxy.kleskun.workers.dev",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:8000,messages:[{role:"user",content:contentArr}]})});
@@ -1264,7 +1352,7 @@ function RankingsTab({scores,weights,setWeights,locks,setLocks,activeRaceData,ac
         h("div",{style:{color:C.muted,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}},"Top Pick · "+activeRaceData.icon+" "+activeRaceData.label),
         h("div",{style:{fontSize:21,fontWeight:900,color:C.gold}},scores[0].name),
         h("div",{style:{color:"#64748b",fontSize:12,marginTop:2}},"Score "+scores[0].totalScore+" · "+scores[0].odds+" · "+scores[0].jockey))),
-    ...(rankMode==='tells'?scores.map((horse,i)=>h(TellCard,{key:horse.number,horse,rank:i,horses:scores,raceType:activeRace})):orderedScores.map((horse,i)=>h("div",{key:horse.number},h(HorseCard,{horse,rank:i,weights,allScores:scores,activeRace,onTap:hs=>setActionHorse(hs),dragHandle:rankMode==='mine'?renderRankArrows(i,orderedScores.length):null})))),
+    ...(rankMode==='tells'?scores.map((horse,i)=>h(TellCard,{key:horse.number,horse,rank:i,horses:scores,raceType:activeRace,raceMeta})):orderedScores.map((horse,i)=>h("div",{key:horse.number},h(HorseCard,{horse,rank:i,weights,allScores:scores,activeRace,onTap:hs=>setActionHorse(hs),dragHandle:rankMode==='mine'?renderRankArrows(i,orderedScores.length):null})))),
     scratchCount>0&&h("div",null,
       h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"16px 0 8px",display:"flex",alignItems:"center",gap:6}},h("span",null,"🚫 Scratches"),h("span",null,"("+scratchCount+")")),
       ...scratchedHorses.map(hs=>h(ScratchedCard,{key:hs.number,horse:hs,onTap:hr=>setActionHorse(hr)}))),
