@@ -574,6 +574,33 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
         const tg=tintFor(bd.rank);
         return h("div",{key:f.id,style:{background:tg.bg,border:tg.bd,borderLeft:tg.stripe||tg.bd,borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:tg.fg,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:3}},bd.close&&h("span",{title:"Too close to call — gap to the leader is inside the noise",style:{display:"inline-flex",alignItems:"center"}},h("span",{style:{width:10,height:10,borderRadius:"50%",background:C.gold,border:"1px solid #8a6f28",boxShadow:"inset 0 0 0 1.5px rgba(255,255,255,0.45)",display:"inline-block",flexShrink:0}})),bd.rank==null?"N/A":"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},bd.na?"No data in this field":"Stat: "+bd.rawStat),h("span",{style:{color:bd.na?tg.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))));
       }))));}
+function AngleTableView({scores,weights}){
+  const active=ALL_FACTORS.filter(f=>weights[f.id]>0);
+  if(!scores.length)return null;
+  return h("div",{style:{overflowX:"auto",WebkitOverflowScrolling:"touch",border:"1px solid "+C.border,borderRadius:12,marginBottom:16,background:"#fff"}},
+    h("table",{style:{borderCollapse:"collapse",fontSize:11,width:"100%"}},
+      h("thead",null,
+        h("tr",null,
+          h("th",{style:{position:"sticky",left:0,zIndex:2,background:"#fff",padding:"8px 6px",textAlign:"left",fontSize:9.5,fontWeight:700,color:C.muted,borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,minWidth:84,maxWidth:84}},"Angle"),
+          ...scores.map((horse,i)=>{
+            const rk=i+1,t=tintFor(rk<=3?rk:0),silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
+            return h("th",{key:horse.number,style:{padding:"6px 3px",textAlign:"center",borderBottom:"2px solid "+C.border,minWidth:40,background:"#fff"}},
+              h("div",{style:{width:24,height:24,borderRadius:"50%",background:t.bg,border:t.bd,color:t.fg,fontWeight:800,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 3px"}},rk),
+              h("div",{style:{width:20,height:14,borderRadius:4,background:silk.bg,color:silk.fg,fontWeight:900,fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto",border:silk.bg==="#ffffff"?"1px solid rgba(0,0,0,0.15)":"none"}},horse.number));
+          })),
+      ),
+      h("tbody",null,
+        active.map(f=>h("tr",{key:f.id},
+          h("td",{style:{position:"sticky",left:0,zIndex:1,background:"#fff",padding:"6px",fontSize:9.5,fontWeight:600,color:C.text,borderBottom:"1px solid "+C.border,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:84,maxWidth:84}},f.label),
+          ...scores.map(horse=>{
+            const bd=horse.breakdown[f.id],t=tintFor(bd?bd.rank:null);
+            return h("td",{key:horse.number,style:{textAlign:"center",padding:"6px 2px",borderBottom:"1px solid "+C.border,background:t.bg,borderLeft:t.stripe||"1px solid transparent"}},
+              h("span",{style:{color:t.fg,fontWeight:700,fontSize:11}},bd&&bd.rank!=null?bd.rank:"–"));
+          })
+        ))
+      )
+    ));
+}
 function ScratchedCard({horse,onTap}){
   return h("div",{style:{background:"#f8fafc",border:"1px dashed #cbd5e1",borderRadius:14,padding:"12px 16px",marginBottom:8,opacity:0.65,cursor:"pointer"},onClick:()=>onTap(horse)},
     h("div",{style:{display:"flex",alignItems:"center",gap:12}},
@@ -1349,19 +1376,23 @@ function RankingsTab({scores,weights,setWeights,locks,setLocks,activeRaceData,ac
       raceMeta.conditions&&h("div",{style:{fontSize:12.5,color:"#475569",lineHeight:1.5}},raceMeta.conditions)),
     scratchCount>0&&h("div",{style:{background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:10,padding:"8px 12px",marginBottom:10,fontSize:11,color:"#dc2626",display:"flex",alignItems:"center",gap:8}},h("span",null,"🚫"),h("span",null,scratchCount+" horse"+(scratchCount>1?"s":"")+" scratched — rankings updated")),
 
-    scores.length>0&&h("div",{style:{display:"flex",gap:8,marginBottom:10}},
-      h("button",{onClick:()=>setRankMode('giddyup'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='giddyup'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='giddyup'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='giddyup'?C.gold:C.muted}},"🐴 GiddyUp Rankings"),
-      h("button",{onClick:()=>setRankMode('tells'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='tells'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='tells'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='tells'?C.gold:C.muted}},"📜 The Tell Report"),
-      h("button",{onClick:()=>setRankMode('mine'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='mine'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='mine'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='mine'?C.gold:C.muted}},"⭐ My Custom Rankings")),
+    scores.length>0&&h("div",{style:{marginBottom:10}},
+      h("div",{style:{display:"flex",gap:8,marginBottom:8}},
+        h("button",{onClick:()=>setRankMode('giddyup'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='giddyup'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='giddyup'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='giddyup'?C.gold:C.muted}},"🐴 GiddyUp Rankings"),
+        h("button",{onClick:()=>setRankMode('mine'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='mine'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='mine'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='mine'?C.gold:C.muted}},"⭐ My Custom Rankings")),
+      h("div",{style:{display:"flex",gap:8}},
+        h("button",{onClick:()=>setRankMode('tells'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='tells'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='tells'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='tells'?C.gold:C.muted}},"📜 The Tell Report"),
+        h("button",{onClick:()=>setRankMode('table'),style:{flex:1,padding:"10px 8px",borderRadius:12,border:rankMode==='table'?"2px solid "+C.gold:"2px solid "+C.border,background:rankMode==='table'?"rgba(201,168,76,0.12)":"#fff",cursor:"pointer",fontWeight:800,fontSize:13,color:rankMode==='table'?C.gold:C.muted}},"📊 Table"))),
     rankMode==='mine'&&scores.length>0&&h("div",{style:{fontSize:11,color:"#a07830",marginBottom:10,display:"flex",alignItems:"center",gap:6}},h("span",null,"↕"),h("span",null,"Use the arrows to set your own order")),
 
-    scores.length>0&&h("div",{style:{background:"linear-gradient(135deg,#fffbf0,#fff8e6)",border:"2px solid "+C.gold,borderRadius:16,padding:"16px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14}},
+    scores.length>0&&rankMode!=='table'&&h("div",{style:{background:"linear-gradient(135deg,#fffbf0,#fff8e6)",border:"2px solid "+C.gold,borderRadius:16,padding:"16px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14}},
       h("div",{style:{fontSize:38}},"🏆"),
       h("div",{style:{flex:1}},
         h("div",{style:{color:C.muted,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:2}},"Top Pick · "+activeRaceData.icon+" "+activeRaceData.label),
         h("div",{style:{fontSize:21,fontWeight:900,color:C.gold}},scores[0].name),
         h("div",{style:{color:"#64748b",fontSize:12,marginTop:2}},"Score "+scores[0].totalScore+" · "+scores[0].odds+" · "+scores[0].jockey))),
-    ...(rankMode==='tells'?scores.map((horse,i)=>h(TellCard,{key:horse.number,horse,rank:i,horses:scores,raceType:activeRace,raceMeta})):orderedScores.map((horse,i)=>h("div",{key:horse.number},h(HorseCard,{horse,rank:i,weights,allScores:scores,activeRace,onTap:hs=>setActionHorse(hs),dragHandle:rankMode==='mine'?renderRankArrows(i,orderedScores.length):null})))),
+    rankMode==='table'&&h("div",{style:{fontSize:11,color:"#a07830",marginBottom:10,display:"flex",alignItems:"center",gap:6}},h("span",null,"↔"),h("span",null,"Scroll sideways to see every horse · columns ordered by GiddyUp rank")),
+    ...(rankMode==='table'?[h(AngleTableView,{key:"table",scores,weights})]:rankMode==='tells'?scores.map((horse,i)=>h(TellCard,{key:horse.number,horse,rank:i,horses:scores,raceType:activeRace,raceMeta})):orderedScores.map((horse,i)=>h("div",{key:horse.number},h(HorseCard,{horse,rank:i,weights,allScores:scores,activeRace,onTap:hs=>setActionHorse(hs),dragHandle:rankMode==='mine'?renderRankArrows(i,orderedScores.length):null})))),
     scratchCount>0&&h("div",null,
       h("div",{style:{fontSize:10,color:C.muted,letterSpacing:2,textTransform:"uppercase",margin:"16px 0 8px",display:"flex",alignItems:"center",gap:6}},h("span",null,"🚫 Scratches"),h("span",null,"("+scratchCount+")")),
       ...scratchedHorses.map(hs=>h(ScratchedCard,{key:hs.number,horse:hs,onTap:hr=>setActionHorse(hr)}))),
