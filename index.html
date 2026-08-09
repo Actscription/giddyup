@@ -598,6 +598,16 @@ function AngleTableView({scores,weights}){
               h("span",{style:{color:t.fg,fontWeight:700,fontSize:11}},bd&&bd.rank!=null?bd.rank:"–"));
           })
         ))
+      ),
+      h("tfoot",null,
+        h("tr",null,
+          h("td",{style:{position:"sticky",left:0,zIndex:1,background:C.navy,padding:"7px 6px",fontSize:9.5,fontWeight:800,color:C.gold,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"Total"),
+          ...scores.map(horse=>{
+            const total=active.reduce((sum,f)=>{const bd=horse.breakdown[f.id];return sum+(bd&&bd.rank!=null?bd.rank:0);},0);
+            return h("td",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",background:C.navy}},
+              h("span",{style:{color:C.gold,fontWeight:800,fontSize:12}},total));
+          })
+        )
       )
     ));
 }
