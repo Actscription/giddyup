@@ -10,13 +10,17 @@ const giddyupSupabase = supabase.createClient(GIDDYUP_SUPABASE_URL, GIDDYUP_SUPA
 
 const GiddyUpAuth = {
 
-  // Register a new user with email, password, username, city, real name
-  async register(email, password, username, city, realName) {
+  // Register a new user with email, password, username, city, real name.
+  // venueSlug is optional — set when the user signed up through a venue
+  // portal (e.g. giddyupsilks.app/brewhouse → venueSlug "brewhouse").
+  // Passed through as raw_user_meta_data so the profiles-row trigger can
+  // copy it into profiles.venue_slug at account creation.
+  async register(email, password, username, city, realName, venueSlug) {
     const { data, error } = await giddyupSupabase.auth.signUp({
       email,
       password,
       options: {
-        data: { username, city, real_name: realName }
+        data: { username, city, real_name: realName, venue_slug: venueSlug || null }
       }
     });
     if (error) return { success: false, error: error.message };
