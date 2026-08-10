@@ -2019,6 +2019,26 @@ function getVenueSlugFromPath(){
   if(slug)sessionStorage.setItem("giddyup_venue",slug);
 })();
 
+// ── VENUE PORTAL CONTENT ─────────────────────────────────────────
+// One entry per outlet. Add a new key here (matching its URL slug) to
+// give any future venue the same branded splash + message center —
+// no other code changes needed. Update the `messages` array any time
+// specials/dates change; takes effect on next deploy.
+const VENUE_PORTALS={
+  brewhouse:{
+    displayName:"Canadian Brewhouse",
+    messages:[
+      {label:"Pasta Race Day Special",detail:"Thursdays · $12.99"},
+      {label:"Fall Tournament kicks off",detail:"Sept 6"},
+      {label:"Weekly leaderboard resets",detail:"Sunday"}
+    ]
+  }
+};
+function getActiveVenue(){
+  const slug=sessionStorage.getItem("giddyup_venue");
+  return (slug&&VENUE_PORTALS[slug])?VENUE_PORTALS[slug]:null;
+}
+
 // ── AUTH SCREEN (Supabase) ──────────────────────────────────────
 function AuthScreen({mode,setMode,onAuthed}){
   const [u,setU]=useState(''),[rn,setRn]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
@@ -2201,10 +2221,14 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
     setShowSplash(true);
   }});
 
-  if(showSplash)return h("div",{style:{minHeight:"100vh",background:"#0a150a",backgroundImage:"url('Finish_Line.png')",backgroundSize:"cover",backgroundPosition:"center 35%",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}},
-    h("div",{style:{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 45%,rgba(0,0,0,0.88) 100%)"}}),h("div",{style:{position:"absolute",inset:0,background:"radial-gradient(ellipse 85% 40% at 50% 68%,rgba(255,180,60,0.38) 0%,rgba(255,120,20,0.18) 40%,transparent 70%)"}}),
+  if(showSplash){
+  const venue=getActiveVenue();
+  return h("div",{style:{minHeight:"100vh",background:"#0a150a",backgroundImage:"url('Finish_Line.png')",backgroundSize:"cover",backgroundPosition:"center 35%",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}},
+    h("div",{style:{position:"absolute",top:0,left:0,right:0,bottom:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 45%,rgba(0,0,0,0.88) 100%)"}}),h("div",{style:{position:"absolute",top:0,left:0,right:0,bottom:0,background:"radial-gradient(ellipse 85% 40% at 50% 68%,rgba(255,180,60,0.38) 0%,rgba(255,120,20,0.18) 40%,transparent 70%)"}}),
     h("div",{style:{position:"relative",zIndex:1,width:"100%",maxWidth:480,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"max(54px,env(safe-area-inset-top)) 28px 36px"}},
       h("div",{onClick:handleSilksLogout,style:{position:"absolute",top:14,right:14,zIndex:10,fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.85)",cursor:"pointer",background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:20,padding:"6px 14px"}},"Sign Out"),
+      venue&&h("div",{style:{textAlign:"center",marginBottom:4}},
+        h("div",{style:{fontSize:11,fontWeight:800,letterSpacing:3,color:C.gold,textTransform:"uppercase",textShadow:"0 2px 8px rgba(0,0,0,0.85)"}},venue.displayName)),
       h("div",{style:{textAlign:"center",marginBottom:6}},
         h("div",{style:{fontSize:54,fontWeight:900,color:"#ffffff",letterSpacing:4,lineHeight:1,textShadow:"0 2px 24px rgba(0,0,0,0.9)"}},
           h("span",{style:{color:"#ffffff"}},"Giddy"),h("span",{style:{color:C.gold}},"Up"))),
@@ -2215,6 +2239,11 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       h("div",{style:{textAlign:"center",marginBottom:20}},
         h("div",{style:{fontSize:10,color:"rgba(255,255,255,0.5)",letterSpacing:4,textTransform:"uppercase",marginBottom:8}},"Welcome back"),
         h("div",{style:{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,maxWidth:280,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:"0 2px 12px rgba(0,0,0,0.8)"}},(silksUser.username||"Rider"))),
+      venue&&h("div",{style:{width:"100%",maxWidth:340,background:"rgba(10,15,10,0.55)",border:"1px solid rgba(201,168,76,0.45)",borderRadius:14,padding:"12px 16px",marginBottom:20,backdropFilter:"blur(3px)"}},
+        h("div",{style:{fontSize:10,fontWeight:800,letterSpacing:2,color:C.gold,marginBottom:8,textTransform:"uppercase"}},"From The House"),
+        venue.messages.map((m,i)=>h("div",{key:i,style:{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:10,padding:"5px 0",borderTop:i===0?"none":"1px solid rgba(255,255,255,0.14)"}},
+          h("div",{style:{fontSize:12.5,color:"rgba(255,255,255,0.92)"}},m.label),
+          m.detail&&h("div",{style:{fontSize:10.5,color:C.gold,whiteSpace:"nowrap"}},m.detail)))),
       h("div",{style:{flex:1}}),
       h("div",{onClick:()=>{window.location.href="learn.html";},style:{display:"flex",alignItems:"center",gap:10,background:"rgba(255,255,255,0.08)",border:"1.5px solid rgba(201,168,76,0.55)",borderRadius:30,padding:"12px 20px",cursor:"pointer",marginBottom:22,backdropFilter:"blur(4px)"}},
         h("div",{style:{fontSize:22,flexShrink:0}},"📖"),
@@ -2222,6 +2251,7 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
           h("div",{style:{fontSize:13,fontWeight:800,color:"#ffffff",letterSpacing:.3}},"Are You a New Horse Player?"),
           h("div",{style:{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:.5,marginTop:1}},"Read This First →"))),
       h("div",{style:{fontSize:15,fontStyle:"italic",color:"rgba(255,255,255,0.90)",textAlign:"center",textShadow:"0 2px 8px rgba(0,0,0,0.9)",lineHeight:1.6,fontWeight:500}},h("div",null,"\u201cWe do the numbers."),h("div",null,"You enjoy the race.\u201d"))));
+  }
   return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#f0f4ff 0%,#faf8f2 50%,#f5f0ff 100%)",color:C.text}},
     h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"16px 20px 12px",position:"sticky",top:0,zIndex:100}},
       h("div",{style:{maxWidth:520,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}},
