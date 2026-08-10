@@ -2002,6 +2002,23 @@ function SettingsTab({silksUser,setSilksUser,onLogout}){
     h("button",{onClick:onLogout,style:{width:"100%",padding:13,background:"#fee2e2",border:"none",borderRadius:12,color:"#dc2626",fontSize:14,fontWeight:700,cursor:"pointer"}},"Sign Out"));
 }
 
+// ── VENUE PORTAL DETECTION ───────────────────────────────────────
+// giddyupsilks.app/<slug> (e.g. /brewhouse) tags signups with the venue
+// they came through. Generic by design — any outlet can get a portal at
+// /<their-slug> with zero code changes, just a row in venue_portals.
+// Captured once per session into sessionStorage so it survives the
+// splash → signup navigation but doesn't leak into unrelated sessions.
+const GIDDYUP_RESERVED_SLUGS=["index.html","play.html","learn.html","manifest.json","manifest-play.json","giddyup-auth.js"];
+function getVenueSlugFromPath(){
+  const seg=window.location.pathname.replace(/^\/+|\/+$/g,"").split("/")[0].toLowerCase();
+  if(!seg||GIDDYUP_RESERVED_SLUGS.includes(seg))return null;
+  return seg;
+}
+(function captureVenueSlug(){
+  const slug=getVenueSlugFromPath();
+  if(slug)sessionStorage.setItem("giddyup_venue",slug);
+})();
+
 // ── AUTH SCREEN (Supabase) ──────────────────────────────────────
 function AuthScreen({mode,setMode,onAuthed}){
   const [u,setU]=useState(''),[rn,setRn]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
@@ -2012,7 +2029,7 @@ function AuthScreen({mode,setMode,onAuthed}){
     if(!u||!rn||!e||!c||!p){setErr('Please fill in all fields.');return;}
     if(p.length<8){setErr('Password must be at least 8 characters.');return;}
     setBusy(true);
-    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c,rn);
+    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c,rn,sessionStorage.getItem("giddyup_venue"));
     setBusy(false);
     if(!result.success){setErr(result.error);return;}
     const profile=await GiddyUpAuth.getProfile(result.user.id);
