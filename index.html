@@ -2016,7 +2016,14 @@ function getVenueSlugFromPath(){
 }
 (function captureVenueSlug(){
   const slug=getVenueSlugFromPath();
-  if(slug)sessionStorage.setItem("giddyup_venue",slug);
+  if(slug){
+    sessionStorage.setItem("giddyup_venue",slug);
+  }else{
+    // Plain giddyupsilks.app load — clear any venue tag left over from a
+    // previous /slug visit earlier in this browser session, so the
+    // generic splash and generic (unattributed) signups stay generic.
+    sessionStorage.removeItem("giddyup_venue");
+  }
 })();
 
 // ── VENUE PORTAL CONTENT ─────────────────────────────────────────
