@@ -100,7 +100,7 @@
     <div class="word">Giddy<b>Up</b></div>
     <h1>New Horse Player? <span>Start Here.</span></h1>
     <p>&ldquo;We do the numbers. You enjoy the race.&rdquo;</p>
-    <a class="backlink" href="index.html">&larr; Back to the App</a>
+    <a class="backlink" href="index.html" id="backlink-top">&larr; Back to the App</a>
   </header>
 
   <div class="tabbar" id="tabbar"></div>
@@ -109,6 +109,20 @@
 </div>
 
 <script>
+// Route "Back to the App" to wherever the patron actually came from.
+// If they arrived via a venue portal (e.g. /brewhouse), send them back
+// there so the branded splash and message center are still there —
+// not the generic root, which would drop the venue association even
+// though sessionStorage itself is untouched by this page.
+(function fixBacklinks(){
+  const venue=sessionStorage.getItem("giddyup_venue");
+  const dest=venue?("/"+venue):"index.html";
+  const top=document.getElementById("backlink-top");
+  const bottom=document.getElementById("backlink-bottom");
+  if(top)top.href=dest;
+  if(bottom)bottom.href=dest;
+})();
+
 const TABS = [
   {id:"intro", label:"Welcome"},
   {id:"bets", label:"Bets & Odds"},
@@ -352,7 +366,7 @@ const RENDER = {
         <div class="step"><div class="num">2</div><div class="txt">Create your account — you can also choose a Racing Name for yourself, works well for tournaments</div></div>
       </div>
 
-      <a class="cta" href="index.html">Back to the App →</a>
+      <a class="cta" href="index.html" id="backlink-bottom">Back to the App →</a>
 
       <div class="quote" style="margin-top:24px">
         <div class="q">"We do the Numbers.<br>You enjoy the race."</div>
