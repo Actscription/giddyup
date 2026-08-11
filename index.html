@@ -574,7 +574,7 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
         const tg=tintFor(bd.rank);
         return h("div",{key:f.id,style:{background:tg.bg,border:tg.bd,borderLeft:tg.stripe||tg.bd,borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:tg.fg,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:3}},bd.close&&h("span",{title:"Too close to call — gap to the leader is inside the noise",style:{display:"inline-flex",alignItems:"center"}},h("span",{style:{width:10,height:10,borderRadius:"50%",background:C.gold,border:"1px solid #8a6f28",boxShadow:"inset 0 0 0 1.5px rgba(255,255,255,0.45)",display:"inline-block",flexShrink:0}})),bd.rank==null?"N/A":"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},bd.na?"No data in this field":"Stat: "+bd.rawStat),h("span",{style:{color:bd.na?tg.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))));
       }))));}
-const RANK3_FILL={bg:"#f5ecc8",fg:"#8a6f28"};
+const RANK3_FILL={bg:"#faf3dd",fg:"#5c4a12",ring:"#8a6f28"};
 function AngleTableView({scores,weights}){
   const active=ALL_FACTORS.filter(f=>weights[f.id]>0);
   if(!scores.length)return null;
@@ -584,10 +584,9 @@ function AngleTableView({scores,weights}){
         h("tr",null,
           h("th",{style:{position:"sticky",left:0,zIndex:2,background:"#fff",padding:"8px 6px",textAlign:"left",fontSize:9.5,fontWeight:700,color:C.muted,borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,minWidth:84,maxWidth:84}},"Angle"),
           ...scores.map((horse,i)=>{
-            const rk=i+1,silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
-            const badge=rk===3?{bg:RANK3_FILL.bg,bd:"none",fg:RANK3_FILL.fg}:tintFor(rk<=2?rk:0);
+            const rk=i+1,silk=SILK_COLORS[horse.number]||SILK_COLORS.default,t=RANK_TINT[0];
             return h("th",{key:horse.number,style:{padding:"6px 3px",textAlign:"center",borderBottom:"2px solid "+C.border,minWidth:40,background:"#fff"}},
-              h("div",{style:{width:24,height:24,borderRadius:"50%",background:badge.bg,border:badge.bd,color:badge.fg,fontWeight:800,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 3px"}},rk),
+              h("div",{style:{width:24,height:24,borderRadius:"50%",background:t.bg,border:t.bd,color:t.fg,fontWeight:800,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 3px"}},rk),
               h("div",{style:{width:20,height:14,borderRadius:4,background:silk.bg,color:silk.fg,fontWeight:900,fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto",border:silk.bg==="#ffffff"?"1px solid rgba(0,0,0,0.15)":"none"}},horse.number));
           })),
       ),
@@ -597,7 +596,7 @@ function AngleTableView({scores,weights}){
           ...scores.map(horse=>{
             const bd=horse.breakdown[f.id],rank=bd?bd.rank:null;
             if(rank===3)return h("td",{key:horse.number,style:{textAlign:"center",padding:"6px 2px",borderBottom:"1px solid "+C.border}},
-              h("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:20,height:20,borderRadius:"50%",background:RANK3_FILL.bg,color:RANK3_FILL.fg,fontWeight:800,fontSize:11}},rank));
+              h("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:20,height:20,borderRadius:"50%",background:RANK3_FILL.bg,border:"2px solid "+RANK3_FILL.ring,color:RANK3_FILL.fg,fontWeight:800,fontSize:11}},rank));
             const t=tintFor(rank);
             return h("td",{key:horse.number,style:{textAlign:"center",padding:"6px 2px",borderBottom:"1px solid "+C.border,background:t.bg}},
               h("span",{style:{color:t.fg,fontWeight:700,fontSize:11}},rank!=null?rank:"–"));
@@ -606,7 +605,7 @@ function AngleTableView({scores,weights}){
       ),
       h("tfoot",null,
         h("tr",null,
-          h("td",{style:{position:"sticky",left:0,zIndex:1,background:C.navy,padding:"7px 6px",fontSize:9.5,fontWeight:800,color:C.gold,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"Score"),
+          h("td",{style:{position:"sticky",left:0,zIndex:1,background:C.navy,padding:"7px 6px",fontSize:9.5,fontWeight:800,color:C.gold,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"GiddyUp Points"),
           ...scores.map(horse=>
             h("td",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",background:C.navy}},
               h("span",{style:{color:C.gold,fontWeight:800,fontSize:12}},horse.totalScore)))
