@@ -574,6 +574,7 @@ const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
         const tg=tintFor(bd.rank);
         return h("div",{key:f.id,style:{background:tg.bg,border:tg.bd,borderLeft:tg.stripe||tg.bd,borderRadius:10,padding:"8px 10px"}},h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:3}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},f.label),h("span",{style:{color:tg.fg,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:3}},bd.close&&h("span",{title:"Too close to call — gap to the leader is inside the noise",style:{display:"inline-flex",alignItems:"center"}},h("span",{style:{width:10,height:10,borderRadius:"50%",background:C.gold,border:"1px solid #8a6f28",boxShadow:"inset 0 0 0 1.5px rgba(255,255,255,0.45)",display:"inline-block",flexShrink:0}})),bd.rank==null?"N/A":"#"+bd.rank)),h("div",{style:{display:"flex",justifyContent:"space-between"}},h("span",{style:{color:tg.lbl,fontSize:10,fontWeight:600}},bd.na?"No data in this field":"Stat: "+bd.rawStat),h("span",{style:{color:bd.na?tg.fg:C.text,fontSize:12,fontWeight:700}},bd.na?"—":Math.round(bd.pts*100))));
       }))));}
+const RANK3_FILL={bg:"#faf3dd",fg:"#5c4a12",ring:"#8a6f28"};
 function AngleTableView({scores,weights}){
   const active=ALL_FACTORS.filter(f=>weights[f.id]>0);
   if(!scores.length)return null;
@@ -583,7 +584,7 @@ function AngleTableView({scores,weights}){
         h("tr",null,
           h("th",{style:{position:"sticky",left:0,zIndex:2,background:"#fff",padding:"8px 6px",textAlign:"left",fontSize:9.5,fontWeight:700,color:C.muted,borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,minWidth:84,maxWidth:84}},"Angle"),
           ...scores.map((horse,i)=>{
-            const rk=i+1,t=tintFor(rk<=3?rk:0),silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
+            const rk=i+1,silk=SILK_COLORS[horse.number]||SILK_COLORS.default,t=RANK_TINT[0];
             return h("th",{key:horse.number,style:{padding:"6px 3px",textAlign:"center",borderBottom:"2px solid "+C.border,minWidth:40,background:"#fff"}},
               h("div",{style:{width:24,height:24,borderRadius:"50%",background:t.bg,border:t.bd,color:t.fg,fontWeight:800,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 3px"}},rk),
               h("div",{style:{width:20,height:14,borderRadius:4,background:silk.bg,color:silk.fg,fontWeight:900,fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto",border:silk.bg==="#ffffff"?"1px solid rgba(0,0,0,0.15)":"none"}},horse.number));
@@ -593,20 +594,21 @@ function AngleTableView({scores,weights}){
         active.map(f=>h("tr",{key:f.id},
           h("td",{style:{position:"sticky",left:0,zIndex:1,background:"#fff",padding:"6px",fontSize:9.5,fontWeight:600,color:C.text,borderBottom:"1px solid "+C.border,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:84,maxWidth:84}},f.label),
           ...scores.map(horse=>{
-            const bd=horse.breakdown[f.id],t=tintFor(bd?bd.rank:null);
-            return h("td",{key:horse.number,style:{textAlign:"center",padding:"6px 2px",borderBottom:"1px solid "+C.border,background:t.bg,borderLeft:t.stripe||"1px solid transparent"}},
-              h("span",{style:{color:t.fg,fontWeight:700,fontSize:11}},bd&&bd.rank!=null?bd.rank:"–"));
+            const bd=horse.breakdown[f.id],rank=bd?bd.rank:null;
+            if(rank===3)return h("td",{key:horse.number,style:{textAlign:"center",padding:"6px 2px",borderBottom:"1px solid "+C.border}},
+              h("span",{style:{display:"inline-flex",alignItems:"center",justifyContent:"center",width:20,height:20,borderRadius:"50%",background:RANK3_FILL.bg,border:"2px solid "+RANK3_FILL.ring,color:RANK3_FILL.fg,fontWeight:800,fontSize:11}},rank));
+            const t=tintFor(rank);
+            return h("td",{key:horse.number,style:{textAlign:"center",padding:"6px 2px",borderBottom:"1px solid "+C.border,background:t.bg}},
+              h("span",{style:{color:t.fg,fontWeight:700,fontSize:11}},rank!=null?rank:"–"));
           })
         ))
       ),
       h("tfoot",null,
         h("tr",null,
-          h("td",{style:{position:"sticky",left:0,zIndex:1,background:C.navy,padding:"7px 6px",fontSize:9.5,fontWeight:800,color:C.gold,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"Total"),
-          ...scores.map(horse=>{
-            const total=active.reduce((sum,f)=>{const bd=horse.breakdown[f.id];return sum+(bd&&bd.rank!=null?bd.rank:0);},0);
-            return h("td",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",background:C.navy}},
-              h("span",{style:{color:C.gold,fontWeight:800,fontSize:12}},total));
-          })
+          h("td",{style:{position:"sticky",left:0,zIndex:1,background:C.navy,padding:"7px 6px",fontSize:9.5,fontWeight:800,color:C.gold,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"GiddyUp Points"),
+          ...scores.map(horse=>
+            h("td",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",background:C.navy}},
+              h("span",{style:{color:C.gold,fontWeight:800,fontSize:12}},horse.totalScore)))
         )
       )
     ));
@@ -2002,50 +2004,6 @@ function SettingsTab({silksUser,setSilksUser,onLogout}){
     h("button",{onClick:onLogout,style:{width:"100%",padding:13,background:"#fee2e2",border:"none",borderRadius:12,color:"#dc2626",fontSize:14,fontWeight:700,cursor:"pointer"}},"Sign Out"));
 }
 
-// ── VENUE PORTAL DETECTION ───────────────────────────────────────
-// giddyupsilks.app/<slug> (e.g. /brewhouse) tags signups with the venue
-// they came through. Generic by design — any outlet can get a portal at
-// /<their-slug> with zero code changes, just a row in venue_portals.
-// Captured once per session into sessionStorage so it survives the
-// splash → signup navigation but doesn't leak into unrelated sessions.
-const GIDDYUP_RESERVED_SLUGS=["index.html","play.html","learn.html","manifest.json","manifest-play.json","giddyup-auth.js"];
-function getVenueSlugFromPath(){
-  const seg=window.location.pathname.replace(/^\/+|\/+$/g,"").split("/")[0].toLowerCase();
-  if(!seg||GIDDYUP_RESERVED_SLUGS.includes(seg))return null;
-  return seg;
-}
-(function captureVenueSlug(){
-  const slug=getVenueSlugFromPath();
-  if(slug){
-    sessionStorage.setItem("giddyup_venue",slug);
-  }else{
-    // Plain giddyupsilks.app load — clear any venue tag left over from a
-    // previous /slug visit earlier in this browser session, so the
-    // generic splash and generic (unattributed) signups stay generic.
-    sessionStorage.removeItem("giddyup_venue");
-  }
-})();
-
-// ── VENUE PORTAL CONTENT ─────────────────────────────────────────
-// One entry per outlet. Add a new key here (matching its URL slug) to
-// give any future venue the same branded splash + message center —
-// no other code changes needed. Update the `messages` array any time
-// specials/dates change; takes effect on next deploy.
-const VENUE_PORTALS={
-  brewhouse:{
-    displayName:"Canadian Brewhouse",
-    messages:[
-      {label:"Pasta Race Day Special",detail:"Thursdays · $12.99"},
-      {label:"Fall Tournament kicks off",detail:"Sept 6"},
-      {label:"Weekly leaderboard resets",detail:"Sunday"}
-    ]
-  }
-};
-function getActiveVenue(){
-  const slug=sessionStorage.getItem("giddyup_venue");
-  return (slug&&VENUE_PORTALS[slug])?VENUE_PORTALS[slug]:null;
-}
-
 // ── AUTH SCREEN (Supabase) ──────────────────────────────────────
 function AuthScreen({mode,setMode,onAuthed}){
   const [u,setU]=useState(''),[rn,setRn]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
@@ -2056,7 +2014,7 @@ function AuthScreen({mode,setMode,onAuthed}){
     if(!u||!rn||!e||!c||!p){setErr('Please fill in all fields.');return;}
     if(p.length<8){setErr('Password must be at least 8 characters.');return;}
     setBusy(true);
-    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c,rn,sessionStorage.getItem("giddyup_venue"));
+    const result=await GiddyUpAuth.register(e.toLowerCase(),p,u,c,rn);
     setBusy(false);
     if(!result.success){setErr(result.error);return;}
     const profile=await GiddyUpAuth.getProfile(result.user.id);
@@ -2228,14 +2186,10 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
     setShowSplash(true);
   }});
 
-  if(showSplash){
-  const venue=getActiveVenue();
-  return h("div",{style:{minHeight:"100vh",background:"#0a150a",backgroundImage:"url('Finish_Line.png')",backgroundSize:"cover",backgroundPosition:"center 35%",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}},
-    h("div",{style:{position:"absolute",top:0,left:0,right:0,bottom:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 45%,rgba(0,0,0,0.88) 100%)"}}),h("div",{style:{position:"absolute",top:0,left:0,right:0,bottom:0,background:"radial-gradient(ellipse 85% 40% at 50% 68%,rgba(255,180,60,0.38) 0%,rgba(255,120,20,0.18) 40%,transparent 70%)"}}),
+  if(showSplash)return h("div",{style:{minHeight:"100vh",background:"#0a150a",backgroundImage:"url('Finish_Line.png')",backgroundSize:"cover",backgroundPosition:"center 35%",fontFamily:"Georgia,serif",display:"flex",flexDirection:"column",alignItems:"center",position:"relative",overflow:"hidden"}},
+    h("div",{style:{position:"absolute",inset:0,background:"linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 45%,rgba(0,0,0,0.88) 100%)"}}),h("div",{style:{position:"absolute",inset:0,background:"radial-gradient(ellipse 85% 40% at 50% 68%,rgba(255,180,60,0.38) 0%,rgba(255,120,20,0.18) 40%,transparent 70%)"}}),
     h("div",{style:{position:"relative",zIndex:1,width:"100%",maxWidth:480,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"max(54px,env(safe-area-inset-top)) 28px 36px"}},
       h("div",{onClick:handleSilksLogout,style:{position:"absolute",top:14,right:14,zIndex:10,fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.85)",cursor:"pointer",background:"rgba(0,0,0,0.45)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:20,padding:"6px 14px"}},"Sign Out"),
-      venue&&h("div",{style:{textAlign:"center",marginBottom:4}},
-        h("div",{style:{fontSize:18,fontWeight:800,letterSpacing:2,color:"#E4032E",textTransform:"uppercase",textShadow:"0 2px 8px rgba(0,0,0,0.85)"}},venue.displayName)),
       h("div",{style:{textAlign:"center",marginBottom:6}},
         h("div",{style:{fontSize:54,fontWeight:900,color:"#ffffff",letterSpacing:4,lineHeight:1,textShadow:"0 2px 24px rgba(0,0,0,0.9)"}},
           h("span",{style:{color:"#ffffff"}},"Giddy"),h("span",{style:{color:C.gold}},"Up"))),
@@ -2246,11 +2200,6 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
       h("div",{style:{textAlign:"center",marginBottom:20}},
         h("div",{style:{fontSize:10,color:"rgba(255,255,255,0.5)",letterSpacing:4,textTransform:"uppercase",marginBottom:8}},"Welcome back"),
         h("div",{style:{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,maxWidth:280,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:"0 2px 12px rgba(0,0,0,0.8)"}},(silksUser.username||"Rider"))),
-      venue&&h("div",{style:{width:"100%",maxWidth:400,background:"rgba(10,15,10,0.6)",border:"1px solid rgba(201,168,76,0.5)",borderRadius:16,padding:"18px 22px",marginBottom:20,backdropFilter:"blur(3px)"}},
-        h("div",{style:{fontSize:14,fontWeight:800,letterSpacing:2,color:C.gold,marginBottom:12,textTransform:"uppercase"}},"From The House"),
-        venue.messages.map((m,i)=>h("div",{key:i,style:{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:14,padding:"9px 0",borderTop:i===0?"none":"1px solid rgba(255,255,255,0.16)"}},
-          h("div",{style:{fontSize:16,color:"rgba(255,255,255,0.95)",fontWeight:500}},m.label),
-          m.detail&&h("div",{style:{fontSize:13.5,color:C.gold,whiteSpace:"nowrap",fontWeight:600}},m.detail)))),
       h("div",{style:{flex:1}}),
       h("div",{onClick:()=>{window.location.href="learn.html";},style:{display:"flex",alignItems:"center",gap:10,background:"rgba(255,255,255,0.08)",border:"1.5px solid rgba(201,168,76,0.55)",borderRadius:30,padding:"12px 20px",cursor:"pointer",marginBottom:22,backdropFilter:"blur(4px)"}},
         h("div",{style:{fontSize:22,flexShrink:0}},"📖"),
@@ -2258,7 +2207,6 @@ if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:us
           h("div",{style:{fontSize:13,fontWeight:800,color:"#ffffff",letterSpacing:.3}},"Are You a New Horse Player?"),
           h("div",{style:{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:.5,marginTop:1}},"Read This First →"))),
       h("div",{style:{fontSize:15,fontStyle:"italic",color:"rgba(255,255,255,0.90)",textAlign:"center",textShadow:"0 2px 8px rgba(0,0,0,0.9)",lineHeight:1.6,fontWeight:500}},h("div",null,"\u201cWe do the numbers."),h("div",null,"You enjoy the race.\u201d"))));
-  }
   return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#f0f4ff 0%,#faf8f2 50%,#f5f0ff 100%)",color:C.text}},
     h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"16px 20px 12px",position:"sticky",top:0,zIndex:100}},
       h("div",{style:{maxWidth:520,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}},
