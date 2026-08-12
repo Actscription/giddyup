@@ -2299,9 +2299,11 @@ const [weights,setWeights]=useState({...PRESETS.custom});
   // synchronously from the URL hash too, since the event can fire before
   // this component finishes mounting and subscribing.
   const [recoveryMode,setRecoveryMode]=useState(()=>/type=recovery/.test(window.location.hash));
-  useEffect(()=>{
-    GiddyUpAuth.onPasswordRecovery(()=>setRecoveryMode(true));
-  },[]);
+useEffect(()=>{
+    if(GiddyUpAuth&&typeof GiddyUpAuth.onPasswordRecovery==='function'){
+      GiddyUpAuth.onPasswordRecovery(()=>setRecoveryMode(true));
+    }
+  },[]);;
   function handleRecoverySet(user){
     window.history.replaceState(null,"",window.location.pathname+window.location.search);
     setRecoveryMode(false);
