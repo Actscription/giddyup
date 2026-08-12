@@ -165,6 +165,17 @@ const GiddyUpAuth = {
     });
   },
 
+  // Listen specifically for a password-recovery session — fires when the
+  // user lands back in the app via the "reset your password" email link
+  // (Supabase parses the recovery token out of the URL automatically and
+  // opens a temporary session, emitting a PASSWORD_RECOVERY event).
+  // callback receives that temporary session.
+  onPasswordRecovery(callback) {
+    giddyupSupabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") callback(session);
+    });
+  },
+
   // ── PLAY DAY CARD (GiddyUp Play race day data) ──────────────────
   // Stores the entire day's card (numRaces, picks, results, scores,
   // mlPicks, mlScores, guPicks, guScores, partnerName) as one JSON
