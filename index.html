@@ -1391,11 +1391,13 @@ function RankingsTab({scores,weights,setWeights,locks,setLocks,activeRaceData,ac
       "To adjust your Angles or choose a custom preset angle, tap Angles.",
     ]}),
     actionHorse&&h(HorseActionModal,{horse:actionHorse,isScratched:!!scratched[actionHorse.number],onSave:handleAction,onClose:()=>setActionHorse(null)}),
-    h("button",{onClick:()=>setPickerOpen(true),style:{width:"100%",textAlign:"left",padding:"10px 14px",background:"linear-gradient(135deg,#f5e3ad,#f0d894)",border:"none",borderRadius:12,marginBottom:12,cursor:"pointer"}},
-      h("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},
-        h("span",{style:{fontSize:12.5,fontWeight:800,color:C.navy}},"Angles Detected: "+anglesPickerLabel),
-        h("span",{style:{fontSize:12,color:C.navy,fontWeight:700,opacity:0.7}},"Change ▾")),
-      h("div",{style:{fontSize:10.5,color:C.navy,opacity:0.75,marginTop:4}},"Race type detection can be unreliable — make sure you have the correct Preset")),
+    h("button",{onClick:()=>setPickerOpen(true),style:{width:"100%",textAlign:"left",padding:"16px",background:"linear-gradient(135deg,#f5e3ad,#f0d894)",border:"none",borderRadius:14,marginBottom:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}},
+      h("div",{style:{width:42,height:42,background:"rgba(160,120,48,0.18)",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}},"🎯"),
+      h("div",{style:{flex:1,minWidth:0}},
+        h("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}},
+          h("span",{style:{fontSize:16,fontWeight:900,color:C.navy}},"Angles Detected: "+anglesPickerLabel),
+          h("span",{style:{fontSize:13,color:C.navy,fontWeight:700,opacity:0.75,flexShrink:0}},"Change ▾")),
+        h("div",{style:{fontSize:13,color:C.navy,opacity:0.8,marginTop:4,lineHeight:1.4}},"Race type detection can be unreliable — make sure you have the correct preset"))),
     h(AnglesPickerSheet,{open:pickerOpen,onClose:()=>setPickerOpen(false),silksUser,activeRace,angleMode,activeSpecialist,giddyupPresets,onSelectGiddyUp:selectGiddyUpForRanking,onSelectMyDNA:selectMyDNAForRanking,onSelectSpecialist:selectSpecialistForRanking}),
     raceName&&(function(){
       var dateLabel="";
