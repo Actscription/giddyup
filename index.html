@@ -846,9 +846,45 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
           throw new Error("The analysis is timing out — this race may have more horses or history than usual. Try again, and if it keeps happening let Carm know.");
         }
       }
+      // Large fields (20+ horses, lots of pastStarts text) occasionally
+      // trip Claude into emitting a raw control character (an actual
+      // newline/tab byte) inside a JSON string value instead of escaping it
+      // as \n/\t — that corrupts JSON.parse from that point forward with
+      // errors like "Bad control character in string literal" or "Expected
+      // ',' or ']'". This walks the text tracking string boundaries and
+      // escapes any stray control characters found inside a string literal,
+      // leaving structural whitespace (outside strings) untouched.
+      function sanitizeJsonControlChars(str){
+        let out="",inString=false,escaped=false;
+        for(let i=0;i<str.length;i++){
+          const ch=str[i],code=str.charCodeAt(i);
+          if(inString){
+            if(escaped){out+=ch;escaped=false;continue;}
+            if(ch==="\\"){out+=ch;escaped=true;continue;}
+            if(ch==="\""){inString=false;out+=ch;continue;}
+            if(code<0x20){
+              if(ch==="\n")out+="\\n";
+              else if(ch==="\r")out+="\\r";
+              else if(ch==="\t")out+="\\t";
+              else out+="\\u"+code.toString(16).padStart(4,"0");
+              continue;
+            }
+            out+=ch;
+          }else{
+            if(ch==="\"")inString=true;
+            out+=ch;
+          }
+        }
+        return out;
+      }
       const jsonMatch=rawJsonText.match(/\{[\s\S]*\}/);
       if(!jsonMatch)throw new Error("No JSON found in response");
-      const parsed=JSON.parse(jsonMatch[0]);
+      let parsed;
+      try{
+        parsed=JSON.parse(jsonMatch[0]);
+      }catch(parseErr){
+        parsed=JSON.parse(sanitizeJsonControlChars(jsonMatch[0]));
+      }
       const rt=(parsed.raceType||"custom").toLowerCase().trim();
       const detectedRaceType=["stakes","allowance","claiming","maiden"].find(t=>rt.includes(t))||"custom";
       const allHorses=(parsed.horses||[]).map((hh,idx)=>({
