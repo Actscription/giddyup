@@ -791,19 +791,61 @@ function UploadTab({races,setRaces,setActiveTab,setHorses,setActiveRace,setWeigh
         :"Analyze this horse racing past performance sheet. Return ONLY valid JSON: {raceType:string,raceNumber:number,postTime:string,track:string,raceDistance:string,raceConditions:string,raceSurface:string,horses:[{number,name,jockey,trainer,odds,age,bred,firstLasix,jockeyMeet:{starts,wins,winPct},trainerMeet:{starts,wins,winPct},earnings:{cy_earnings,cy_starts,ly_earnings,ly_starts,car_earnings,car_starts},stats:{speed,form,jockey,trainer,distance,track,post,class,days,weight,workouts,equipment,pedigree,style,combo,bias},pastStarts:[{date,raceType,purse,finishPosition,daysAgo,distance,surface,jockey,speedFigure,comment}]}]}. raceNumber is the large race number printed on the card. postTime is the approximate post time exactly as printed (e.g. 3:15PM) or empty string. track is the track name if printed (e.g. Evergreen Park) or empty string. raceDistance is the race distance exactly as printed (e.g. '4 Furlongs' or '1 Mile') or empty string. raceSurface is the racing surface exactly as printed (e.g. 'Dirt', 'Turf', 'Synthetic', 'All Weather') or empty string if not printed. raceConditions is the race condition/eligibility line as printed, including any abbreviation code, purse, and age/sex/weight restrictions (e.g. '(MX) MAIDEN. Purse $6,800. For Maidens, Three Years Old and Upward. Three Year Olds, 124 Lbs; Older, 124 Lbs.') or empty string. Stats 0-100. pastStarts is each past-performance line printed for the horse, most recent first — raceType is one of 'stakes','allowance','claiming','maiden claiming','maiden','optional claiming' based on the condition text printed (e.g. 'Stk - 3YOSpring - 11k' is stakes, 'Mcl 8000' is maiden claiming, 'Msw 6800' or 'Mdn 6800' is maiden). purse is the dollar amount printed for that condition if shown, else null. finishPosition is the horse's placing in that start as an integer. daysAgo is approximate days between that start's date and today, computed from the printed date. If no past performance lines are printed for a horse (first-time starter), return an empty array."+meetRecordSchema;
       contentArr.push({type:"text",text:promptText});
 
-      let response,rawText;
+      // The Worker now streams the Anthropic response through as Server-Sent
+      // Events instead of buffering the whole completion, so a big field
+      // (20+ horses) doesn't sit on one idle connection long enough for
+      // Cloudflare's edge to time it out with a 522/524. We read the stream
+      // as it arrives and accumulate the text deltas into rawJsonText.
+      let rawJsonText="";
+      async function runStreamingRequest(){
+        const resp=await fetch("https://giddyup-proxy.kleskun.workers.dev",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:16000,messages:[{role:"user",content:contentArr}]})});
+        const contentType=resp.headers.get("content-type")||"";
+        if(!contentType.includes("text/event-stream")||!resp.body){
+          // Non-streaming path: error JSON from the Worker/Anthropic, or an
+          // old cached Worker deploy still returning a plain buffered reply.
+          const rawText=await resp.text();
+          if(rawText.indexOf("error code: 524")>=0||rawText.indexOf("error code: 522")>=0){
+            throw new Error("The analysis is timing out — this race may have more horses or history than usual. Try again, and if it keeps happening let Carm know.");
+          }
+          const data=JSON.parse(rawText);
+          if(data.error)throw new Error(data.error.message);
+          return data.content.map(c=>c.text||"").join("").trim();
+        }
+        const reader=resp.body.getReader();
+        const decoder=new TextDecoder();
+        let buffer="",acc="";
+        while(true){
+          const {value,done}=await reader.read();
+          if(done)break;
+          buffer+=decoder.decode(value,{stream:true});
+          const lines=buffer.split("\n");
+          buffer=lines.pop();
+          for(const line of lines){
+            const t=line.trim();
+            if(!t.startsWith("data:"))continue;
+            const jsonStr=t.slice(5).trim();
+            if(!jsonStr||jsonStr==="[DONE]")continue;
+            let evt;
+            try{evt=JSON.parse(jsonStr);}catch(e){continue;}
+            if(evt.type==="content_block_delta"&&evt.delta&&evt.delta.type==="text_delta"){
+              acc+=evt.delta.text;
+            }else if(evt.type==="error"){
+              throw new Error((evt.error&&evt.error.message)||"Stream error");
+            }
+          }
+        }
+        return acc.trim();
+      }
       for(let attempt=0;attempt<2;attempt++){
-        response=await fetch("https://giddyup-proxy.kleskun.workers.dev",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:16000,messages:[{role:"user",content:contentArr}]})});
-        rawText=await response.text();
-        if(rawText.indexOf("error code: 524")>=0||rawText.indexOf("error code: 522")>=0){
+        try{
+          rawJsonText=await runStreamingRequest();
+          break;
+        }catch(streamErr){
           if(attempt===0)continue;
+          if(/timing out/i.test(streamErr.message))throw streamErr;
           throw new Error("The analysis is timing out — this race may have more horses or history than usual. Try again, and if it keeps happening let Carm know.");
         }
-        break;
       }
-      const data=JSON.parse(rawText);
-      if(data.error)throw new Error(data.error.message);
-      const rawJsonText=data.content.map(c=>c.text||"").join("").trim();
       const jsonMatch=rawJsonText.match(/\{[\s\S]*\}/);
       if(!jsonMatch)throw new Error("No JSON found in response");
       const parsed=JSON.parse(jsonMatch[0]);
