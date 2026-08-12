@@ -168,6 +168,10 @@ const SILK_COLORS={
   default:{bg:"#6b7280",fg:"#ffffff"}
 };
 const C={gold:"#c9a84c",navy:"#1a2535",navy2:"#2d3f55",border:"#e2e8f0",muted:"#94a3b8",text:"#1a2535"};
+// Light, welcoming backdrop for the sign-in / password-reset screens and
+// the initial loading spinner — replaces the old dark forest-green
+// gradient, which read as gloomy rather than inviting.
+const AUTH_BG="linear-gradient(160deg,#eef6ea 0%,#f5f8f0 50%,#eaf5ef 100%)";
 // Circuit is Evergreen Park only for now. When GiddyUp covers more than one
 // track, this should become per-published-card data (e.g. returned by
 // getPublishedDates) instead of a single hardcoded label.
@@ -2028,9 +2032,9 @@ function SettingsTab({silksUser,setSilksUser,onLogout}){
   const fieldLabel=(t)=>h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},t);
   const inputStyle={width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text};
   return h("div",{style:{paddingTop:14}},
-    h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",borderRadius:16,padding:"18px 20px",marginBottom:16,textAlign:"center"}},
-      h("div",{style:{fontSize:10,color:"#c9a84c88",letterSpacing:3,textTransform:"uppercase",marginBottom:6}},"⚙ Account"),
-      h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}},"Settings")),
+    h("div",{style:{background:"#fdf6e3",border:"1.5px solid "+C.gold,borderRadius:16,padding:"22px 20px",marginBottom:16,textAlign:"center"}},
+      h("div",{style:{fontSize:12,fontWeight:700,color:"#a07830",letterSpacing:3,textTransform:"uppercase",marginBottom:8}},"⚙ Account"),
+      h("div",{style:{fontSize:26,fontWeight:900,color:C.navy,marginBottom:4}},"Settings")),
     h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},
       h("div",{style:{marginBottom:14}},fieldLabel("Racing Name"),
         h("input",{value:username,onChange:e=>setUsername(e.target.value),maxLength:20,style:inputStyle})),
@@ -2155,12 +2159,12 @@ function PasswordRecoveryScreen({onDone}){
       setBusy(false);
     }
   }
-  return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
-    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden"}},
-      h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"24px 24px 20px",textAlign:"center"}},
+  return h("div",{style:{minHeight:"100vh",background:AUTH_BG,display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
+    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:"0 4px 20px rgba(26,37,53,0.08)"}},
+      h("div",{style:{background:"#fdf6e3",borderBottom:"1.5px solid "+C.gold,padding:"24px 24px 20px",textAlign:"center"}},
         h("div",{style:{fontSize:36,marginBottom:6}},"🐴"),
-        h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}},"GiddyUp"),
-        h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:6}},"Choose a new password")),
+        h("div",{style:{fontSize:24,fontWeight:900,letterSpacing:1}},h("span",{style:{color:C.navy}},"Giddy"),h("span",{style:{color:C.gold}},"Up")),
+        h("div",{style:{fontSize:11,color:"#7a6320",marginTop:6,fontWeight:600}},"Choose a new password")),
       h("div",{style:{padding:"24px 24px 28px"}},
         h("div",{style:{fontSize:13,color:C.muted,marginBottom:16,lineHeight:1.5}},"You're verified — set a new password to finish resetting your account."),
         h("div",{style:{marginBottom:14}},
@@ -2221,12 +2225,12 @@ function AuthScreen({mode,setMode,onAuthed}){
 
   const isRegister=mode==='register';
 
-  return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
-    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden"}},
-      h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"24px 24px 20px",textAlign:"center"}},
+  return h("div",{style:{minHeight:"100vh",background:AUTH_BG,display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
+    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:"0 4px 20px rgba(26,37,53,0.08)"}},
+      h("div",{style:{background:"#fdf6e3",borderBottom:"1.5px solid "+C.gold,padding:"24px 24px 20px",textAlign:"center"}},
         h("div",{style:{fontSize:36,marginBottom:6}},"🐴"),
-        h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}},"GiddyUp"),
-        h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:6}},forgotOpen?"Reset your password":isRegister?"Create your account":"Sign in to continue")),
+        h("div",{style:{fontSize:24,fontWeight:900,letterSpacing:1}},h("span",{style:{color:C.navy}},"Giddy"),h("span",{style:{color:C.gold}},"Up")),
+        h("div",{style:{fontSize:11,color:"#7a6320",marginTop:6,fontWeight:600}},forgotOpen?"Reset your password":isRegister?"Create your account":"Sign in to continue")),
       forgotOpen
         ?h("div",{style:{padding:"24px 24px 28px"}},
           h("div",{style:{fontSize:13,color:C.muted,marginBottom:16,lineHeight:1.5}},"Enter the email on your account and we'll send you a link to set a new password."),
@@ -2299,11 +2303,11 @@ const [weights,setWeights]=useState({...PRESETS.custom});
   // synchronously from the URL hash too, since the event can fire before
   // this component finishes mounting and subscribing.
   const [recoveryMode,setRecoveryMode]=useState(()=>/type=recovery/.test(window.location.hash));
-useEffect(()=>{
+  useEffect(()=>{
     if(GiddyUpAuth&&typeof GiddyUpAuth.onPasswordRecovery==='function'){
       GiddyUpAuth.onPasswordRecovery(()=>setRecoveryMode(true));
     }
-  },[]);;
+  },[]);
   function handleRecoverySet(user){
     window.history.replaceState(null,"",window.location.pathname+window.location.search);
     setRecoveryMode(false);
@@ -2387,7 +2391,7 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks,currentRank
   const TABS=[{id:"upload",label:"📷",full:"Upload"},{id:"rankings",label:"🏇",full:"Rankings"},{id:"angles",label:"🎯",full:"Angles"},{id:"giddyup",label:"🐴",full:"Bets"},{id:"play",label:"🎫",full:"GiddyUp"},{id:"diary",label:"📒",full:"Diary"}];
 
   // Wait for auth check before rendering anything (avoids flash of login screen)
-  if(!authChecked)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
+  if(!authChecked)return h("div",{style:{minHeight:"100vh",background:AUTH_BG,display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
 
   // Landed here via a password-reset email link → set a new password
   // before anything else, regardless of whether silksUser is set
