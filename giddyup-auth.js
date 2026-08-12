@@ -90,6 +90,31 @@ const GiddyUpAuth = {
     return { success: true, data };
   },
 
+  // Change the account password for the currently signed-in user. Supabase
+  // requires an active session (which SettingsTab already has, since the
+  // user is logged in to reach this screen) — no old-password re-entry is
+  // needed server-side, but callers should still confirm the new password
+  // client-side (matches register()'s 8-character minimum).
+  async updatePassword(newPassword) {
+    const { data, error } = await giddyupSupabase.auth.updateUser({ password: newPassword });
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
+  // Send a "reset your password" email to a signed-out user. Supabase
+  // emails a link to redirectTo (or the Supabase project's default Site
+  // URL if omitted) that opens the app with a temporary recovery session,
+  // at which point updatePassword() above can be called to finish the
+  // reset.
+  async sendPasswordReset(email, redirectTo) {
+    const { data, error } = await giddyupSupabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo ? { redirectTo } : undefined
+    );
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  },
+
   // ── TOURNAMENT INTEREST ──────────────────────────────────────────
   // Sign up (or update) interest in the handicapping tournament.
   // One row per user — re-submitting updates the existing row.
