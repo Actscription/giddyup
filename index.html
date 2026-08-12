@@ -1982,6 +1982,11 @@ function SettingsTab({silksUser,setSilksUser,onLogout}){
   const [emailBusy,setEmailBusy]=useState(false);
   const [emailMsg,setEmailMsg]=useState("");
   const [emailErr,setEmailErr]=useState("");
+  const [newPw,setNewPw]=useState("");
+  const [confirmPw,setConfirmPw]=useState("");
+  const [pwBusy,setPwBusy]=useState(false);
+  const [pwMsg,setPwMsg]=useState("");
+  const [pwErr,setPwErr]=useState("");
 
   async function saveProfile(){
     setErr("");setMsg("");
@@ -2002,6 +2007,17 @@ function SettingsTab({silksUser,setSilksUser,onLogout}){
     if(!result.success){setEmailErr(result.error);return;}
     setEmailMsg("Check "+newEmail+" for a confirmation link — your email won't change until you click it.");
     setNewEmail("");
+  }
+  async function changePassword(){
+    setPwErr("");setPwMsg("");
+    if(!newPw||newPw.length<8){setPwErr("New password must be at least 8 characters.");return;}
+    if(newPw!==confirmPw){setPwErr("Passwords don't match.");return;}
+    setPwBusy(true);
+    const result=await GiddyUpAuth.updatePassword(newPw);
+    setPwBusy(false);
+    if(!result.success){setPwErr(result.error);return;}
+    setPwMsg("Password updated.");
+    setNewPw("");setConfirmPw("");
   }
   const fieldLabel=(t)=>h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},t);
   const inputStyle={width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text};
@@ -2027,6 +2043,14 @@ function SettingsTab({silksUser,setSilksUser,onLogout}){
       emailErr&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:12,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},emailErr),
       emailMsg&&h("div",{style:{fontSize:12,color:"#166534",marginBottom:12,padding:"8px 12px",background:"#f0fdf4",borderRadius:8}},emailMsg),
       h("button",{onClick:changeEmail,disabled:emailBusy,style:{width:"100%",padding:13,background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,color:C.text,fontSize:14,fontWeight:700,cursor:emailBusy?"not-allowed":"pointer",opacity:emailBusy?0.6:1}},emailBusy?"Sending...":"Update Email")),
+    h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},
+      fieldLabel("New Password"),
+      h("input",{type:"password",value:newPw,onChange:e=>setNewPw(e.target.value),placeholder:"Min 8 characters",style:{...inputStyle,marginBottom:10}}),
+      fieldLabel("Confirm New Password"),
+      h("input",{type:"password",value:confirmPw,onChange:e=>setConfirmPw(e.target.value),placeholder:"Re-enter new password",style:{...inputStyle,marginBottom:10}}),
+      pwErr&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:12,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},pwErr),
+      pwMsg&&h("div",{style:{fontSize:12,color:"#166534",marginBottom:12,padding:"8px 12px",background:"#f0fdf4",borderRadius:8}},pwMsg),
+      h("button",{onClick:changePassword,disabled:pwBusy,style:{width:"100%",padding:13,background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,color:C.text,fontSize:14,fontWeight:700,cursor:pwBusy?"not-allowed":"pointer",opacity:pwBusy?0.6:1}},pwBusy?"Updating...":"Change Password")),
     h("button",{onClick:onLogout,style:{width:"100%",padding:13,background:"#fee2e2",border:"none",borderRadius:12,color:"#dc2626",fontSize:14,fontWeight:700,cursor:"pointer"}},"Sign Out"));
 }
 
