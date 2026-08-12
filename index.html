@@ -2013,11 +2013,17 @@ function SettingsTab({silksUser,setSilksUser,onLogout}){
     if(!newPw||newPw.length<8){setPwErr("New password must be at least 8 characters.");return;}
     if(newPw!==confirmPw){setPwErr("Passwords don't match.");return;}
     setPwBusy(true);
-    const result=await GiddyUpAuth.updatePassword(newPw);
-    setPwBusy(false);
-    if(!result.success){setPwErr(result.error);return;}
-    setPwMsg("Password updated.");
-    setNewPw("");setConfirmPw("");
+    try{
+      const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error("Timed out — check your connection and try again.")),15000));
+      const result=await Promise.race([GiddyUpAuth.updatePassword(newPw),timeout]);
+      if(!result.success){setPwErr(result.error);return;}
+      setPwMsg("Password updated.");
+      setNewPw("");setConfirmPw("");
+    }catch(ex){
+      setPwErr((ex&&ex.message)||"Something went wrong updating your password. Please try again.");
+    }finally{
+      setPwBusy(false);
+    }
   }
   const fieldLabel=(t)=>h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},t);
   const inputStyle={width:"100%",padding:"11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text};
