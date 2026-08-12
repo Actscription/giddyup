@@ -13,7 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="giddyup-auth.js?v=3"></script>
+<script src="giddyup-auth.js?v=4"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Georgia,serif;background:#f0f4ff;color:#1a2535}
@@ -2128,6 +2128,50 @@ function PasswordInput({value,onChange,placeholder,autoFocus}){
     h("input",{type:show?"text":"password",value,onChange,placeholder,autoFocus,style:{width:"100%",padding:"11px 42px 11px 13px",border:"1.5px solid "+C.border,borderRadius:9,fontSize:15,color:C.text,boxSizing:"border-box"}}),
     h("button",{type:"button",onClick:()=>setShow(s=>!s),"aria-label":show?"Hide password":"Show password",title:show?"Hide password":"Show password",style:{position:"absolute",right:6,top:"50%",transform:"translateY(-50%)",background:"transparent",border:"none",cursor:"pointer",fontSize:17,color:C.muted,padding:6,lineHeight:1}},show?"🙈":"👁️"));
 }
+// Shown when the person lands back in the app via the "reset your
+// password" link in the recovery email. Supabase's client has already
+// parsed the recovery token from the URL and opened a temporary
+// recovery session by this point — updatePassword() here upgrades that
+// into a normal signed-in session, so we can also fetch the profile and
+// log them straight in rather than making them sign in a second time.
+function PasswordRecoveryScreen({onDone}){
+  const [p,setP]=useState(''),[p2,setP2]=useState('');
+  const [err,setErr]=useState(''),[busy,setBusy]=useState(false);
+  async function submit(){
+    setErr('');
+    if(!p||p.length<8){setErr('Password must be at least 8 characters.');return;}
+    if(p!==p2){setErr("Passwords don't match.");return;}
+    setBusy(true);
+    try{
+      const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Timed out — check your connection and try again.')),15000));
+      const result=await Promise.race([GiddyUpAuth.updatePassword(p),timeout]);
+      if(!result.success){setErr(result.error);setBusy(false);return;}
+      const session=await GiddyUpAuth.getSession();
+      if(!session||!session.user){onDone(null);return;}
+      const profile=await GiddyUpAuth.getProfile(session.user.id);
+      onDone({id:session.user.id,username:profile?profile.username:'',email:session.user.email||'',city:profile?profile.city:'',realName:profile?profile.real_name:'',customAngles:normalizeCustomAngles(profile&&profile.custom_angles)});
+    }catch(ex){
+      setErr((ex&&ex.message)||'Something went wrong. Please try again.');
+      setBusy(false);
+    }
+  }
+  return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"32px 20px"}},
+    h("div",{style:{width:"100%",maxWidth:420,background:"#fff",borderRadius:18,overflow:"hidden"}},
+      h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",padding:"24px 24px 20px",textAlign:"center"}},
+        h("div",{style:{fontSize:36,marginBottom:6}},"🐴"),
+        h("div",{style:{fontSize:24,fontWeight:900,background:"linear-gradient(135deg,#c9a84c,#f0d080)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:1}},"GiddyUp"),
+        h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:6}},"Choose a new password")),
+      h("div",{style:{padding:"24px 24px 28px"}},
+        h("div",{style:{fontSize:13,color:C.muted,marginBottom:16,lineHeight:1.5}},"You're verified — set a new password to finish resetting your account."),
+        h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"New Password"),
+          h(PasswordInput,{value:p,onChange:e=>setP(e.target.value),placeholder:"Min 8 characters",autoFocus:true})),
+        h("div",{style:{marginBottom:14}},
+          h("div",{style:{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},"Confirm New Password"),
+          h(PasswordInput,{value:p2,onChange:e=>setP2(e.target.value),placeholder:"Re-enter new password"})),
+        err&&h("div",{style:{fontSize:12,color:"#dc2626",marginBottom:14,padding:"8px 12px",background:"#fef2f2",borderRadius:8}},err),
+        h("button",{onClick:submit,disabled:busy,style:{width:"100%",padding:14,background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"none",borderRadius:12,color:C.gold,fontSize:15,fontWeight:800,cursor:busy?"not-allowed":"pointer",opacity:busy?0.6:1}},busy?"Saving...":"Set New Password"))));
+}
 function AuthScreen({mode,setMode,onAuthed}){
   const [u,setU]=useState(''),[rn,setRn]=useState(''),[e,setE]=useState(''),[c,setC]=useState(''),[p,setP]=useState('');
   const [err,setErr]=useState(''),[busy,setBusy]=useState(false);
@@ -2249,6 +2293,20 @@ const [weights,setWeights]=useState({...PRESETS.custom});
   const [silksUser,setSilksUser]=useState(null);
   const [authMode,setAuthMode]=useState('login'); // 'login' | 'register'
   const [authChecked,setAuthChecked]=useState(false);
+  // Detects landing here via a "reset your password" email link. Supabase
+  // parses the recovery token out of the URL and opens a temporary
+  // recovery session, firing a PASSWORD_RECOVERY auth event — checked
+  // synchronously from the URL hash too, since the event can fire before
+  // this component finishes mounting and subscribing.
+  const [recoveryMode,setRecoveryMode]=useState(()=>/type=recovery/.test(window.location.hash));
+  useEffect(()=>{
+    GiddyUpAuth.onPasswordRecovery(()=>setRecoveryMode(true));
+  },[]);
+  function handleRecoverySet(user){
+    window.history.replaceState(null,"",window.location.pathname+window.location.search);
+    setRecoveryMode(false);
+    if(user){setSilksUser(user);setShowSplash(true);}
+  }
   // ── Live GiddyUp Presets (admin-published, replaces hardcoded PRESETS) ──
   const [giddyupPresets,setGiddyupPresets]=useState({});
   useEffect(()=>{
@@ -2328,6 +2386,10 @@ async function handleSaveAngles(raceType,currentWeights,currentLocks,currentRank
 
   // Wait for auth check before rendering anything (avoids flash of login screen)
   if(!authChecked)return h("div",{style:{minHeight:"100vh",background:"linear-gradient(160deg,#0f4023 0%,#1a6b3c 60%,#2d9155 100%)",display:"flex",alignItems:"center",justifyContent:"center"}},h("div",{style:{fontSize:40}},"🐴"));
+
+  // Landed here via a password-reset email link → set a new password
+  // before anything else, regardless of whether silksUser is set
+  if(recoveryMode)return h(PasswordRecoveryScreen,{onDone:handleRecoverySet});
 
   // Not signed in → show auth screen, gating everything else
 if(!silksUser)return h(AuthScreen,{mode:authMode,setMode:setAuthMode,onAuthed:user=>{
