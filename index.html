@@ -354,6 +354,33 @@ function parseFurlongs(s){
   return n?parseFloat(n[1]):null;
 }
 
+// Diary photos were being stored as raw, uncompressed base64 straight from the
+// camera/file picker. A single phone photo can be several MB that way, and
+// localStorage is typically capped around 5-10MB total per site — so a save
+// could silently blow the quota, throw inside a try/catch that swallowed the
+// error, and vanish on next reload while looking like it had saved fine.
+// This downsizes/re-compresses to a JPEG that stays legible for a race
+// program or ticket photo but is realistically tens-to-low-hundreds of KB
+// instead of multiple MB.
+function compressImageDataUrl(dataUrl,maxDim,quality){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      let width=img.width,height=img.height;
+      if(width>maxDim||height>maxDim){
+        if(width>height){height=Math.round(height*maxDim/width);width=maxDim;}
+        else{width=Math.round(width*maxDim/height);height=maxDim;}
+      }
+      const canvas=document.createElement("canvas");
+      canvas.width=width;canvas.height=height;
+      const ctx=canvas.getContext("2d");
+      ctx.drawImage(img,0,0,width,height);
+      try{resolve(canvas.toDataURL("image/jpeg",quality));}catch(ex){reject(ex);}
+    };
+    img.onerror=reject;
+    img.src=dataUrl;
+  });
+}
 function tellForHorse(horse,horses,raceType,raceMeta){
   const notes=[];
   const cf=classFlag(horse,raceType);
@@ -2070,9 +2097,9 @@ function DiaryTab({silksUser}){
       setEntries([]);
     }
   },[diaryKey]);
-  function persist(next){try{localStorage.setItem(diaryKey,JSON.stringify(next));}catch(ex){}}
+  function persist(next){try{localStorage.setItem(diaryKey,JSON.stringify(next));return true;}catch(ex){return false;}}
   function deleteEntry(id){setEntries(e=>{const next=e.filter(en=>en.id!==id);persist(next);return next;});}
-  function handleImg(file){if(!file)return;const r=new FileReader();r.onload=e=>setImage(e.target.result);r.readAsDataURL(file);}function nowStr(){const d=new Date();return{date:d.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),time:d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true})};}function save(){if(!note&&!image)return;setSaving(true);const ts=nowStr();setTimeout(()=>{setEntries(e=>{const next=[{id:Date.now(),raceName:raceName||"Paddock Note",note,image,date:ts.date,time:ts.time},...e];persist(next);return next;});setNote("");setImage(null);setRaceName("");setSaving(false);},400);}const ts=nowStr();return h("div",{style:{paddingTop:14}},h(TabHelp,{title:"How to Use — Diary",steps:[
+  function handleImg(file){if(!file)return;const r=new FileReader();r.onload=e=>{compressImageDataUrl(e.target.result,1280,0.72).then(setImage).catch(()=>setImage(e.target.result));};r.readAsDataURL(file);}function nowStr(){const d=new Date();return{date:d.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),time:d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true})};}function save(){if(!note&&!image)return;setSaving(true);const ts=nowStr();setTimeout(()=>{setEntries(e=>{const next=[{id:Date.now(),raceName:raceName||"Paddock Note",note,image,date:ts.date,time:ts.time},...e];const ok=persist(next);if(!ok){alert("This entry didn't save — your device's diary storage is full. Try a smaller photo, or delete an old entry first.");return e;}return next;});setNote("");setImage(null);setRaceName("");setSaving(false);},400);}const ts=nowStr();return h("div",{style:{paddingTop:14}},h(TabHelp,{title:"How to Use — Diary",steps:[
     "Add a race title or note name to identify the entry.",
     "Take a photo or choose from your library — winning tickets, programs, anything.",
     "Write your observations before or after the race.",
