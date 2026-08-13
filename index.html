@@ -268,7 +268,7 @@ const CLASS_RANK={"maiden claiming":1,"maiden":2,"claiming":3,"optional claiming
 function classRankOf(rt){return CLASS_RANK[(rt||"").toLowerCase().trim()]||2;}
 function ordinal(n){const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
 
-function classFlag(horse,todayRaceType){
+function classFlag(horse,horses,todayRaceType){
   const starts=horse.pastStarts||[];
   if(!starts.length)return null;
   const todayRank=classRankOf(todayRaceType);
@@ -277,8 +277,23 @@ function classFlag(horse,todayRaceType){
   const bestRecentStakes=starts.filter(p=>classRankOf(p.raceType)>=5).sort((a,b)=>classRankOf(b.raceType)-classRankOf(a.raceType))[0];
 
   if(bestRecentStakes&&todayRank<=3){
-    return{horse:horse.number,name:horse.name,rule:"class_rise_stakes",polarity:"positive",strength:90,
-      text:"Ran "+ordinal(bestRecentStakes.finishPosition)+" in a "+(bestRecentStakes.purse?("$"+bestRecentStakes.purse+" "):"")+"stakes"+(bestRecentStakes.daysAgo?(" ("+Math.round(bestRecentStakes.daysAgo/30)+" month"+(Math.round(bestRecentStakes.daysAgo/30)===1?"":"s")+" back)"):"")+" — tougher company than anything else in this field has seen."};
+    // "Tougher company than anything else in this field has seen" is a
+    // claim about the WHOLE FIELD, not just this horse — only say it when
+    // that's actually verified against the other horses' own class peaks.
+    // Otherwise, describe this horse's class history honestly without
+    // implying a uniqueness the check never confirmed (multiple horses
+    // genuinely can be dropping in class together — that's normal, and the
+    // wording shouldn't overclaim when it happens).
+    const myPeak=classRankOf(bestRecentStakes.raceType);
+    const fieldPeaks=(horses||[]).map(h=>{
+      const s=(h.pastStarts||[]).filter(p=>classRankOf(p.raceType)>=5);
+      return s.length?Math.max(...s.map(p=>classRankOf(p.raceType))):null;
+    }).filter(v=>v!=null);
+    const isUniqueLeader=fieldPeaks.length>=2&&myPeak===Math.max(...fieldPeaks)&&fieldPeaks.filter(v=>v===myPeak).length===1;
+    const timeAgo=bestRecentStakes.daysAgo?(" ("+Math.round(bestRecentStakes.daysAgo/30)+" month"+(Math.round(bestRecentStakes.daysAgo/30)===1?"":"s")+" back)"):"";
+    const base="Ran "+ordinal(bestRecentStakes.finishPosition)+" in a "+(bestRecentStakes.purse?("$"+bestRecentStakes.purse+" "):"")+"stakes"+timeAgo;
+    return{horse:horse.number,name:horse.name,rule:"class_rise_stakes",polarity:"positive",strength:isUniqueLeader?90:72,
+      text:isUniqueLeader?(base+" — tougher company than anything else in this field has seen."):(base+" — well beyond today's class level, a real class edge in this spot.")};
   }
   if(todayRank<avgRank){
     const lastFinish=recent[0].finishPosition;
@@ -322,7 +337,7 @@ function barnConflicts(horses){
 function buildRaceReport(horses,raceType){
   const flags=[];
   horses.forEach(horse=>{
-    const cf=classFlag(horse,raceType);
+    const cf=classFlag(horse,horses,raceType);
     if(cf){
       const cold=coldJockeyModifier(horse);
       if(cold)cf.caution=cold;
@@ -384,7 +399,7 @@ function compressImageDataUrl(dataUrl,maxDim,quality){
 }
 function tellForHorse(horse,horses,raceType,raceMeta){
   const notes=[];
-  const cf=classFlag(horse,raceType);
+  const cf=classFlag(horse,horses,raceType);
   if(cf)notes.push({strength:cf.strength,text:cf.text});
   const barnMates=horses.filter(h=>h.trainer===horse.trainer&&h.number!==horse.number);
   if(barnMates.length){
