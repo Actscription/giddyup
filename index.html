@@ -516,7 +516,7 @@ function reportEntry(f,i,total){
     f.caution&&h("div",{style:{fontSize:12,color:"#c2410c",marginTop:4}},f.caution)
   );
 }
-function shareContent(title,text){if(navigator.share)navigator.share({title,text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert("Copied!"));}
+function shareContent(title,text){const finalText=text+"\n\n🐴 https://giddyupsilks.app";if(navigator.share)navigator.share({title,text:finalText,url:"https://giddyupsilks.app"}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(finalText).then(()=>alert("Copied!"));}
 const DEMO=[
   {number:5,name:"Commandperformance",jockey:"I. Ortiz Jr.",trainer:"Todd Pletcher",odds:"50-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:96,form:85,jockey:92,trainer:95,distance:80,track:85,post:75,class:90,days:75,weight:75,workouts:82,equipment:70,pedigree:85,style:75,combo:88,bias:70}},
   {number:17,name:"Pappacap",jockey:"J. Bravo",trainer:"Mark Casse",odds:"15-1",earnings:{cy_earnings:0,cy_starts:0,ly_earnings:0,ly_starts:0,car_earnings:0,car_starts:0},stats:{speed:100,form:88,jockey:82,trainer:85,distance:82,track:88,post:72,class:92,days:80,weight:75,workouts:85,equipment:70,pedigree:88,style:80,combo:78,bias:72}},
