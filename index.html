@@ -2112,8 +2112,8 @@ function DiaryTab({silksUser,scores,myOrder,raceMeta,currentRaceName,raceType,ra
     const list=myPicks.map(function(hh,i){
       const tell=tellForHorse(hh,scores,raceType,raceMeta||{});
       const line=(i+1)+". #"+hh.number+" "+hh.name+" — "+hh.totalScore+" GiddyUp Points";
-      return tell&&tell.hasTell?line+"\n   "+tell.text:line;
-    }).join("\n\n");
+      return tell&&tell.hasTell?line+"\n   • "+tell.text:line;
+    }).join("\n· · ·\n");
     const headLines=[byLine,raceLine,metaLine].filter(Boolean);
     const body=headLines.concat(["","RACE DETAILS","",list]).join("\n");
     return{title:(raceLine||currentRaceName||"My Picks"),body:body};
