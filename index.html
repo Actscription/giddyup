@@ -625,10 +625,10 @@ function AngleTableView({scores,weights}){
               h("div",{style:{width:30,height:22,borderRadius:5,background:silk.bg,color:silk.fg,fontWeight:900,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto",border:silk.bg==="#ffffff"?"1px solid rgba(0,0,0,0.15)":"none"}},horse.number));
           })),
         h("tr",null,
-          h("th",{style:{position:"sticky",left:0,zIndex:2,background:C.navy,padding:"7px 6px",textAlign:"left",fontSize:9.5,fontWeight:800,color:C.gold,borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"GiddyUp Points"),
+          h("th",{style:{position:"sticky",left:0,zIndex:2,background:"#e2e8f0",padding:"7px 6px",textAlign:"left",fontSize:9.5,fontWeight:800,color:"#000000",borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"GiddyUp Points"),
           ...scores.map(horse=>
-            h("th",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",borderBottom:"2px solid "+C.border,background:C.navy}},
-              h("span",{style:{color:C.gold,fontWeight:800,fontSize:12}},horse.totalScore)))
+            h("th",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",borderBottom:"2px solid "+C.border,background:"#e2e8f0"}},
+              h("span",{style:{color:"#000000",fontWeight:800,fontSize:14}},horse.totalScore)))
         )
       ),
       h("tbody",null,
