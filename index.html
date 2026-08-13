@@ -2109,7 +2109,7 @@ function DiaryTab({silksUser,scores,myOrder,raceMeta,currentRaceName,raceType,ra
     const byLine="🐴 Picks by "+((silksUser&&silksUser.username)?silksUser.username:"Guest");
     const raceLine=[raceMeta&&raceMeta.track,currentRaceName].filter(Boolean).join(" — ");
     const metaLine=[dateLabel,(raceMeta&&raceMeta.post?"Post "+raceMeta.post:"")].filter(Boolean).join(" · ");
-    const list=myPicks.slice(0,6).map(function(hh,i){
+    const list=myPicks.map(function(hh,i){
       const tell=tellForHorse(hh,scores,raceType,raceMeta||{});
       const line=(i+1)+". #"+hh.number+" "+hh.name+" — "+hh.totalScore+" GiddyUp Points";
       return tell&&tell.hasTell?line+"\n   "+tell.text:line;
@@ -2123,13 +2123,123 @@ function DiaryTab({silksUser,scores,myOrder,raceMeta,currentRaceName,raceType,ra
     setRaceName(function(prev){return prev?prev:built.title;});
     setNote(function(prev){return prev?built.body+"\n\n"+prev:built.body;});
   }
+  // Renders the full picks + Tell Report list as an actual branded image —
+  // plain text can't do a real bulleted layout or alternating row shading,
+  // so this draws it on a canvas instead: navy/gold header matching the
+  // app's palette, one row per horse in Custom Rankings order (every horse
+  // in the field, not just a top handful), soft-gold background on every
+  // even-numbered pick, wrapped text so long Tell Report lines don't run
+  // off the edge, and a giddyupsilks.app credit line at the bottom.
+  function buildReportRows(ctx,contentWidth){
+    function wrapText(text,font){
+      ctx.font=font;
+      const words=text.split(" ");
+      const lines=[];
+      let line="";
+      for(const word of words){
+        const test=line?line+" "+word:word;
+        if(ctx.measureText(test).width>contentWidth&&line){lines.push(line);line=word;}
+        else line=test;
+      }
+      if(line)lines.push(line);
+      return lines;
+    }
+    return myPicks.map(function(hh,i){
+      const tell=tellForHorse(hh,scores,raceType,raceMeta||{});
+      const headerLines=wrapText((i+1)+". #"+hh.number+" "+hh.name+" — "+hh.totalScore+" GiddyUp Points","bold 14px Arial");
+      const tellLines=(tell&&tell.hasTell)?wrapText(tell.text,"13px Arial"):[];
+      const rowH=16+headerLines.length*20+(tellLines.length?tellLines.length*18+6:0)+14;
+      return{headerLines,tellLines,rowH};
+    });
+  }
+  async function generateReportImage(){
+    const W=900,PAD=28,HEADER_H=96,META_H=26,FOOT_H=44,dpr=window.devicePixelRatio||1;
+    const scratch=document.createElement("canvas").getContext("2d");
+    const contentWidth=W-PAD*2;
+    const rows=buildReportRows(scratch,contentWidth);
+    const bodyH=rows.reduce((s,r)=>s+r.rowH,0);
+    const totalH=HEADER_H+META_H+bodyH+FOOT_H+PAD;
+    const canvas=document.createElement("canvas");
+    canvas.width=W*dpr;canvas.height=totalH*dpr;
+    const ctx=canvas.getContext("2d");
+    ctx.scale(dpr,dpr);
+    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,W,totalH);
+    // header band
+    const grad=ctx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0,C.navy);grad.addColorStop(1,C.navy2);
+    ctx.fillStyle=grad;ctx.fillRect(0,0,W,HEADER_H);
+    ctx.fillStyle="#ffffff";ctx.font="bold 24px Arial";
+    ctx.fillText("🐴 Picks by "+((silksUser&&silksUser.username)?silksUser.username:"Guest"),PAD,42);
+    const raceLine=[raceMeta&&raceMeta.track,currentRaceName].filter(Boolean).join(" — ");
+    ctx.fillStyle=C.gold;ctx.font="600 15px Arial";
+    ctx.fillText(raceLine,PAD,68);
+    // meta line
+    let dateLabel="";
+    if(raceMeta&&raceMeta.date){try{const p=raceMeta.date.split("-");const d=new Date(+p[0],+p[1]-1,+p[2]);dateLabel=d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});}catch(ex){dateLabel=raceMeta.date;}}
+    const metaLine=[dateLabel,(raceMeta&&raceMeta.post?"Post "+raceMeta.post:"")].filter(Boolean).join(" · ");
+    ctx.fillStyle="#475569";ctx.font="13px Arial";
+    ctx.fillText(metaLine,PAD,HEADER_H+18);
+    // rows, soft-gold shading on every even-numbered pick (2,4,6...)
+    let y=HEADER_H+META_H;
+    rows.forEach(function(r,i){
+      if((i+1)%2===0){ctx.fillStyle="#fdf6e3";ctx.fillRect(0,y,W,r.rowH);}
+      let ty=y+22;
+      ctx.fillStyle=C.navy;ctx.font="bold 14px Arial";
+      r.headerLines.forEach(function(line){ctx.fillText(line,PAD,ty);ty+=20;});
+      if(r.tellLines.length){
+        ctx.fillStyle="#475569";ctx.font="13px Arial";
+        r.tellLines.forEach(function(line){ctx.fillText(line,PAD+14,ty);ty+=18;});
+      }
+      y+=r.rowH;
+    });
+    // footer credit — styled to read as a link (an image can't actually be
+    // clickable, so the real clickable link travels alongside the image in
+    // the share() call itself, below)
+    const footText="giddyupsilks.app";
+    ctx.font="600 12px Arial";
+    const footW=ctx.measureText(footText).width;
+    const footX=W/2-footW/2,footY=totalH-16;
+    ctx.fillStyle=C.gold;ctx.textAlign="center";
+    ctx.fillText(footText,W/2,footY);
+    ctx.strokeStyle=C.gold;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(footX,footY+3);ctx.lineTo(footX+footW,footY+3);ctx.stroke();
+    ctx.textAlign="left";
+    return new Promise(function(resolve){canvas.toBlob(function(blob){resolve(blob);},"image/png",0.95);});
+  }
+  const [generatingReport,setGeneratingReport]=useState(false);
+  async function shareFullReport(){
+    if(!myPicks.length)return;
+    setGeneratingReport(true);
+    try{
+      const blob=await generateReportImage();
+      const file=new File([blob],"giddyup-picks.png",{type:"image/png"});
+      const shareCaption=(currentRaceName||"My Picks")+" — via GiddyUp Silks";
+      const shareUrl="https://giddyupsilks.app";
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file],title:currentRaceName||"GiddyUp Picks",text:shareCaption,url:shareUrl});setGeneratingReport(false);return;}catch(ex){}
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;a.download="giddyup-picks.png";
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(function(){URL.revokeObjectURL(url);},4000);
+      // Browsers that can only download (no file-sharing support) can't
+      // attach a caption to the file itself, so copy the link to the
+      // clipboard as a courtesy — it travels with the image if pasted
+      // alongside it anywhere.
+      if(navigator.clipboard){try{navigator.clipboard.writeText(shareCaption+" — "+shareUrl);}catch(ex){}}
+    }catch(ex){
+      alert("Couldn't generate the report image. Please try again.");
+    }
+    setGeneratingReport(false);
+  }
   function handleImg(file){if(!file)return;const r=new FileReader();r.onload=e=>{compressImageDataUrl(e.target.result,1280,0.72).then(setImage).catch(()=>setImage(e.target.result));};r.readAsDataURL(file);}function nowStr(){const d=new Date();return{date:d.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),time:d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true})};}function save(){if(!note&&!image)return;setSaving(true);const ts=nowStr();setTimeout(()=>{setEntries(e=>{const next=[{id:Date.now(),raceName:raceName||"Paddock Note",note,image,date:ts.date,time:ts.time},...e];const ok=persist(next);if(!ok){alert("This entry didn't save — your device's diary storage is full. Try a smaller photo, or delete an old entry first.");return e;}return next;});setNote("");setImage(null);setRaceName("");setSaving(false);},400);}const ts=nowStr();return h("div",{style:{paddingTop:14}},h(TabHelp,{title:"How to Use — Diary",steps:[
     "Add a race title or note name to identify the entry.",
     "Take a photo or choose from your library — winning tickets, programs, anything.",
     "Write your observations before or after the race.",
     "Tap Save to My Day — entries appear below.",
     "Build your diary over time to develop your own handicapping edge.",
-  ]}),h("div",{style:{background:"#fdf6e3",border:"1.5px solid "+C.gold,borderRadius:16,padding:"22px 20px",marginBottom:16,textAlign:"center"}},h("div",{style:{fontSize:12,fontWeight:700,color:"#a07830",letterSpacing:3,textTransform:"uppercase",marginBottom:8}},"📒 Your Racing Journal"),h("div",{style:{fontSize:26,fontWeight:900,color:C.navy,marginBottom:4}},"A Day at the Races")),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:14,padding:"10px 12px",background:"#f8fafc",borderRadius:10}},h("div",{style:{fontSize:16}},"📅"),h("div",{style:{flex:1}},h("div",{style:{fontSize:14,fontWeight:700,color:C.text}},ts.date),h("div",{style:{fontSize:12,color:C.muted}},"⏰ "+ts.time))),h("input",{value:raceName,onChange:e=>setRaceName(e.target.value),placeholder:"Race or note title",style:{width:"100%",padding:"12px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:15,color:C.text,marginBottom:10,outline:"none",background:"#f8fafc"}}),h("div",{style:{display:"flex",gap:8,marginBottom:10}},h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{flex:1,padding:"14px 8px",background:"rgba(201,168,76,0.12)",border:"1.5px solid "+C.gold,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:20}},"📸"),h("span",{style:{fontSize:14,fontWeight:700,color:"#7a5b12"}},"Take Photo")),h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{flex:1,padding:"14px 8px",background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:20}},"🖼"),h("span",{style:{fontSize:14,fontWeight:700,color:C.text}},"Library"))),image&&h("div",{style:{position:"relative",marginBottom:10}},h("img",{src:image,style:{width:"100%",maxHeight:200,borderRadius:10,objectFit:"cover"}}),h("button",{onClick:()=>setImage(null),style:{position:"absolute",top:8,right:8,background:"rgba(0,0,0,.6)",border:"none",borderRadius:20,color:"#fff",width:26,height:26,cursor:"pointer",fontSize:13}},"✕")),h("input",{ref:cameraRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("input",{ref:fileRef,type:"file",accept:"image/*",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"1px solid "+C.gold,borderRadius:12,padding:"14px",marginBottom:10,display:"flex",alignItems:"center",gap:12}},h("div",{style:{fontSize:22}},"🐴"),h("div",{style:{flex:1}},h("div",{style:{fontSize:14,fontWeight:800,color:"#fff"}},"Add My Custom Picks + Tell Report"),h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.65)",marginTop:2}},myPicks.length?"Drops your current Custom Rankings and GiddyUp's read on each horse right into this note.":"Set your Custom Rankings in the Rankings tab first.")),h("button",{onClick:addPicksAndTell,disabled:!myPicks.length,style:{padding:"10px 16px",background:myPicks.length?C.gold:"rgba(255,255,255,0.15)",border:"none",borderRadius:10,color:myPicks.length?C.navy:"rgba(255,255,255,0.4)",fontSize:13,fontWeight:800,cursor:myPicks.length?"pointer":"not-allowed",whiteSpace:"nowrap"}},"Add")),h("textarea",{value:note,onChange:e=>setNote(e.target.value),placeholder:"Your observations...",style:{width:"100%",padding:"12px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:15,color:C.text,minHeight:100,resize:"vertical",outline:"none",background:"#f8fafc",lineHeight:1.6}}),h("button",{onClick:save,disabled:!note&&!image,style:{width:"100%",marginTop:10,padding:"15px",background:(!note&&!image)?"#e2e8f0":"linear-gradient(135deg,"+C.gold+",#f0d080)",border:"none",borderRadius:12,color:(!note&&!image)?C.muted:C.navy,fontSize:16,fontWeight:800,cursor:(!note&&!image)?"not-allowed":"pointer"}},saving?"Saving...":"💾 Save to My Day")),entries.length>0&&h(Fragment,null,h("div",{style:{fontSize:12,fontWeight:700,color:C.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:12}},"Today's Entries · "+entries.length),entries.map(entry=>h("div",{key:entry.id,style:{background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden",marginBottom:12}},h("div",{style:{padding:"10px 14px",borderBottom:"1px solid "+C.border,display:"flex",alignItems:"center",gap:10}},h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:15,color:C.text}},entry.raceName),h("div",{style:{fontSize:12,color:C.muted}},"📅 "+entry.date+" · ⏰ "+entry.time)),h("div",{style:{display:"flex",gap:6}},h("button",{onClick:()=>shareContent(entry.raceName||"GiddyUp Diary",entry.note||""),style:{background:"rgba(201,168,76,0.15)",border:"1px solid "+C.gold,borderRadius:8,padding:"4px 10px",fontSize:12,color:"#7a5b12",fontWeight:700,cursor:"pointer"}},"Share"),h("button",{onClick:()=>deleteEntry(entry.id),style:{background:"#fee2e2",border:"none",borderRadius:8,padding:"4px 10px",fontSize:12,color:"#ef4444",cursor:"pointer"}},"Delete"))),h("div",{style:{padding:"12px 14px"}},entry.image&&h("img",{src:entry.image,style:{width:"100%",maxHeight:180,borderRadius:10,objectFit:"cover",marginBottom:10}}),entry.note&&h("div",{style:{fontSize:14,color:"#475569",lineHeight:1.7,marginBottom:10}},entry.note))))),entries.length===0&&h("div",{style:{textAlign:"center",padding:"36px 20px",color:C.muted}},h("div",{style:{fontSize:44,marginBottom:12}},"🏇"),h("div",{style:{fontWeight:700,fontSize:17,color:C.text}},"Your story starts here")));}
+  ]}),h("div",{style:{background:"#fdf6e3",border:"1.5px solid "+C.gold,borderRadius:16,padding:"22px 20px",marginBottom:16,textAlign:"center"}},h("div",{style:{fontSize:12,fontWeight:700,color:"#a07830",letterSpacing:3,textTransform:"uppercase",marginBottom:8}},"📒 Your Racing Journal"),h("div",{style:{fontSize:26,fontWeight:900,color:C.navy,marginBottom:4}},"A Day at the Races")),h("div",{style:{background:"#fff",border:"1px solid "+C.border,borderRadius:16,padding:"16px",marginBottom:16}},h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:14,padding:"10px 12px",background:"#f8fafc",borderRadius:10}},h("div",{style:{fontSize:16}},"📅"),h("div",{style:{flex:1}},h("div",{style:{fontSize:14,fontWeight:700,color:C.text}},ts.date),h("div",{style:{fontSize:12,color:C.muted}},"⏰ "+ts.time))),h("input",{value:raceName,onChange:e=>setRaceName(e.target.value),placeholder:"Race or note title",style:{width:"100%",padding:"12px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:15,color:C.text,marginBottom:10,outline:"none",background:"#f8fafc"}}),h("div",{style:{display:"flex",gap:8,marginBottom:10}},h("button",{onClick:()=>cameraRef.current&&cameraRef.current.click(),style:{flex:1,padding:"14px 8px",background:"rgba(201,168,76,0.12)",border:"1.5px solid "+C.gold,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:20}},"📸"),h("span",{style:{fontSize:14,fontWeight:700,color:"#7a5b12"}},"Take Photo")),h("button",{onClick:()=>fileRef.current&&fileRef.current.click(),style:{flex:1,padding:"14px 8px",background:"#f8fafc",border:"1.5px solid "+C.border,borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}},h("span",{style:{fontSize:20}},"🖼"),h("span",{style:{fontSize:14,fontWeight:700,color:C.text}},"Library"))),image&&h("div",{style:{position:"relative",marginBottom:10}},h("img",{src:image,style:{width:"100%",maxHeight:200,borderRadius:10,objectFit:"cover"}}),h("button",{onClick:()=>setImage(null),style:{position:"absolute",top:8,right:8,background:"rgba(0,0,0,.6)",border:"none",borderRadius:20,color:"#fff",width:26,height:26,cursor:"pointer",fontSize:13}},"✕")),h("input",{ref:cameraRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("input",{ref:fileRef,type:"file",accept:"image/*",style:{display:"none"},onChange:e=>handleImg(e.target.files[0])}),h("div",{style:{background:"linear-gradient(135deg,"+C.navy+","+C.navy2+")",border:"1px solid "+C.gold,borderRadius:12,padding:"14px",marginBottom:10,display:"flex",alignItems:"center",gap:12}},h("div",{style:{fontSize:22}},"🐴"),h("div",{style:{flex:1}},h("div",{style:{fontSize:14,fontWeight:800,color:"#fff"}},"Add My Custom Picks + Tell Report"),h("div",{style:{fontSize:11,color:"rgba(255,255,255,0.65)",marginTop:2}},myPicks.length?"Drops your current Custom Rankings and GiddyUp's read on each horse right into this note.":"Set your Custom Rankings in the Rankings tab first.")),h("button",{onClick:addPicksAndTell,disabled:!myPicks.length,style:{padding:"10px 16px",background:myPicks.length?C.gold:"rgba(255,255,255,0.15)",border:"none",borderRadius:10,color:myPicks.length?C.navy:"rgba(255,255,255,0.4)",fontSize:13,fontWeight:800,cursor:myPicks.length?"pointer":"not-allowed",whiteSpace:"nowrap"}},"Add"),h("button",{onClick:shareFullReport,disabled:!myPicks.length||generatingReport,style:{padding:"10px 16px",background:myPicks.length?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.08)",border:"1.5px solid "+C.gold,borderRadius:10,color:myPicks.length?"#fff":"rgba(255,255,255,0.4)",fontSize:13,fontWeight:800,cursor:myPicks.length?"pointer":"not-allowed",whiteSpace:"nowrap",marginLeft:8}},(generatingReport?"Building…":"📤 Full Report"))),h("textarea",{value:note,onChange:e=>setNote(e.target.value),placeholder:"Your observations...",style:{width:"100%",padding:"12px 12px",border:"1px solid "+C.border,borderRadius:10,fontSize:15,color:C.text,minHeight:100,resize:"vertical",outline:"none",background:"#f8fafc",lineHeight:1.6}}),h("button",{onClick:save,disabled:!note&&!image,style:{width:"100%",marginTop:10,padding:"15px",background:(!note&&!image)?"#e2e8f0":"linear-gradient(135deg,"+C.gold+",#f0d080)",border:"none",borderRadius:12,color:(!note&&!image)?C.muted:C.navy,fontSize:16,fontWeight:800,cursor:(!note&&!image)?"not-allowed":"pointer"}},saving?"Saving...":"💾 Save to My Day")),entries.length>0&&h(Fragment,null,h("div",{style:{fontSize:12,fontWeight:700,color:C.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:12}},"Today's Entries · "+entries.length),entries.map(entry=>h("div",{key:entry.id,style:{background:"#fff",border:"1px solid "+C.border,borderRadius:14,overflow:"hidden",marginBottom:12}},h("div",{style:{padding:"10px 14px",borderBottom:"1px solid "+C.border,display:"flex",alignItems:"center",gap:10}},h("div",{style:{flex:1}},h("div",{style:{fontWeight:700,fontSize:15,color:C.text}},entry.raceName),h("div",{style:{fontSize:12,color:C.muted}},"📅 "+entry.date+" · ⏰ "+entry.time)),h("div",{style:{display:"flex",gap:6}},h("button",{onClick:()=>shareContent(entry.raceName||"GiddyUp Diary",entry.note||""),style:{background:"rgba(201,168,76,0.15)",border:"1px solid "+C.gold,borderRadius:8,padding:"4px 10px",fontSize:12,color:"#7a5b12",fontWeight:700,cursor:"pointer"}},"Share"),h("button",{onClick:()=>deleteEntry(entry.id),style:{background:"#fee2e2",border:"none",borderRadius:8,padding:"4px 10px",fontSize:12,color:"#ef4444",cursor:"pointer"}},"Delete"))),h("div",{style:{padding:"12px 14px"}},entry.image&&h("img",{src:entry.image,style:{width:"100%",maxHeight:180,borderRadius:10,objectFit:"cover",marginBottom:10}}),entry.note&&h("div",{style:{fontSize:14,color:"#475569",lineHeight:1.7,marginBottom:10}},entry.note))))),entries.length===0&&h("div",{style:{textAlign:"center",padding:"36px 20px",color:C.muted}},h("div",{style:{fontSize:44,marginBottom:12}},"🏇"),h("div",{style:{fontWeight:700,fontSize:17,color:C.text}},"Your story starts here")));}
 
 // ── SETTINGS TAB ──────────────────────────────────────────────
 function SettingsTab({silksUser,setSilksUser,onLogout}){
