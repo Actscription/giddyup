@@ -622,8 +622,14 @@ function AngleTableView({scores,weights}){
             const rk=i+1,silk=SILK_COLORS[horse.number]||SILK_COLORS.default,t=RANK_TINT[0];
             return h("th",{key:horse.number,style:{padding:"6px 3px",textAlign:"center",borderBottom:"2px solid "+C.border,minWidth:40,background:"#fff"}},
               h("div",{style:{width:24,height:24,borderRadius:"50%",background:t.bg,border:t.bd,color:t.fg,fontWeight:800,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 3px"}},rk),
-              h("div",{style:{width:20,height:14,borderRadius:4,background:silk.bg,color:silk.fg,fontWeight:900,fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto",border:silk.bg==="#ffffff"?"1px solid rgba(0,0,0,0.15)":"none"}},horse.number));
+              h("div",{style:{width:30,height:22,borderRadius:5,background:silk.bg,color:silk.fg,fontWeight:900,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto",border:silk.bg==="#ffffff"?"1px solid rgba(0,0,0,0.15)":"none"}},horse.number));
           })),
+        h("tr",null,
+          h("th",{style:{position:"sticky",left:0,zIndex:2,background:C.navy,padding:"7px 6px",textAlign:"left",fontSize:9.5,fontWeight:800,color:C.gold,borderBottom:"2px solid "+C.border,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"GiddyUp Points"),
+          ...scores.map(horse=>
+            h("th",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",borderBottom:"2px solid "+C.border,background:C.navy}},
+              h("span",{style:{color:C.gold,fontWeight:800,fontSize:12}},horse.totalScore)))
+        )
       ),
       h("tbody",null,
         active.map(f=>h("tr",{key:f.id},
@@ -637,14 +643,6 @@ function AngleTableView({scores,weights}){
               h("span",{style:{color:t.fg,fontWeight:700,fontSize:11}},rank!=null?rank:"–"));
           })
         ))
-      ),
-      h("tfoot",null,
-        h("tr",null,
-          h("td",{style:{position:"sticky",left:0,zIndex:1,background:C.navy,padding:"7px 6px",fontSize:9.5,fontWeight:800,color:C.gold,borderRight:"1px solid "+C.border,whiteSpace:"nowrap",minWidth:84,maxWidth:84}},"GiddyUp Points"),
-          ...scores.map(horse=>
-            h("td",{key:horse.number,style:{textAlign:"center",padding:"7px 2px",background:C.navy}},
-              h("span",{style:{color:C.gold,fontWeight:800,fontSize:12}},horse.totalScore)))
-        )
       )
     ));
 }
