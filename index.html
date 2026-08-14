@@ -533,13 +533,15 @@ function TellCard({horse,rank,horses,raceType,raceMeta}){
   const silk=SILK_COLORS[horse.number]||SILK_COLORS.default;
   const tell=tellForHorse(horse,horses,raceType,raceMeta||{});
   const bio=[horse.age?horse.age+"yo":null,horse.bred||null].filter(Boolean).join(" · ");
+  const connections=[horse.jockey||null,horse.trainer||null].filter(Boolean).join(" - ");
   return h("div",{style:{background:rank===0?"linear-gradient(135deg,#fffbf0,#fff8e6)":"#fff",border:rank===0?"2px solid "+C.gold:"1px solid "+C.border,borderRadius:14,padding:"14px 16px",marginBottom:10}},
     h("div",{style:{display:"flex",alignItems:"center",gap:12,marginBottom:8}},
       h("div",{style:{width:38,height:38,borderRadius:9,background:silk.bg,color:silk.fg,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:15,border:"1px solid rgba(0,0,0,0.15)",flexShrink:0}},horse.number),
       h("div",{style:{flex:1}},
         rank===0&&h("div",{style:{fontSize:10,fontWeight:700,color:C.gold,letterSpacing:1,textTransform:"uppercase",marginBottom:1}},"Top pick"),
         h("div",{style:{color:C.text,fontWeight:700,fontSize:15}},horse.name),
-        bio&&h("div",{style:{color:"#475569",fontWeight:500,fontSize:12,marginTop:1}},bio))),
+        bio&&h("div",{style:{color:"#475569",fontWeight:500,fontSize:12,marginTop:1}},bio),
+        connections&&h("div",{style:{color:"#64748b",fontWeight:500,fontSize:12,marginTop:1}},connections))),
     h("div",{style:{fontSize:13,color:tell.hasTell?C.navy:"#94a3b8",lineHeight:1.6,fontStyle:tell.hasTell?"normal":"italic"}},tell.text));
 }
 
